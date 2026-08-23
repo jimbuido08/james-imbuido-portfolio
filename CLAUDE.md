@@ -4,13 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Current state
 
-Greenfield: the repo contains no application code yet — only the master plan, a README, and `.gitignore`. The first development task is the Phase 0 scaffold (Next.js + TypeScript + Tailwind + ESLint + Prettier, deployed via GitHub → Vercel).
+Phase 0 (§28) complete: the Next.js App Router skeleton is scaffolded at the repo root — TypeScript (strict), Tailwind, ESLint (flat config) + Prettier, placeholder homepage only. No feature dependencies (three.js/R3F, Framer Motion, Supabase clients, chess.js) and no portfolio routes exist yet; they land in later phases per the §34 build order. The §15 directory skeleton exists as empty folders tracked via `.gitkeep`.
 
 **Source of truth:** `James Imbuido — Interactive Data Universe Portfolio _ Master Project Plan.md`. It defines the product, routes, data models, security rules, V1 scope, and a strict build order. Read the relevant sections before any substantial work — do not guess at requirements the plan already specifies. Section numbers below (§N) refer to that file.
 
 ## Commands
 
-No build/lint/test tooling exists yet — there is no `package.json`. Once the Phase 0 scaffold lands this will be a standard Next.js App Router app (`npm run dev`, `npm run build`, `npm run lint`) (§14, §28 Phase 0). The plan mandates no test framework; "done" is defined by the acceptance checklist in §32, not by test coverage.
+Standard Next.js App Router app, npm only (§14, §28 Phase 0): `npm install`; `npm run dev` (dev server, http://localhost:3000); `npm run build` (production build + type-check); `npm run start`; `npm run lint` (ESLint flat config); `npm run format` / `npm run format:check` (Prettier; `*.md` docs excluded by `.prettierignore`). No test framework by design; "done" is defined by the acceptance checklist in §32, not by test coverage.
 
 ## What this project is
 
