@@ -86,7 +86,7 @@ export function UniverseScene({
           opacity={0.3}
           color={UNIVERSE_COLORS.fgSubtle}
         />
-        <DataCore reducedMotion={reducedMotion} />
+        <DataCore reducedMotion={reducedMotion} labelVisible={!selected} />
         <ConnectionLines />
         <UniverseNodes
           selected={selected}

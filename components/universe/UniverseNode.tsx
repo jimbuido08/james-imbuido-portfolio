@@ -1,12 +1,14 @@
 "use client";
 
-import { Float } from "@react-three/drei";
+import { Float, Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useRef, useState } from "react";
 import * as THREE from "three";
 
 import { NODE_RADIUS } from "@/lib/universe/config";
 import type { UniverseNodeDef } from "@/lib/universe/config";
+
+import { NodeLabel } from "./NodeLabel";
 
 type UniverseNodeProps = {
   def: UniverseNodeDef;
@@ -46,34 +48,47 @@ export function UniverseNode({
   });
 
   const node = (
-    <mesh
-      ref={mesh}
-      position={def.position}
-      onClick={(e) => {
-        e.stopPropagation();
-        if (!selectedId) onSelect(def);
-      }}
-      onPointerOver={(e) => {
-        e.stopPropagation();
-        setHovered(true);
-        onHover(def);
-        document.body.style.cursor = "pointer";
-      }}
-      onPointerOut={(e) => {
-        e.stopPropagation();
-        setHovered(false);
-        onHover(null);
-        document.body.style.cursor = "auto";
-      }}
-    >
-      <sphereGeometry args={[NODE_RADIUS, 32, 32]} />
-      <meshStandardMaterial
-        color={def.accent}
-        emissive={def.accent}
-        emissiveIntensity={hovered || isSelected ? 0.5 : 0.22}
-        roughness={0.4}
-      />
-    </mesh>
+    <>
+      <mesh
+        ref={mesh}
+        position={def.position}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (!selectedId) onSelect(def);
+        }}
+        onPointerOver={(e) => {
+          e.stopPropagation();
+          setHovered(true);
+          onHover(def);
+          document.body.style.cursor = "pointer";
+        }}
+        onPointerOut={(e) => {
+          e.stopPropagation();
+          setHovered(false);
+          onHover(null);
+          document.body.style.cursor = "auto";
+        }}
+      >
+        <sphereGeometry args={[NODE_RADIUS, 32, 32]} />
+        <meshStandardMaterial
+          color={def.accent}
+          emissive={def.accent}
+          emissiveIntensity={hovered || isSelected ? 0.5 : 0.22}
+          roughness={0.4}
+        />
+      </mesh>
+      {/* Always-visible name + subtitle, glued to the node. Hidden while any
+          node is selected so labels don't clutter the camera glide. */}
+      {selectedId === null && (
+        <Html
+          position={[def.position[0], def.position[1] - 0.5, def.position[2]]}
+          center
+          pointerEvents="none"
+        >
+          <NodeLabel def={def} />
+        </Html>
+      )}
+    </>
   );
 
   if (reducedMotion) return node;

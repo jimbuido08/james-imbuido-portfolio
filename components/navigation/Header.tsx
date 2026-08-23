@@ -27,7 +27,7 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b border-border bg-bg/80 backdrop-blur">
       <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="font-semibold">
-          James Imbuido
+          James Imbuido | Data Scientist & AI Engineer
         </Link>
 
         {/* Desktop nav */}

@@ -45,3 +45,6 @@ next-env.d.ts
 
 # Claude Code local settings (machine-specific; never share)
 .claude/settings.local.json
+
+# Playwright MCP browser-test artifacts (logs, snapshots, screenshots)
+/.playwright-mcp/

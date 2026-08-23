@@ -26,6 +26,8 @@
   --color-accent-data: #2dd4bf;
   --color-accent-jtb: #d9a03f;
   --color-accent-chess: #4da37e;
+  --color-accent-about: #60a5fa; /* muted blue */
+  --color-accent-exp: #d98c96; /* muted rose */
   --color-accent-neut: #9ca3af;
 
   /* Global focus ring (§3.4) */
