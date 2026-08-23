@@ -1,0 +1,11 @@
+# Lockfiles and generated files
+package-lock.json
+next-env.d.ts
+
+# Build output
+.next
+out
+build
+
+# Hand-maintained docs are not machine-formatted (incl. the master plan)
+*.md
