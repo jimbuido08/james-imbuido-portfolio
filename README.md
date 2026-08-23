@@ -6,7 +6,23 @@ The guiding idea is *show, don't tell* — the portfolio itself demonstrates the
 
 ## Status
 
-**Pre-development (Phase 0).** The repository currently holds the authoritative spec — the [Master Project Plan](<./James Imbuido — Interactive Data Universe Portfolio _ Master Project Plan.md>) — covering the product concept, routes, data models, security invariants, V1 scope, and the phased build order. The Next.js application has not been scaffolded yet; setup and run instructions will land with the Phase 0 scaffold.
+**Phase 0 complete — project skeleton.** Next.js (App Router) + TypeScript (strict) + Tailwind CSS + ESLint + Prettier, deployed via GitHub → Vercel. The homepage is a placeholder; portfolio routes and features land in later phases per the master plan's build order (§28, §34).
+
+## Development
+
+Requires Node.js ≥ 20.9 and npm.
+
+```bash
+npm install          # install dependencies (first time / after pulling)
+npm run dev          # dev server → http://localhost:3000
+npm run build        # production build (also type-checks)
+npm run start        # serve the production build
+npm run lint         # ESLint (flat config)
+npm run format       # Prettier: rewrite supported files
+npm run format:check # Prettier: verify formatting without writing
+```
+
+Environment variables: none are required for the skeleton. When later phases need them, copy `.env.example` to `.env.local` and fill in the values — `.env.local` is git-ignored and must never be committed.
 
 ## Key features (planned)
 
