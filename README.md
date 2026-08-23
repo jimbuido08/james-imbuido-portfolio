@@ -6,7 +6,7 @@ The guiding idea is *show, don't tell* — the portfolio itself demonstrates the
 
 ## Status
 
-**Phase 1 complete — design system + site shell.** Next.js (App Router) + TypeScript (strict) + Tailwind CSS + ESLint + Prettier, deployed via GitHub → Vercel. Design tokens, UI primitives, and a responsive header/footer shell are in place; the homepage and an unlinked `/design` preview page exercise them. The portfolio's routes and interactive features land in later phases per the master plan's build order (§28, §34).
+**Phase 2 complete — Data Universe prototype + placeholder routes.** The homepage is now a full-viewport React Three Fiber scene: a central data core orbited by six navigation nodes (About, Experience, AI/ML, Data Visualisation, JTB, Chess AI) with connection lines and a particle starfield. Hover highlights nodes; clicking glides the camera into the node's section. It degrades gracefully — the hero copy is server-rendered, the whole site works without WebGL, reduced motion freezes the scene, and mobile gets a lighter quality profile. Seven routes (`/about`, `/experience`, `/ai-ml`, `/data`, `/jtb`, `/chess`, `/contact`) serve honest placeholder content with per-route metadata. Next up: **Phase 3 — real portfolio content** (About, Experience, Contact, and the AI/ML + Data Visualisation project systems) per the master plan's build order (§28, §34).
 
 ## Development
 
