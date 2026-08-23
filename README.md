@@ -6,7 +6,7 @@ The guiding idea is *show, don't tell* — the portfolio itself demonstrates the
 
 ## Status
 
-**Phase 0 complete — project skeleton.** Next.js (App Router) + TypeScript (strict) + Tailwind CSS + ESLint + Prettier, deployed via GitHub → Vercel. The homepage is a placeholder; portfolio routes and features land in later phases per the master plan's build order (§28, §34).
+**Phase 1 complete — design system + site shell.** Next.js (App Router) + TypeScript (strict) + Tailwind CSS + ESLint + Prettier, deployed via GitHub → Vercel. Design tokens, UI primitives, and a responsive header/footer shell are in place; the homepage and an unlinked `/design` preview page exercise them. The portfolio's routes and interactive features land in later phases per the master plan's build order (§28, §34).
 
 ## Development
 
