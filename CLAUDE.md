@@ -8,7 +8,7 @@ Phase 1 (§28) laid the foundation (design tokens in `app/globals.css`, `cx` hel
 
 Degradation is load-bearing: hero copy is server-rendered (crawlable, no-JS), the WebGL-less path renders no canvas yet keeps full content + navigation, `prefers-reduced-motion` freezes the scene and navigates instantly on node click, and mobile gets a reduced quality profile. `three`/`@react-three/*` live only in a lazy chunk via `next/dynamic({ ssr: false })` inside the client `DataUniverse` — never in the `/` main bundle.
 
-Seven placeholder routes (`/about`, `/experience`, `/ai-ml`, `/data`, `/jtb`, `/chess`, `/contact`) now render honest, clearly-marked placeholder copy with per-route metadata — they previously 404'd. No real project content is connected. Next up: **Phase 3 — Portfolio content** (§34): About, Experience, education, Contact, and the AI/ML + Data Visualisation project systems. The §15 directory skeleton exists as empty folders tracked via `.gitkeep`.
+Seven placeholder routes (`/about`, `/experience`, `/ai-ml`, `/data`, `/jtb`, `/chess`, `/contact`) now render honest, clearly-marked placeholder copy with per-route metadata — they previously 404'd. No real project content is connected. **Phase 3 complete** — portfolio content and the AI/ML + Data Visualisation project systems. Next up: **Phase 4 — chess UI** per §34.
 
 **Source of truth:** `James Imbuido — Interactive Data Universe Portfolio _ Master Project Plan.md`. It defines the product, routes, data models, security rules, V1 scope, and a strict build order. Read the relevant sections before any substantial work — do not guess at requirements the plan already specifies. Section numbers below (§N) refer to that file.
 
