@@ -88,8 +88,7 @@ export default function Home() {
               James Imbuido
             </h1>
             <p className="mt-4 max-w-prose text-base leading-relaxed text-fg-muted">
-              Data Scientist — building an interactive portfolio that shows the
-              work, not just the title.
+              Data Scientist
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button href="/about" className="pointer-events-auto">
