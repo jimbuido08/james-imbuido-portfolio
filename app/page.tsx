@@ -1,7 +1,6 @@
 import Link from "next/link";
 
 import { DataUniverse } from "@/components/universe/DataUniverse";
-import { Button } from "@/components/ui/Button";
 import {
   Card,
   CardDescription,
@@ -24,14 +23,14 @@ const domains: {
     href: "/about",
     title: "About",
     tag: "About",
-    domain: "neutral",
+    domain: "about",
     description: "Background, path, and values — content in progress.",
   },
   {
     href: "/experience",
     title: "Experience",
     tag: "Experience",
-    domain: "neutral",
+    domain: "experience",
     description: "Professional timeline and roles — content in progress.",
   },
   {
@@ -74,37 +73,10 @@ const domains: {
 export default function Home() {
   return (
     <>
-      {/* Data Universe viewport — hero copy is SSR'd FIRST (z-10), the 3D
-          canvas is an enhancement layered underneath. Without WebGL the
-          section still renders hero + nav; the index grid below is the
-          conventional fallback (§11.1, §31 P5). */}
+      {/* Data Universe viewport — the 3D canvas fills the section. Without
+          WebGL nothing renders here; the index grid below is the conventional
+          content + navigation fallback (§11.1, §31 P5). */}
       <section className="relative h-[calc(100dvh-4rem)] min-h-[540px] overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-center pt-[10vh]">
-          <Container>
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-fg-subtle">
-              Data × AI × Interactive Systems
-            </p>
-            <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl">
-              James Imbuido
-            </h1>
-            <p className="mt-4 max-w-prose text-base leading-relaxed text-fg-muted">
-              Data Scientist
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button href="/about" className="pointer-events-auto">
-                Explore
-              </Button>
-              <Button
-                href="/contact"
-                variant="secondary"
-                className="pointer-events-auto"
-              >
-                Contact
-              </Button>
-            </div>
-          </Container>
-        </div>
-
         <div className="absolute inset-0">
           <DataUniverse />
         </div>

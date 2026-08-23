@@ -48,8 +48,8 @@ export function DataUniverse() {
     return () => mq.removeEventListener("change", update);
   }, []);
 
-  // §11.1 fallback path: no WebGL → render nothing. The SSR hero overlay and
-  // the index grid below already provide full content and navigation.
+  // §11.1 fallback path: no WebGL → render nothing. The header nav and the
+  // SSR'd index grid below already provide full content and navigation.
   if (!webgl) return null;
 
   const quality = isMobile ? QUALITY.mobile : QUALITY.desktop;

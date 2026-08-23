@@ -1,11 +1,22 @@
 // Palette mirrors app/globals.css @theme tokens. Three.js canvases cannot read
 // CSS custom properties, so this file is the single allowed location for hexes.
 
-export type UniverseDomain = "ai" | "data" | "jtb" | "chess" | "neutral";
+export type UniverseDomain =
+  | "ai"
+  | "data"
+  | "jtb"
+  | "chess"
+  | "about"
+  | "experience"
+  | "neutral";
 
 export interface UniverseNodeDef {
   id: string; // "about"
   label: string; // "About"
+  // Shorter display name for the always-visible label, matching the header
+  // nav. Used where the full label is too wide to sit centered under the
+  // node without colliding with a neighbouring label.
+  shortLabel?: string;
   route: string; // "/about"
   domain: UniverseDomain;
   accent: string; // hex, mirror of the domain accent token
@@ -33,8 +44,8 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
     id: "about",
     label: "About",
     route: "/about",
-    domain: "neutral",
-    accent: "#9ca3af",
+    domain: "about",
+    accent: "#60a5fa",
     blurb: "Who James is — background and approach.",
     position: [3.2, 0.4, 0],
   },
@@ -42,14 +53,15 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
     id: "experience",
     label: "Experience",
     route: "/experience",
-    domain: "neutral",
-    accent: "#9ca3af",
+    domain: "experience",
+    accent: "#d98c96",
     blurb: "Professional data science experience.",
     position: [1.6, -0.35, 2.771],
   },
   {
     id: "ai-ml",
     label: "AI / Machine Learning",
+    shortLabel: "AI/ML",
     route: "/ai-ml",
     domain: "ai",
     accent: "#818cf8",
@@ -59,6 +71,7 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
   {
     id: "data",
     label: "Data Visualisation",
+    shortLabel: "Data",
     route: "/data",
     domain: "data",
     accent: "#2dd4bf",
