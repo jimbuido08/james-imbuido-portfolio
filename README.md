@@ -6,7 +6,7 @@ The guiding idea is *show, don't tell* — the portfolio itself demonstrates the
 
 ## Status
 
-**Phase 2 complete — Data Universe prototype + placeholder routes.** The homepage is now a full-viewport React Three Fiber scene: a central data core orbited by six navigation nodes (About, Experience, AI/ML, Data Visualisation, JTB, Chess AI) with connection lines and a particle starfield. Hover highlights nodes; clicking glides the camera into the node's section. It degrades gracefully — the hero copy is server-rendered, the whole site works without WebGL, reduced motion freezes the scene, and mobile gets a lighter quality profile. Seven routes (`/about`, `/experience`, `/ai-ml`, `/data`, `/jtb`, `/chess`, `/contact`) serve honest placeholder content with per-route metadata. Next up: **Phase 3 — real portfolio content** (About, Experience, Contact, and the AI/ML + Data Visualisation project systems) per the master plan's build order (§28, §34).
+**Phase 3 complete — portfolio content.** `/about`, `/experience`, and `/contact` are real structured pages (About's nursing → data science journey, a career + education timeline, and an honestly-disabled contact form). The AI/ML + Data Visualisation project systems are live: structured frontmatter markdown under `content/` is loaded at build time into `/ai-ml` and `/data` grids with filter chips, and every project gets a static case-study route (SSG, 404 on unknown slugs). All human-readable content remains honestly marked `[TODO: James — …]`. Next up: **Phase 4 — chess UI** per the master plan's build order (§28, §34).
 
 ## Development
 
