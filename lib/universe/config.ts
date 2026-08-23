@@ -71,7 +71,7 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
   {
     id: "data",
     label: "Data Visualisation",
-    shortLabel: "Data",
+    shortLabel: "Data Viz",
     route: "/data",
     domain: "data",
     accent: "#2dd4bf",

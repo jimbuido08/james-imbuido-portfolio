@@ -2,13 +2,14 @@
 
 import { Float, Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 
 import { NODE_RADIUS } from "@/lib/universe/config";
 import type { UniverseNodeDef } from "@/lib/universe/config";
 
 import { NodeLabel } from "./NodeLabel";
+import { nodePositions } from "./nodePositions";
 
 type UniverseNodeProps = {
   def: UniverseNodeDef;
@@ -35,8 +36,22 @@ export function UniverseNode({
   const isSelected = selectedId === def.id;
   const targetScale = isSelected ? 1.7 : hovered ? 1.35 : 1;
 
+  // Persistent vector tracked in the shared registry so ConnectionLines can
+  // reach this node's live center even while Float drifts it off def.position.
+  const worldPosition = useMemo(
+    () => new THREE.Vector3(...def.position),
+    [def.position],
+  );
+  useEffect(() => {
+    nodePositions.set(def.id, worldPosition);
+    return () => {
+      nodePositions.delete(def.id);
+    };
+  }, [def.id, worldPosition]);
+
   useFrame((_, delta) => {
     if (!mesh.current) return;
+    mesh.current.getWorldPosition(worldPosition);
     if (reducedMotion) {
       mesh.current.scale.setScalar(targetScale);
     } else {
