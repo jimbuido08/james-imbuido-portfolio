@@ -35,10 +35,10 @@ export const UNIVERSE_COLORS = {
   fgSubtle: "#71717a", // --color-fg-subtle (particles)
 } as const;
 
-export const ORBIT_RADIUS = 3.2;
-
-// Precomputed: ORBIT_RADIUS ring on XZ plane, alternating y offsets
-// ±[0.4, -0.35, 0.3, -0.4, 0.45, -0.3]; x = r·cosθ, z = r·sinθ, θ = i·60°.
+// Positions are precomputed, not derived at runtime. Nodes sit ~60° apart on
+// the XZ plane (θ = i·60°) but each has its own orbital radius (2.7–3.9) and
+// elevation (−0.9 to 0.95), so the constellation feels organic rather than a
+// rigid ring: x = r·cosθ, z = r·sinθ.
 export const UNIVERSE_NODES: UniverseNodeDef[] = [
   {
     id: "about",
@@ -47,7 +47,7 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
     domain: "about",
     accent: "#60a5fa",
     blurb: "Who James is — background and approach.",
-    position: [3.2, 0.4, 0],
+    position: [3.5, 0.9, 0], // r = 3.5
   },
   {
     id: "experience",
@@ -56,7 +56,7 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
     domain: "experience",
     accent: "#d98c96",
     blurb: "Professional data science experience.",
-    position: [1.6, -0.35, 2.771],
+    position: [1.35, -0.7, 2.338], // r = 2.7
   },
   {
     id: "ai-ml",
@@ -66,7 +66,7 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
     domain: "ai",
     accent: "#818cf8",
     blurb: "Machine learning and AI projects.",
-    position: [-1.6, 0.3, 2.771],
+    position: [-1.95, 0.45, 3.377], // r = 3.9
   },
   {
     id: "data",
@@ -76,7 +76,7 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
     domain: "data",
     accent: "#2dd4bf",
     blurb: "Dashboards and custom visualisations.",
-    position: [-3.2, -0.4, 0],
+    position: [-2.9, -0.9, 0], // r = 2.8
   },
   {
     id: "jtb",
@@ -85,7 +85,7 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
     domain: "jtb",
     accent: "#d9a03f",
     blurb: "JTB — ask questions about James's work.",
-    position: [-1.6, 0.45, -2.771],
+    position: [-1.85, 0.95, -3.204], // r = 3.7
   },
   {
     id: "chess",
@@ -94,7 +94,7 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
     domain: "chess",
     accent: "#4da37e",
     blurb: "Play against James's chess model.",
-    position: [1.6, -0.3, -2.771],
+    position: [1.55, -0.35, -2.685], // r = 3.1
   },
 ];
 

@@ -3,6 +3,7 @@
 import { Float, Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { RefObject } from "react";
 import * as THREE from "three";
 
 import { NODE_RADIUS } from "@/lib/universe/config";
@@ -17,6 +18,7 @@ type UniverseNodeProps = {
   onHover: (node: UniverseNodeDef | null) => void;
   onSelect: (node: UniverseNodeDef) => void;
   reducedMotion: boolean;
+  coreRef: RefObject<THREE.Group | null>;
 };
 
 /**
@@ -30,6 +32,7 @@ export function UniverseNode({
   onHover,
   onSelect,
   reducedMotion,
+  coreRef,
 }: UniverseNodeProps) {
   const [hovered, setHovered] = useState(false);
   const mesh = useRef<THREE.Mesh>(null);
@@ -93,12 +96,15 @@ export function UniverseNode({
         />
       </mesh>
       {/* Always-visible name + subtitle, glued to the node. Hidden while any
-          node is selected so labels don't clutter the camera glide. */}
+          node is selected so labels don't clutter the camera glide. Occluded
+          against the core so the label disappears when the node orbits behind
+          it — scoped to coreRef only so the particle field can't falsely hide it. */}
       {selectedId === null && (
         <Html
           position={[def.position[0], def.position[1] - 0.5, def.position[2]]}
           center
           pointerEvents="none"
+          occlude={[coreRef as RefObject<THREE.Object3D>]}
         >
           <NodeLabel def={def} />
         </Html>
