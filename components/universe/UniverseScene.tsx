@@ -69,6 +69,9 @@ export function UniverseScene({
   onSelect,
   onNavigate,
 }: UniverseSceneProps) {
+  // Shared handle on the core so node labels can occlusion-test against it,
+  // hiding when the node drifts behind the "James" core.
+  const coreRef = useRef<THREE.Group>(null);
   return (
     <>
       <fog attach="fog" args={[UNIVERSE_COLORS.bg, 9, 16]} />
@@ -86,13 +89,18 @@ export function UniverseScene({
           opacity={0.3}
           color={UNIVERSE_COLORS.fgSubtle}
         />
-        <DataCore reducedMotion={reducedMotion} labelVisible={!selected} />
+        <DataCore
+          reducedMotion={reducedMotion}
+          labelVisible={!selected}
+          groupRef={coreRef}
+        />
         <ConnectionLines />
         <UniverseNodes
           selected={selected}
           onHover={onHover}
           onSelect={onSelect}
           reducedMotion={reducedMotion}
+          coreRef={coreRef}
         />
       </Rig>
       <OrbitControls

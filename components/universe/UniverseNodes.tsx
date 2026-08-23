@@ -1,5 +1,8 @@
 "use client";
 
+import type { RefObject } from "react";
+import type * as THREE from "three";
+
 import { UNIVERSE_NODES } from "@/lib/universe/config";
 import type { UniverseNodeDef } from "@/lib/universe/config";
 
@@ -10,6 +13,7 @@ type UniverseNodesProps = {
   onHover: (node: UniverseNodeDef | null) => void;
   onSelect: (node: UniverseNodeDef) => void;
   reducedMotion: boolean;
+  coreRef: RefObject<THREE.Group | null>;
 };
 
 /** Maps the node registry (§11.2 idle/hover/selected/transition states). */
@@ -18,6 +22,7 @@ export function UniverseNodes({
   onHover,
   onSelect,
   reducedMotion,
+  coreRef,
 }: UniverseNodesProps) {
   return (
     <>
@@ -29,6 +34,7 @@ export function UniverseNodes({
           onHover={onHover}
           onSelect={onSelect}
           reducedMotion={reducedMotion}
+          coreRef={coreRef}
         />
       ))}
     </>
