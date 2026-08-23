@@ -6,7 +6,7 @@ The guiding idea is *show, don't tell* — the portfolio itself demonstrates the
 
 ## Status
 
-**Phase 3 complete — portfolio content.** `/about`, `/experience`, and `/contact` are real structured pages (About's nursing → data science journey, a career + education timeline, and an honestly-disabled contact form). The AI/ML + Data Visualisation project systems are live: structured frontmatter markdown under `content/` is loaded at build time into `/ai-ml` and `/data` grids with filter chips, and every project gets a static case-study route (SSG, 404 on unknown slugs). All human-readable content remains honestly marked `[TODO: James — …]`. Next up: **Phase 4 — chess UI** per the master plan's build order (§28, §34).
+**Phase 4 complete — chess.** `/chess` is a fully playable game: a hand-built token board with tap-tap, drag-and-drop, and full keyboard support; chess.js-enforced legal moves; three difficulty levels; and every game-end state (mate, stalemate, threefold, insufficient material, fifty-move, resignation). The opponent is an honest heuristic stand-in that runs through the client-side interface James's trained model will later implement; the +5 JTB reward arrives with accounts and server-verified replays in later phases. Portfolio content pages remain honestly marked `[TODO: James — …]`. Next up: **Phase 5 — Supabase** per the master plan's build order (§28, §34).
 
 ## Development
 
