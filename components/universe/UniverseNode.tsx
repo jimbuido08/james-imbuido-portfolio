@@ -1,0 +1,91 @@
+"use client";
+
+import { Float } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
+import { useRef, useState } from "react";
+import * as THREE from "three";
+
+import { NODE_RADIUS } from "@/lib/universe/config";
+import type { UniverseNodeDef } from "@/lib/universe/config";
+
+type UniverseNodeProps = {
+  def: UniverseNodeDef;
+  selectedId: string | null;
+  onHover: (node: UniverseNodeDef | null) => void;
+  onSelect: (node: UniverseNodeDef) => void;
+  reducedMotion: boolean;
+};
+
+/**
+ * Single orbit node. State machine: idle → hover → selected (§11.2).
+ * Scale targets: idle 1 / hover 1.35 / selected 1.7, eased in useFrame.
+ * Reduced motion: no Float drift and scale snaps instantly.
+ */
+export function UniverseNode({
+  def,
+  selectedId,
+  onHover,
+  onSelect,
+  reducedMotion,
+}: UniverseNodeProps) {
+  const [hovered, setHovered] = useState(false);
+  const mesh = useRef<THREE.Mesh>(null);
+  const isSelected = selectedId === def.id;
+  const targetScale = isSelected ? 1.7 : hovered ? 1.35 : 1;
+
+  useFrame((_, delta) => {
+    if (!mesh.current) return;
+    if (reducedMotion) {
+      mesh.current.scale.setScalar(targetScale);
+    } else {
+      const next =
+        mesh.current.scale.x +
+        (targetScale - mesh.current.scale.x) * (1 - Math.exp(-10 * delta));
+      mesh.current.scale.setScalar(next);
+    }
+  });
+
+  const node = (
+    <mesh
+      ref={mesh}
+      position={def.position}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (!selectedId) onSelect(def);
+      }}
+      onPointerOver={(e) => {
+        e.stopPropagation();
+        setHovered(true);
+        onHover(def);
+        document.body.style.cursor = "pointer";
+      }}
+      onPointerOut={(e) => {
+        e.stopPropagation();
+        setHovered(false);
+        onHover(null);
+        document.body.style.cursor = "auto";
+      }}
+    >
+      <sphereGeometry args={[NODE_RADIUS, 32, 32]} />
+      <meshStandardMaterial
+        color={def.accent}
+        emissive={def.accent}
+        emissiveIntensity={hovered || isSelected ? 0.5 : 0.22}
+        roughness={0.4}
+      />
+    </mesh>
+  );
+
+  if (reducedMotion) return node;
+
+  return (
+    <Float
+      speed={1.4}
+      rotationIntensity={0.25}
+      floatIntensity={0.9}
+      floatingRange={[-0.12, 0.12]}
+    >
+      {node}
+    </Float>
+  );
+}

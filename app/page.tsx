@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { DataUniverse } from "@/components/universe/DataUniverse";
 import { Button } from "@/components/ui/Button";
 import {
   Card,
@@ -73,27 +74,45 @@ const domains: {
 export default function Home() {
   return (
     <>
-      <section className="flex min-h-[70vh] items-center">
-        <Container>
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-fg-subtle">
-            Data × AI × Interactive Systems
-          </p>
-          <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl">
-            James Imbuido
-          </h1>
-          <p className="mt-4 max-w-prose text-base leading-relaxed text-fg-muted">
-            Data Scientist — building an interactive portfolio that shows the
-            work, not just the title.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Button href="/about">Explore</Button>
-            <Button href="/contact" variant="secondary">
-              Contact
-            </Button>
-          </div>
-        </Container>
+      {/* Data Universe viewport — hero copy is SSR'd FIRST (z-10), the 3D
+          canvas is an enhancement layered underneath. Without WebGL the
+          section still renders hero + nav; the index grid below is the
+          conventional fallback (§11.1, §31 P5). */}
+      <section className="relative h-[calc(100dvh-4rem)] min-h-[540px] overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-center pt-[10vh]">
+          <Container>
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-fg-subtle">
+              Data × AI × Interactive Systems
+            </p>
+            <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl">
+              James Imbuido
+            </h1>
+            <p className="mt-4 max-w-prose text-base leading-relaxed text-fg-muted">
+              Data Scientist — building an interactive portfolio that shows the
+              work, not just the title.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button href="/about" className="pointer-events-auto">
+                Explore
+              </Button>
+              <Button
+                href="/contact"
+                variant="secondary"
+                className="pointer-events-auto"
+              >
+                Contact
+              </Button>
+            </div>
+          </Container>
+        </div>
+
+        <div className="absolute inset-0">
+          <DataUniverse />
+        </div>
       </section>
 
+      {/* Conventional index grid — the keyboard/screen-reader/crawlable path to
+          every route; mirrors the Data Universe nodes. */}
       <section className="py-16 sm:py-24">
         <Container>
           <SectionHeading
