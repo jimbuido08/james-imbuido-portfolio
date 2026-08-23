@@ -27,6 +27,7 @@ export function DataCore({
 
   useFrame((_, delta) => {
     if (reducedMotion || !group.current) return;
+    // eslint-disable-next-line react-hooks/immutability -- R3F useFrame mutates the scene object every frame by design; the ref is the documented escape hatch.
     group.current.rotation.y += delta * 0.1;
   });
 

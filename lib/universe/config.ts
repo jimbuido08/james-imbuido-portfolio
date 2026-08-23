@@ -2,13 +2,7 @@
 // CSS custom properties, so this file is the single allowed location for hexes.
 
 export type UniverseDomain =
-  | "ai"
-  | "data"
-  | "jtb"
-  | "chess"
-  | "about"
-  | "experience"
-  | "neutral";
+  "ai" | "data" | "jtb" | "chess" | "about" | "experience" | "neutral";
 
 export interface UniverseNodeDef {
   id: string; // "about"

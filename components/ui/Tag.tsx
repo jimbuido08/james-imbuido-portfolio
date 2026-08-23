@@ -3,13 +3,7 @@ import type { ReactNode } from "react";
 import { cx } from "@/lib/utils";
 
 export type TagDomain =
-  | "ai"
-  | "data"
-  | "jtb"
-  | "chess"
-  | "about"
-  | "experience"
-  | "neutral";
+  "ai" | "data" | "jtb" | "chess" | "about" | "experience" | "neutral";
 
 const domainClasses: Record<TagDomain, string> = {
   ai: "text-accent-ai border-accent-ai/40",
