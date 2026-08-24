@@ -29,7 +29,8 @@ export const RATE_LIMIT_WINDOW_MS = 60_000;
 export const DEFAULT_LLM_MODEL = "gpt-oss:120b";
 
 /**
- * Default Ollama host — the cloud API. Override with OLLAMA_BASE_URL,
+ * Default Ollama host — the cloud API. `/api/chat` is appended by the client,
+ * so this is the bare host (no trailing `/api`). Override with OLLAMA_BASE_URL,
  * e.g. "http://localhost:11434" to point at a local Ollama.
  */
-export const DEFAULT_OLLAMA_BASE_URL = "https://ollama.com/api";
+export const DEFAULT_OLLAMA_BASE_URL = "https://ollama.com";

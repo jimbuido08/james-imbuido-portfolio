@@ -1,4 +1,8 @@
-[TODO: James — machine learning work for JTB (classical ML, modelling, eval).
-[TODO: James — real techniques, datasets, and results you can vouch for.
-[TODO: James — keep it to what a visitor can verify or learn from; no padding.
-[TODO: James — replace these marker lines with real copy to activate.
+### Graduate Modelling Project — Consumer Finance (CBA)
+As part of CBA's graduate program, James evaluated an initial machine-learning model for suspected bias, rectified the discovered biases in the second iteration of the model, and presented the outcomes to stakeholders covering both technical and business aspects.
+
+### Production evaluation of AI solutions (CBA)
+James ran generative-AI and agentic evaluations of AI solutions in production, improving evaluation scores by ~20% using LLM-as-a-judge and a fully automated, self-improving pipeline on GitHub Actions with HoneyHive.
+
+### ML tooling James uses
+Python and R, with NumPy, Pandas, and PySpark; applied mathematics and data analysis for modelling work.
