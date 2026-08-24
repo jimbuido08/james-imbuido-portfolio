@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
+import { safeNext } from "@/lib/auth/actions";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { SignupForm } from "./SignupForm";
@@ -13,7 +14,14 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function SignupPage() {
+export default async function SignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  const { next } = await searchParams;
+  const nextPath = safeNext(next);
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -28,7 +36,7 @@ export default async function SignupPage() {
         title="Sign up"
         description="Create an account — email, password, and employment status."
       />
-      <SignupForm />
+      <SignupForm next={nextPath} />
     </Container>
   );
 }
