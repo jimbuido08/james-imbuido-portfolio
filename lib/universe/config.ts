@@ -92,6 +92,48 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
   },
 ];
 
+// Category satellites fan from a parent node (currently only the AI/ML node).
+// UniverseNodeDef plus the parent node id so the faint fan lines can anchor.
+export interface UniverseCategoryDef extends UniverseNodeDef {
+  parentId: string;
+}
+
+// Mirrors the /ai-ml filter chips (§3.3): CLASSICAL ML, AGENTS, EXPERIMENTS.
+// Positions sit ~1–1.2 units from the ai-ml node ([−1.95, 0.45, 3.377]),
+// fanning outward so the satellite constellation reads as subordinate.
+export const AI_ML_CATEGORIES: UniverseCategoryDef[] = [
+  {
+    id: "category-classical-ml",
+    label: "Classical ML",
+    route: "/ai-ml",
+    domain: "ai",
+    accent: "#818cf8",
+    blurb: "Classical machine learning projects.",
+    parentId: "ai-ml",
+    position: [-2.7, 1.0, 2.9],
+  },
+  {
+    id: "category-agents",
+    label: "Agents",
+    route: "/ai-ml",
+    domain: "ai",
+    accent: "#818cf8",
+    blurb: "LLM agent projects.",
+    parentId: "ai-ml",
+    position: [-1.1, 0.6, 3.9],
+  },
+  {
+    id: "category-experiments",
+    label: "Experiments",
+    route: "/ai-ml",
+    domain: "ai",
+    accent: "#818cf8",
+    blurb: "Exploratory experiments.",
+    parentId: "ai-ml",
+    position: [-2.6, -0.5, 3.8],
+  },
+];
+
 export interface QualityProfile {
   particles: number;
   dpr: [number, number];
