@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
+import { safeNext } from "@/lib/auth/actions";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { LoginForm } from "./LoginForm";
@@ -13,7 +14,14 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  const { next } = await searchParams;
+  const nextPath = safeNext(next);
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -24,7 +32,7 @@ export default async function LoginPage() {
   return (
     <Container className="py-16 sm:py-24">
       <SectionHeading as="h1" title="Sign in" description="Welcome back." />
-      <LoginForm />
+      <LoginForm next={nextPath} />
     </Container>
   );
 }

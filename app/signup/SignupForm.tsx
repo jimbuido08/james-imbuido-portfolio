@@ -12,8 +12,11 @@ const fieldClasses =
 
 const initialState = { error: null as string | null, sent: false };
 
-export function SignupForm() {
+export function SignupForm({ next = "/account" }: { next?: string }) {
   const [state, formAction, isPending] = useActionState(signUp, initialState);
+
+  const signInLink =
+    next !== "/account" ? `/login?next=${encodeURIComponent(next)}` : "/login";
 
   if (state.sent) {
     return (
@@ -26,6 +29,7 @@ export function SignupForm() {
 
   return (
     <form action={formAction} className="mt-6 max-w-prose space-y-5">
+      <input type="hidden" name="next" value={next} />
       <div>
         <label htmlFor="signup-email" className="block text-sm text-fg-muted">
           Email
@@ -94,7 +98,7 @@ export function SignupForm() {
       <p className="text-sm text-fg-subtle">
         Already have an account?{" "}
         <Link
-          href="/login"
+          href={signInLink}
           className="text-fg underline underline-offset-4 decoration-border hover:decoration-border-strong"
         >
           Sign in

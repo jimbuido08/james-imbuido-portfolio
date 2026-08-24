@@ -1,28 +1,46 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
+import { createClient } from "@/lib/supabase/server";
+import { INITIAL_CREDITS } from "@/lib/jtb/constants";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { Tag } from "@/components/ui/Tag";
+import { ChatWindow } from "@/components/jtb";
 
 export const metadata: Metadata = {
   title: "JTB — James Imbuido",
-  description: "A chatbot grounded in approved information about James's work.",
+  description:
+    "Ask JTB about James's work, experience, skills, and projects.",
 };
 
-export default function JtbPage() {
+export const dynamic = "force-dynamic";
+
+export default async function JtbPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+  if (error || !user) redirect("/login?next=/jtb");
+
+  // RLS guarantees this returns only this user's own row (or null).
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("credits_remaining")
+    .eq("id", user.id)
+    .single();
+
   return (
     <Container className="py-16 sm:py-24">
-      <Tag domain="jtb">Placeholder</Tag>
       <SectionHeading
         as="h1"
         title="JTB — James Talks Back"
         description="A chatbot grounded in approved information about James's work."
-        className="mt-4"
       />
-      <p className="mt-8 max-w-prose text-fg-muted">
-        JTB requires sign-in and arrives in Phase 6. Placeholder content.
-      </p>
-      {/* TODO(PHASE-6): JTB chat UI + auth + credit system per §5/§6 */}
+      <ChatWindow
+        initialCredits={profile?.credits_remaining ?? INITIAL_CREDITS}
+        className="mt-8"
+      />
     </Container>
   );
 }

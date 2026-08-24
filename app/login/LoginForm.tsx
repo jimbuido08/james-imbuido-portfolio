@@ -11,11 +11,15 @@ const fieldClasses =
 
 const initialState = { error: null as string | null };
 
-export function LoginForm() {
+export function LoginForm({ next = "/account" }: { next?: string }) {
   const [state, formAction, isPending] = useActionState(signIn, initialState);
+
+  const crossLink =
+    next !== "/account" ? `/signup?next=${encodeURIComponent(next)}` : "/signup";
 
   return (
     <form action={formAction} className="mt-6 max-w-prose space-y-5">
+      <input type="hidden" name="next" value={next} />
       <div>
         <label htmlFor="login-email" className="block text-sm text-fg-muted">
           Email
@@ -53,7 +57,7 @@ export function LoginForm() {
       <p className="text-sm text-fg-subtle">
         No account yet?{" "}
         <Link
-          href="/signup"
+          href={crossLink}
           className="text-fg underline underline-offset-4 decoration-border hover:decoration-border-strong"
         >
           Create one
