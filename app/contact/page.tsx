@@ -26,27 +26,38 @@ export default function ContactPage() {
         title="Find me"
         className="mt-16"
       />
-      {/* Values are placeholders, so rows render as plain text. When James adds
-          real values, each row becomes a link:
-          <a className="text-fg underline underline-offset-4 decoration-border hover:decoration-border-strong" href="…">Label <span className="text-fg-subtle">↗</span></a> */}
       <ul className="mt-6 space-y-3">
         <li>
           <span className="text-fg">Email</span> —{" "}
-          <span className="font-mono text-fg-subtle">
-            [TODO: James — your email address]
-          </span>
+          <a
+            className="font-mono text-fg underline underline-offset-4 decoration-border hover:decoration-border-strong"
+            href="mailto:jtb9029@protonmail.com"
+          >
+            jtb9029@protonmail.com
+          </a>
         </li>
         <li>
           <span className="text-fg">LinkedIn</span> —{" "}
-          <span className="font-mono text-fg-subtle">
-            [TODO: James — your LinkedIn profile URL]
-          </span>
+          <a
+            className="text-fg underline underline-offset-4 decoration-border hover:decoration-border-strong"
+            href="https://www.linkedin.com/in/jamesimbuido/"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            linkedin.com/in/jamesimbuido{" "}
+            <span className="text-fg-subtle">↗</span>
+          </a>
         </li>
         <li>
           <span className="text-fg">GitHub</span> —{" "}
-          <span className="font-mono text-fg-subtle">
-            [TODO: James — your GitHub profile URL]
-          </span>
+          <a
+            className="text-fg underline underline-offset-4 decoration-border hover:decoration-border-strong"
+            href="https://github.com/jimbuido08"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            github.com/jimbuido08 <span className="text-fg-subtle">↗</span>
+          </a>
         </li>
       </ul>
       <SectionHeading
