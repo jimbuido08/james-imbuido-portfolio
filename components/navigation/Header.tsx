@@ -14,6 +14,7 @@ const navLinks = [
   { href: "/jtb", label: "JTB" },
   { href: "/chess", label: "Chess" },
   { href: "/contact", label: "Contact" },
+  { href: "/account", label: "Account" },
 ] as const;
 
 /** The conventional navigation fallback (§11.1) — the site must work without WebGL. */

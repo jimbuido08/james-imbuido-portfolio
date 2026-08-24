@@ -6,7 +6,7 @@ The guiding idea is *show, don't tell* — the portfolio itself demonstrates the
 
 ## Status
 
-**Phase 4 complete — chess.** `/chess` is a fully playable game: a hand-built token board with tap-tap, drag-and-drop, and full keyboard support; chess.js-enforced legal moves; three difficulty levels; and every game-end state (mate, stalemate, threefold, insufficient material, fifty-move, resignation). The opponent is an honest heuristic stand-in that runs through the client-side interface James's trained model will later implement; the +5 JTB reward arrives with accounts and server-verified replays in later phases. Portfolio content pages remain honestly marked `[TODO: James — …]`. Next up: **Phase 5 — Supabase** per the master plan's build order (§28, §34).
+**Phase 5 complete — Supabase auth.** Email/password accounts with `/login`, `/signup`, and `/account` pages, wired through Supabase's SSR clients with a `proxy.ts` session-refresh layer. Registration collects only email, password, and employment status (audience analytics only — it never gates features). The `profiles` table (10-credit JTB starting balance + chess-reward flag), `chat_interactions`, and `rewards` tables are applied to the hosted Supabase project with Row Level Security, and `/account` shows each user's real database state. JTB chat, credit spending, and the server-verified chess reward arrive in Phases 6–7. Portfolio content pages remain honestly marked `[TODO: James — …]`. Next up: **Phase 6 — JTB** per the master plan's build order (§28, §34).
 
 ## Development
 

@@ -1,0 +1,68 @@
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+
+import { createClient } from "@/lib/supabase/server";
+import { Container } from "@/components/ui/Container";
+import { SectionHeading } from "@/components/ui/SectionHeading";
+import { SignOutButton } from "./SignOutButton";
+
+export const metadata: Metadata = {
+  title: "Account — James Imbuido",
+  description: "Your James Imbuido account.",
+};
+
+export const dynamic = "force-dynamic";
+
+export default async function AccountPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+  if (error || !user) redirect("/login?next=/account");
+
+  // RLS guarantees this returns only this user's own row (or null).
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("employment_status, credits_remaining, chess_reward_claimed")
+    .eq("id", user.id)
+    .single();
+
+  return (
+    <Container className="py-16 sm:py-24">
+      <SectionHeading as="h1" title="Account" description="Signed in as you." />
+      <dl className="mt-8 max-w-prose space-y-4 rounded-lg border border-border bg-surface p-6">
+        <div className="flex items-center justify-between gap-4">
+          <dt className="text-fg-muted">Email</dt>
+          <dd className="font-mono text-fg">{user.email ?? "—"}</dd>
+        </div>
+        <div className="flex items-center justify-between gap-4">
+          <dt className="text-fg-muted">Employment status</dt>
+          <dd className="text-fg">{profile?.employment_status ?? "—"}</dd>
+        </div>
+        <div className="flex items-center justify-between gap-4">
+          <dt className="text-fg-muted">JTB interactions left</dt>
+          <dd className="font-mono text-fg">
+            {profile?.credits_remaining ?? 10}
+          </dd>
+        </div>
+        <div className="flex items-center justify-between gap-4">
+          <dt className="text-fg-muted">Chess reward</dt>
+          <dd className="text-fg">
+            {profile?.chess_reward_claimed
+              ? "Claimed (+5 JTB)"
+              : "Not yet claimed"}
+          </dd>
+        </div>
+      </dl>
+      <p className="mt-4 max-w-prose text-sm text-fg-subtle">
+        JTB interactions and the chess reward activate in later phases — these
+        values are your database state. Employment status is audience analytics
+        only and never gates any feature.
+      </p>
+      <div className="mt-6">
+        <SignOutButton />
+      </div>
+    </Container>
+  );
+}
