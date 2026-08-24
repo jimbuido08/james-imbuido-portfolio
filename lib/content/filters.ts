@@ -6,16 +6,9 @@ export interface FilterDef {
   matches: (project: Project) => boolean;
 }
 
-/** §3.3 — /ai-ml. "AI / ML" is ONE chip matching either category. */
+/** §3.3 — /ai-ml. Slimmed chips: ALL + CLASSICAL ML, AGENTS, EXPERIMENTS (LLM/NLP dropped). */
 export const AI_ML_FILTERS: FilterDef[] = [
   { key: "all", label: "ALL", matches: () => true },
-  {
-    key: "ai-ml",
-    label: "AI / ML",
-    matches: (p) => p.category === "AI" || p.category === "ML",
-  },
-  { key: "llm", label: "LLM", matches: (p) => p.category === "LLM" },
-  { key: "nlp", label: "NLP", matches: (p) => p.category === "NLP" },
   {
     key: "classical-ml",
     label: "CLASSICAL ML",
