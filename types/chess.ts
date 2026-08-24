@@ -39,3 +39,44 @@ export interface SquareState {
   square: SquareName;
   piece: { type: PieceType; color: Side } | null;
 }
+
+/** Wire format for one submitted move — from/to/promotion is all replay needs. */
+export interface SubmittedMove {
+  from: SquareName;
+  to: SquareName;
+  promotion?: PromotionChoice;
+}
+
+/** POST /api/chess request body: moves + caller's color, nothing else (§3.7). */
+export interface ChessClaimRequest {
+  moves: SubmittedMove[];
+  playerColor: Side;
+}
+
+export type ChessClaimErrorCode =
+  | "unauthenticated"
+  | "invalid"
+  | "illegal_game"
+  | "not_a_win"
+  | "already_claimed"
+  | "internal";
+
+export interface ChessClaimError {
+  error: {
+    code: ChessClaimErrorCode;
+    message: string;
+  };
+  creditsRemaining?: number;
+}
+
+export interface ChessClaimSuccess {
+  ok: true;
+  creditsAwarded: number;
+  creditsRemaining: number;
+}
+
+/** Shape of the claim_chess_reward RPC's jsonb return. */
+export interface ClaimChessRewardResult {
+  claimed: boolean;
+  creditsRemaining: number | null;
+}
