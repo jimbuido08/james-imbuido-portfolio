@@ -5,18 +5,10 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 import { isEmploymentStatus } from "@/lib/auth/employment-status";
+import { safeNext } from "@/lib/auth/next";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 8;
-
-/**
- * Only in-app relative paths are acceptable post-auth destinations — same
- * guard as app/auth/confirm/route.ts (no open redirect). Defaults to /account.
- */
-export function safeNext(value: unknown): string {
-  const raw = typeof value === "string" ? value.trim() : "";
-  return raw.startsWith("/") && !raw.startsWith("//") ? raw : "/account";
-}
 
 export interface AuthFormState {
   error: string | null;

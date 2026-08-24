@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
-import { safeNext } from "@/lib/auth/actions";
+import { safeNext } from "@/lib/auth/next";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { LoginForm } from "./LoginForm";
