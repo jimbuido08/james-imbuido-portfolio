@@ -10,10 +10,12 @@ import { UNIVERSE_COLORS } from "@/lib/universe/config";
 import type { QualityProfile, UniverseNodeDef } from "@/lib/universe/config";
 
 import { CameraTransition } from "./CameraTransition";
+import { CategoryConnections } from "./CategoryConnections";
 import { ConnectionLines } from "./ConnectionLines";
 import { DataCore } from "./DataCore";
 import { Environment } from "./Environment";
 import { ParticleField } from "./ParticleField";
+import { UniverseCategories } from "./UniverseCategories";
 import { UniverseNodes } from "./UniverseNodes";
 
 /**
@@ -95,7 +97,15 @@ export function UniverseScene({
           groupRef={coreRef}
         />
         <ConnectionLines />
+        <CategoryConnections />
         <UniverseNodes
+          selected={selected}
+          onHover={onHover}
+          onSelect={onSelect}
+          reducedMotion={reducedMotion}
+          coreRef={coreRef}
+        />
+        <UniverseCategories
           selected={selected}
           onHover={onHover}
           onSelect={onSelect}
