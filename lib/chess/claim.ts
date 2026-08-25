@@ -1,10 +1,12 @@
 /**
  * The chess reward claim — §3.7's policy as one decision core. Server-side
  * replay (via lib/chess/engine, deterministic local code) is called directly;
- * only the Supabase reads/RPC enter through injected deps, so every branch —
- * already claimed, illegal game, not a win, lost claim race — is exercisable
- * through this interface. Never import from client components.
+ * only the Supabase reads/RPC/attempt rows enter through injected deps, so every
+ * branch — already claimed, rate limited, illegal game, not a win, lost claim
+ * race — is exercisable through this interface. Never import from client
+ * components.
  */
+import { RATE_LIMIT_MAX_ATTEMPTS, RATE_LIMIT_WINDOW_MS } from "./constants";
 import { replayMoves } from "./engine";
 import type {
   ChessClaimRequest,
@@ -23,6 +25,16 @@ export interface ChessClaimDeps {
     | { ok: true; chessRewardClaimed: boolean; creditsRemaining: number }
     | { ok: false }
   >;
+  /** Count of the caller's recorded claim attempts in the trailing window. */
+  countRecentAttempts(windowStartIso: string): Promise<
+    { ok: true; count: number } | { ok: false }
+  >;
+  /**
+   * Meter one claim attempt — best-effort, so a dropped write never denies a
+   * claim. Written for every attempt that passes the rate-limit check (win or
+   * not), so the limiter counts attempts rather than just successful claims.
+   */
+  recordAttempt(): Promise<void>;
   /** The atomic award RPC. result null/malformed = unexpected DB response. */
   claimReward(
     metadata: JsonObject,
@@ -34,6 +46,7 @@ export interface ChessClaimDeps {
 export type ChessClaimOutcome =
   | { kind: "ok"; creditsRemaining: number }
   | { kind: "already_claimed"; creditsRemaining?: number }
+  | { kind: "rate_limited" }
   | { kind: "illegal_game"; atIndex: number }
   | { kind: "not_a_win" }
   | { kind: "internal"; detail: string };
@@ -41,6 +54,8 @@ export type ChessClaimOutcome =
 export async function claimChessReward(
   deps: ChessClaimDeps,
   claim: ChessClaimRequest,
+  /** Clock injected so the rate-limit window is decidable without wall time. */
+  nowMs: number,
 ): Promise<ChessClaimOutcome> {
   // Claimed pre-check — cheap UX gate; not the authority.
   const profile = await deps.getProfile();
@@ -51,6 +66,18 @@ export async function claimChessReward(
       creditsRemaining: profile.creditsRemaining,
     };
   }
+
+  // Rate limit — count of this caller's recorded attempts in the window. The
+  // reward is once-per-user, so this bounds hammering the replay/DB, not the
+  // reward itself.
+  const windowStart = new Date(
+    nowMs - (RATE_LIMIT_WINDOW_MS + 1000),
+  ).toISOString();
+  const attempts = await deps.countRecentAttempts(windowStart);
+  if (!attempts.ok)
+    return { kind: "internal", detail: "rate-limit count failed" };
+  if (attempts.count >= RATE_LIMIT_MAX_ATTEMPTS) return { kind: "rate_limited" };
+  await deps.recordAttempt();
 
   // Server-side replay — always from the standard initial position, so every
   // move must be legal and turns must alternate. Client-provided FENs and

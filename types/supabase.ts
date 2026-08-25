@@ -38,6 +38,24 @@ export type Database = {
         };
         Relationships: [];
       };
+      chess_claim_attempts: {
+        Row: {
+          created_at: string;
+          id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       profiles: {
         Row: {
           chess_reward_claimed: boolean;

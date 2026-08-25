@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { apiError, parseJsonBody, requireUser } from "@/lib/server/http";
 import { claimChessReward } from "@/lib/chess/claim";
+import { RATE_LIMIT_WINDOW_MS } from "@/lib/chess/constants";
 import { CHESS_REWARD_CREDITS } from "@/lib/credits/constants";
 import { parseChessClaim } from "@/lib/validation/chess";
 import type {
@@ -13,8 +14,8 @@ import type {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 // Replay is local CPU bounded by MAX_SUBMITTED_MOVES — no upstream call — so
-// attempts are not metered the way /api/jtb's are; this cap exists so a stuck
-// function never runs (or bills) indefinitely.
+// attempts are metered only as a rate-limit counter (chess_claim_attempts),
+// not for billing; this cap exists so a stuck function never runs indefinitely.
 export const maxDuration = 30;
 
 export async function POST(request: NextRequest) {
@@ -73,8 +74,30 @@ export async function POST(request: NextRequest) {
         // against it and shape-checked inside claim.ts.
         return { ok: true, result: data as ClaimChessRewardResult | null };
       },
+      countRecentAttempts: async (windowStartIso) => {
+        const { count, error } = await supabase
+          .from("chess_claim_attempts")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .gte("created_at", windowStartIso);
+        if (error) {
+          console.error("[chess] attempt count error:", error.message);
+          return { ok: false };
+        }
+        return { ok: true, count: count ?? 0 };
+      },
+      recordAttempt: async () => {
+        const { error } = await supabase
+          .from("chess_claim_attempts")
+          .insert({ user_id: user.id });
+        // Best-effort: a missed attempt row must never deny a claim.
+        if (error) {
+          console.error("[chess] record attempt error:", error.message);
+        }
+      },
     },
     parsed.claim,
+    Date.now(),
   );
 
   // 4) Outcome → HTTP. Every wire shape is unchanged from before.
@@ -109,6 +132,13 @@ export async function POST(request: NextRequest) {
         "not_a_win",
         "Only a game you won by checkmate earns the reward.",
         422,
+      );
+    case "rate_limited":
+      return apiError<ChessClaimErrorCode>(
+        "rate_limited",
+        "Too many claim attempts — please wait a moment.",
+        429,
+        { retryAfterSeconds: RATE_LIMIT_WINDOW_MS / 1000 },
       );
     case "internal":
       console.error("[chess] internal:", outcome.detail);
