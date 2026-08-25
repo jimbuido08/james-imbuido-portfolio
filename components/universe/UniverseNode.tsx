@@ -14,8 +14,6 @@ import { nodePositions } from "./nodePositions";
 
 type UniverseNodeProps = {
   def: UniverseNodeDef;
-  /** Sphere radius — main nodes use NODE_RADIUS; category satellites pass a smaller one. */
-  radius?: number;
   selectedId: string | null;
   onHover: (node: UniverseNodeDef | null) => void;
   onSelect: (node: UniverseNodeDef) => void;
@@ -30,7 +28,6 @@ type UniverseNodeProps = {
  */
 export function UniverseNode({
   def,
-  radius = NODE_RADIUS,
   selectedId,
   onHover,
   onSelect,
@@ -90,7 +87,7 @@ export function UniverseNode({
           document.body.style.cursor = "auto";
         }}
       >
-        <sphereGeometry args={[radius, 32, 32]} />
+        <sphereGeometry args={[NODE_RADIUS, 32, 32]} />
         <meshStandardMaterial
           color={def.accent}
           emissive={def.accent}

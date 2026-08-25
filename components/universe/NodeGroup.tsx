@@ -9,8 +9,6 @@ import { UniverseNode } from "./UniverseNode";
 
 type NodeGroupProps = {
   nodes: UniverseNodeDef[];
-  /** Sphere radius — main nodes use NODE_RADIUS; satellites pass SATELLITE_RADIUS. */
-  radius?: number;
   selected: UniverseNodeDef | null;
   onHover: (node: UniverseNodeDef | null) => void;
   onSelect: (node: UniverseNodeDef) => void;
@@ -18,14 +16,9 @@ type NodeGroupProps = {
   coreRef: RefObject<THREE.Group | null>;
 };
 
-/**
- * Renders a list of node defs — the main constellation and the category
- * satellites both flow through this one component (§11.2 states). The
- * satellites are children of the same system, not a parallel subsystem.
- */
+/** Renders the node constellation (§11.2 idle/hover/selected/transition states). */
 export function NodeGroup({
   nodes,
-  radius,
   selected,
   onHover,
   onSelect,
@@ -38,7 +31,6 @@ export function NodeGroup({
         <UniverseNode
           key={def.id}
           def={def}
-          radius={radius}
           selectedId={selected?.id ?? null}
           onHover={onHover}
           onSelect={onSelect}

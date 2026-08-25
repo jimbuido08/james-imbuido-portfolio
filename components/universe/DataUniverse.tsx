@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useEffect, useSyncExternalStore, useState } from "react";
 
-import { isSameRouteSatellite, QUALITY } from "@/lib/universe/config";
+import { QUALITY } from "@/lib/universe/config";
 import type { UniverseNodeDef } from "@/lib/universe/config";
 import { supportsWebGL } from "@/lib/universe/webgl";
 
@@ -62,13 +62,6 @@ export function DataUniverse() {
   const handleHover = (node: UniverseNodeDef | null) => setHovered(node);
 
   const handleSelect = (node: UniverseNodeDef) => {
-    // Same-route satellites (all AI/ML categories route to /ai-ml, like their
-    // parent) skip the camera glide — it would animate to a destination the
-    // camera is already pointed at — and navigate directly (§11.2).
-    if (isSameRouteSatellite(node)) {
-      router.push(node.route);
-      return;
-    }
     setSelected(node);
     // Reduced motion: no camera transit — navigate immediately (§18).
     if (reducedMotion) {
