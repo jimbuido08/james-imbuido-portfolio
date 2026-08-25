@@ -1,10 +1,10 @@
 ---
-title: "[TODO: James — dashboard title]"
-category: TABLEAU
+title: "Spotify 2023 Listening Dashboard"
+category: POWER_BI
 description: "[TODO: James — one sentence on what this visualisation shows]"
 featured: true
 technologies:
-  - "[TODO: James — technology]"
+  - "Power BI"
 problem: "[TODO: James — what problem were you solving?]"
 data: "[TODO: James — what data was used?]"
 approach: "[TODO: James — how did you approach the problem?]"
@@ -16,11 +16,13 @@ interactive: false
 businessContext: "[TODO: James — the business question this dashboard answers]"
 dataset: "[TODO: James — the data source behind this dashboard]"
 tools:
-  - "[TODO: James — tool]"
+  - "Power BI Desktop"
+  - "Power BI Service"
 keyInsights:
   - "[TODO: James — key insight one]"
   - "[TODO: James — key insight two]"
-embedType: tableau
+embedType: power_bi
+embedUrl: "TODO: James — paste the publish-to-web URL"
 ---
 
 <!-- Body intentionally unused — all content lives in frontmatter (Phase 3). -->

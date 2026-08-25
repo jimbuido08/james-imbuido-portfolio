@@ -48,3 +48,7 @@ next-env.d.ts
 
 # Playwright MCP browser-test artifacts (logs, snapshots, screenshots)
 /.playwright-mcp/
+
+# dashboard workbooks (publish source only — never shipped; embeds come from Tableau Public / Power BI)
+*.twbx
+*.pbix
