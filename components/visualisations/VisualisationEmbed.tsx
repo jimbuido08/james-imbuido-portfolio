@@ -1,3 +1,4 @@
+import { isPlaceholder } from "@/lib/content/trust";
 import type { Project } from "@/types/project";
 import { LazyEmbed } from "@/components/visualisations/LazyEmbed";
 
@@ -12,7 +13,7 @@ const VENDOR_LABEL: Record<string, string> = {
  */
 export function VisualisationEmbed({ project }: { project: Project }) {
   const embedUrl =
-    project.embedUrl && !project.embedUrl.includes("TODO")
+    project.embedUrl && !isPlaceholder(project.embedUrl)
       ? project.embedUrl
       : undefined;
 

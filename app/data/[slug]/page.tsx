@@ -6,6 +6,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Tag } from "@/components/ui/Tag";
 import { Button } from "@/components/ui/Button";
 import { VisualisationEmbed } from "@/components/visualisations/VisualisationEmbed";
+import { isPlaceholder } from "@/lib/content/trust";
 import {
   getVisualisationBySlug,
   getVisualisations,
@@ -48,11 +49,11 @@ export default async function VisualisationPage({
   if (!project) notFound();
 
   const githubUrl =
-    project.githubUrl && !project.githubUrl.includes("TODO")
+    project.githubUrl && !isPlaceholder(project.githubUrl)
       ? project.githubUrl
       : undefined;
   const demoUrl =
-    project.demoUrl && !project.demoUrl.includes("TODO")
+    project.demoUrl && !isPlaceholder(project.demoUrl)
       ? project.demoUrl
       : undefined;
 

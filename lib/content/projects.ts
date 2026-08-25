@@ -1,10 +1,11 @@
 /**
- * Server-only module: imports `fs`; never import from client components.
+ * Server-only module: imports `fs` (via lib/content/markdown); never import
+ * from client components.
  */
-import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
-import matter from "gray-matter";
 
+import { contentDir, readMarkdownDir } from "@/lib/content/markdown";
+import { isAllowedEmbedUrl, isPlaceholder } from "@/lib/content/trust";
 import type { Project, ProjectCategory } from "@/types/project";
 
 const CATEGORIES: ProjectCategory[] = [
@@ -82,29 +83,16 @@ function validateProject(
       `Invalid frontmatter in ${filePath}: "embedUrl" must be a string`,
     );
   }
-  if (typeof embedUrl === "string" && !embedUrl.includes("TODO")) {
-    const allowlist: Record<string, (host: string) => boolean> = {
-      tableau: (h) => h === "public.tableau.com" || h.endsWith(".tableau.com"),
-      power_bi: (h) => h === "app.powerbi.com",
-    };
-    const embedType = data.embedType as string | undefined;
-    const allowed = embedType && allowlist[embedType];
-    let parsed: URL;
-    try {
-      parsed = new URL(embedUrl);
-    } catch {
-      throw new Error(
-        `Invalid frontmatter in ${filePath}: "embedUrl" is not a valid URL`,
-      );
-    }
-    if (
-      parsed.protocol !== "https:" ||
-      (allowed && !allowed(parsed.hostname))
-    ) {
-      throw new Error(
-        `Invalid frontmatter in ${filePath}: "embedUrl" must be an https URL on the vendor host for embedType "${String(embedType)}"`,
-      );
-    }
+  // Placeholder URLs pass (they render the pending panel); real URLs must be
+  // https on the vendor host for their embedType — the allowlist is the boundary.
+  if (
+    typeof embedUrl === "string" &&
+    !isPlaceholder(embedUrl) &&
+    !isAllowedEmbedUrl(data.embedType as string | undefined, embedUrl)
+  ) {
+    throw new Error(
+      `Invalid frontmatter in ${filePath}: "embedUrl" must be an https URL on the vendor host for embedType "${String(data.embedType)}"`,
+    );
   }
 
   return {
@@ -136,22 +124,13 @@ function validateProject(
 }
 
 function readDir(kind: ContentKind): Project[] {
-  const dir = path.join(process.cwd(), "content", kind);
-  let files: string[];
-  try {
-    files = readdirSync(dir).filter((file) => file.endsWith(".md"));
-  } catch {
-    return []; // missing directory → empty state, never a build failure
-  }
+  const files = readMarkdownDir(kind);
   if (files.length === 0) return [];
 
   return files
-    .map((file) => {
-      const filePath = path.join(dir, file);
-      const { data } = matter(readFileSync(filePath, "utf8"));
-      const slug = file.replace(/\.md$/, "");
-      return validateProject(data, filePath, slug);
-    })
+    .map(({ slug, data }) =>
+      validateProject(data, path.join(contentDir(kind), `${slug}.md`), slug),
+    )
     .sort((a, b) => {
       if (a.featured !== b.featured) return a.featured ? -1 : 1;
       return a.title.localeCompare(b.title);

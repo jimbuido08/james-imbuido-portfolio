@@ -1,6 +1,21 @@
 // Palette mirrors app/globals.css @theme tokens. Three.js canvases cannot read
 // CSS custom properties, so this file is the single allowed location for hexes.
 
+import { NAV_ITEMS } from "@/lib/navigation";
+
+/**
+ * Route strings come from the single navigation registry (lib/navigation.ts).
+ * A node id with no matching route is a programming error — throw at module
+ * load so the build fails instead of silently drifting from the header.
+ */
+const navHref = (id: string): string => {
+  const item = NAV_ITEMS.find((n) => n.href === `/${id}`);
+  if (!item) {
+    throw new Error(`Universe node "${id}" has no route in lib/navigation.ts`);
+  }
+  return item.href;
+};
+
 export type UniverseDomain =
   "ai" | "data" | "jtb" | "chess" | "about" | "experience" | "neutral";
 
@@ -37,7 +52,7 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
   {
     id: "about",
     label: "About",
-    route: "/about",
+    route: navHref("about"),
     domain: "about",
     accent: "#60a5fa",
     blurb: "Who James is — background and approach.",
@@ -46,7 +61,7 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
   {
     id: "experience",
     label: "Experience",
-    route: "/experience",
+    route: navHref("experience"),
     domain: "experience",
     accent: "#d98c96",
     blurb: "Professional data science experience.",
@@ -56,7 +71,7 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
     id: "ai-ml",
     label: "AI / Machine Learning",
     shortLabel: "AI/ML",
-    route: "/ai-ml",
+    route: navHref("ai-ml"),
     domain: "ai",
     accent: "#818cf8",
     blurb: "Machine learning and AI projects.",
@@ -66,7 +81,7 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
     id: "data",
     label: "Data Visualisation",
     shortLabel: "Data Viz",
-    route: "/data",
+    route: navHref("data"),
     domain: "data",
     accent: "#2dd4bf",
     blurb: "Dashboards and custom visualisations.",
@@ -75,7 +90,7 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
   {
     id: "jtb",
     label: "JTB",
-    route: "/jtb",
+    route: navHref("jtb"),
     domain: "jtb",
     accent: "#d9a03f",
     blurb: "JTB — ask questions about James's work.",
@@ -84,7 +99,7 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
   {
     id: "chess",
     label: "Chess AI",
-    route: "/chess",
+    route: navHref("chess"),
     domain: "chess",
     accent: "#4da37e",
     blurb: "Play against James's chess model.",
@@ -105,7 +120,7 @@ export const AI_ML_CATEGORIES: UniverseCategoryDef[] = [
   {
     id: "category-classical-ml",
     label: "Classical ML",
-    route: "/ai-ml",
+    route: navHref("ai-ml"),
     domain: "ai",
     accent: "#818cf8",
     blurb: "Classical machine learning projects.",
@@ -115,7 +130,7 @@ export const AI_ML_CATEGORIES: UniverseCategoryDef[] = [
   {
     id: "category-agents",
     label: "Agents",
-    route: "/ai-ml",
+    route: navHref("ai-ml"),
     domain: "ai",
     accent: "#818cf8",
     blurb: "LLM agent projects.",
@@ -125,7 +140,7 @@ export const AI_ML_CATEGORIES: UniverseCategoryDef[] = [
   {
     id: "category-experiments",
     label: "Experiments",
-    route: "/ai-ml",
+    route: navHref("ai-ml"),
     domain: "ai",
     accent: "#818cf8",
     blurb: "Exploratory experiments.",
@@ -150,4 +165,5 @@ export const QUALITY: Record<"desktop" | "mobile", QualityProfile> = {
 export const CAMERA_HOME_POSITION: [number, number, number] = [0, 1.2, 7.5];
 export const CAMERA_FOV = 45;
 export const NODE_RADIUS = 0.18;
+export const SATELLITE_RADIUS = 0.12; // category satellites read as subordinate
 export const APPROACH_DISTANCE = 1.2; // camera stops this far from the node on select
