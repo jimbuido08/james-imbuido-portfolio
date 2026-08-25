@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore, useState } from "react";
 
 import { isSameRouteSatellite, QUALITY } from "@/lib/universe/config";
 import type { UniverseNodeDef } from "@/lib/universe/config";
@@ -31,6 +31,15 @@ export function DataUniverse() {
   const [isMobile, setIsMobile] = useState(false);
   // Initialize false on SSR; the probe only runs in the browser.
   const [webgl] = useState(() => supportsWebGL());
+  // False on the server and during hydration, true after — so the canvas and
+  // hint (gated on `mounted && webgl`) never appear in the server-rendered
+  // HTML, keeping the child list identical across hydration. The subscribe
+  // never fires; the snapshots just encode "not hydrated yet" vs "hydrated".
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -47,10 +56,6 @@ export function DataUniverse() {
     mq.addEventListener("change", update);
     return () => mq.removeEventListener("change", update);
   }, []);
-
-  // §11.1 fallback path: no WebGL → render nothing. The header nav and the
-  // SSR'd index grid below already provide full content and navigation.
-  if (!webgl) return null;
 
   const quality = isMobile ? QUALITY.mobile : QUALITY.desktop;
 
@@ -71,20 +76,29 @@ export function DataUniverse() {
     }
   };
 
+  // §11.1 fallback path: no WebGL → the wrapper stays empty (the header nav
+  // and the SSR'd index grid below provide full content and navigation). The
+  // div is always rendered so server and client agree on the tree. The canvas
+  // and hint are gated on `mounted && webgl` — `mounted` is false on both the
+  // server and the client's first render, so the child list matches during
+  // hydration; the canvas mounts only after, and only when WebGL exists.
   return (
     <div className="relative h-full w-full" aria-hidden="true">
-      <UniverseCanvas
-        quality={quality}
-        reducedMotion={reducedMotion}
-        selected={selected}
-        onHover={handleHover}
-        onSelect={handleSelect}
-        onNavigate={(route) => router.push(route)}
-      />
+      {mounted && webgl && (
+        <UniverseCanvas
+          quality={quality}
+          reducedMotion={reducedMotion}
+          selected={selected}
+          onHover={handleHover}
+          onSelect={handleSelect}
+          onNavigate={(route) => router.push(route)}
+        />
+      )}
       <UniverseOverlay
         hovered={hovered}
         selected={selected}
         reducedMotion={reducedMotion}
+        showHint={mounted && webgl}
       />
     </div>
   );
