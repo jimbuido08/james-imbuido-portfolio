@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/Button";
-import { CHESS_REWARD_CREDITS } from "@/lib/chess/constants";
+import { CHESS_REWARD_CREDITS } from "@/lib/credits/constants";
 import type {
   ChessClaimError,
   ChessClaimSuccess,

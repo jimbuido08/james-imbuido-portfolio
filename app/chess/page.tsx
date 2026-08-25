@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { ChessGame } from "@/components/chess/ChessGame";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { CHESS_REWARD_CREDITS } from "@/lib/credits/constants";
 
 export const metadata: Metadata = {
   title: "Chess AI — James Imbuido",
@@ -26,7 +27,7 @@ export default function ChessPage() {
         The trained model hasn&apos;t been exported for the browser yet, so
         right now a heuristic stand-in opponent runs through the same interface
         it will use. Beat the AI by checkmate on any difficulty while signed in
-        to claim a one-time +5 JTB interaction reward.
+        to claim a one-time +{CHESS_REWARD_CREDITS} JTB interaction reward.
       </p>
       <ChessGame />
     </Container>

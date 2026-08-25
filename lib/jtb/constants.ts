@@ -1,13 +1,8 @@
 /**
  * JTB constants. Pure module — safe to import from client components.
- * Single source of truth for credit, rate-limit, and LLM settings (§5, §3.7).
+ * Owns rate-limit and LLM settings; the credits economy's shared vocabulary
+ * (INITIAL_CREDITS, CHESS_REWARD_CREDITS) lives in lib/credits/constants.ts.
  */
-
-/** New users start with this many JTB interactions (§5). */
-export const INITIAL_CREDITS = 10;
-
-/** Credits awarded once for beating the Chess AI (§3.7). */
-export const CHESS_REWARD_CREDITS = 5;
 
 /** Longest allowed user message in characters (enforced in lib/validation/jtb.ts). */
 export const MAX_MESSAGE_LENGTH = 1000;

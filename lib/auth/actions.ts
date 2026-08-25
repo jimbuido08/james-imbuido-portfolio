@@ -6,9 +6,9 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isEmploymentStatus } from "@/lib/auth/employment-status";
 import { safeNext } from "@/lib/auth/next";
+import { MIN_PASSWORD_LENGTH } from "@/lib/auth/password";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const MIN_PASSWORD_LENGTH = 8;
 
 export interface AuthFormState {
   error: string | null;

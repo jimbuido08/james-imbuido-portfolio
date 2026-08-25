@@ -1,18 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { safeNext } from "@/lib/auth/next";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const tokenHash = searchParams.get("token_hash");
   const type = searchParams.get("type");
-  const nextParam = searchParams.get("next");
 
   // Only in-app relative paths may be redirected to (no open redirect).
-  const next =
-    nextParam?.startsWith("/") && !nextParam.startsWith("//")
-      ? nextParam
-      : "/account";
+  const next = safeNext(searchParams.get("next"));
 
   if (tokenHash && type === "email") {
     const supabase = await createClient();
