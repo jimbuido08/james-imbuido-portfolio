@@ -3,7 +3,7 @@
 import type { RefObject } from "react";
 import type * as THREE from "three";
 
-import { AI_ML_CATEGORIES } from "@/lib/universe/config";
+import { AI_ML_CATEGORIES, SATELLITE_RADIUS } from "@/lib/universe/config";
 import type { UniverseNodeDef } from "@/lib/universe/config";
 
 import { UniverseNode } from "./UniverseNode";
@@ -30,6 +30,7 @@ export function UniverseCategories({
         <UniverseNode
           key={def.id}
           def={def}
+          radius={SATELLITE_RADIUS}
           selectedId={selected?.id ?? null}
           onHover={onHover}
           onSelect={onSelect}
