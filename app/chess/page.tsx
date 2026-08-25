@@ -25,8 +25,8 @@ export default function ChessPage() {
       <p className="mt-4 max-w-prose text-sm text-fg-subtle">
         The trained model hasn&apos;t been exported for the browser yet, so
         right now a heuristic stand-in opponent runs through the same interface
-        it will use. Once accounts and verified rewards land in later phases,
-        beating the AI will grant +5 JTB interactions.
+        it will use. Beat the AI by checkmate on any difficulty while signed in
+        to claim a one-time +5 JTB interaction reward.
       </p>
       <ChessGame />
     </Container>

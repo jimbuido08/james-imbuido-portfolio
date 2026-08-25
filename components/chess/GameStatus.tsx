@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import { Button } from "@/components/ui/Button";
 import type { GameResult } from "@/types/chess";
 
@@ -6,10 +8,13 @@ export function GameStatus({
   statusLine,
   result,
   onNewGame,
+  children,
 }: {
   statusLine: string;
   result: GameResult | null;
   onNewGame: () => void;
+  /** Phase 7 seam: the reward claim UI (RewardClaim) renders here. */
+  children?: ReactNode;
 }) {
   return (
     <>
@@ -22,10 +27,7 @@ export function GameStatus({
       {result && (
         <div className="mb-6 rounded-lg border border-border bg-surface p-6">
           <p className="text-lg font-semibold tracking-tight">{statusLine}</p>
-          <p className="mt-2 max-w-prose text-sm text-fg-muted">
-            Verified rewards land with accounts in a later phase: beating the
-            chess AI will grant +5 JTB interactions.
-          </p>
+          {children}
           <div className="mt-4">
             <Button size="sm" onClick={onNewGame}>
               New game
