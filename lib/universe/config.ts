@@ -149,6 +149,81 @@ export const AI_ML_CATEGORIES: UniverseCategoryDef[] = [
   },
 ];
 
+// --- Registry integrity (module load) --------------------------------------
+// A broken node graph must fail the build, not render a half-missing scene:
+// node ids are unique across the whole constellation, and every satellite's
+// parentId references a real parent node.
+const nodeIds = new Set<string>();
+for (const node of UNIVERSE_NODES) {
+  if (nodeIds.has(node.id)) {
+    throw new Error(`Duplicate universe node id "${node.id}"`);
+  }
+  nodeIds.add(node.id);
+}
+for (const cat of AI_ML_CATEGORIES) {
+  if (nodeIds.has(cat.id)) {
+    throw new Error(`Duplicate universe node id "${cat.id}"`);
+  }
+  nodeIds.add(cat.id);
+  if (!UNIVERSE_NODES.some((n) => n.id === cat.parentId)) {
+    throw new Error(
+      `Category satellite "${cat.id}" has unknown parentId "${cat.parentId}"`,
+    );
+  }
+}
+
+/** Every node the scene draws — main constellation plus category satellites. */
+export const ALL_NODES: UniverseNodeDef[] = [
+  ...UNIVERSE_NODES,
+  ...AI_ML_CATEGORIES,
+];
+
+/** One live line: core→node (fromNodeId null) or parent→satellite (fromNodeId set). */
+export interface LiveLineDef {
+  id: string;
+  fromNodeId: string | null;
+  toNodeId: string;
+  accent: string;
+  opacity: number;
+}
+
+// Core→node lines are brighter (0.45); parent→satellite fan lines are fainter
+// (0.2) so the satellites read as subordinate.
+export const UNIVERSE_LINES: LiveLineDef[] = [
+  ...UNIVERSE_NODES.map((n) => ({
+    id: `core-${n.id}`,
+    fromNodeId: null,
+    toNodeId: n.id,
+    accent: n.accent,
+    opacity: 0.45,
+  })),
+  ...AI_ML_CATEGORIES.map((c) => ({
+    id: `fan-${c.id}`,
+    fromNodeId: c.parentId,
+    toNodeId: c.id,
+    accent: c.accent,
+    opacity: 0.2,
+  })),
+];
+
+/** Type guard: is this def a category satellite (has a parentId)? */
+export function isCategorySatellite(
+  def: UniverseNodeDef,
+): def is UniverseCategoryDef {
+  return "parentId" in def;
+}
+
+/**
+ * True for a satellite whose route matches its parent's — clicking it would
+ * glide the camera to a destination it is already pointed at, so the scene
+ * navigates directly instead (§11.2).
+ */
+export function isSameRouteSatellite(def: UniverseNodeDef): boolean {
+  if (!isCategorySatellite(def)) return false;
+  const parent = UNIVERSE_NODES.find((n) => n.id === def.parentId);
+  return parent?.route === def.route;
+}
+
 export interface QualityProfile {
   particles: number;
   dpr: [number, number];
