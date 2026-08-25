@@ -59,6 +59,7 @@ export type ChessClaimErrorCode =
   | "illegal_game"
   | "not_a_win"
   | "already_claimed"
+  | "rate_limited"
   | "internal";
 
 export interface ChessClaimError {
