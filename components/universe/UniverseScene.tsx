@@ -6,13 +6,7 @@ import type { ReactNode } from "react";
 import { useRef } from "react";
 import * as THREE from "three";
 
-import {
-  AI_ML_CATEGORIES,
-  SATELLITE_RADIUS,
-  UNIVERSE_COLORS,
-  UNIVERSE_LINES,
-  UNIVERSE_NODES,
-} from "@/lib/universe/config";
+import { UNIVERSE_COLORS, UNIVERSE_NODES } from "@/lib/universe/config";
 import type { QualityProfile, UniverseNodeDef } from "@/lib/universe/config";
 
 import { CameraTransition } from "./CameraTransition";
@@ -100,18 +94,9 @@ export function UniverseScene({
           labelVisible={!selected}
           groupRef={coreRef}
         />
-        <LiveLines lines={UNIVERSE_LINES} />
+        <LiveLines />
         <NodeGroup
           nodes={UNIVERSE_NODES}
-          selected={selected}
-          onHover={onHover}
-          onSelect={onSelect}
-          reducedMotion={reducedMotion}
-          coreRef={coreRef}
-        />
-        <NodeGroup
-          nodes={AI_ML_CATEGORIES}
-          radius={SATELLITE_RADIUS}
           selected={selected}
           onHover={onHover}
           onSelect={onSelect}

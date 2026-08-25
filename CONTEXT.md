@@ -8,10 +8,9 @@ disagree, this file is stale — update it.
 
 A personal data-science portfolio. The homepage is a full-viewport 3D "Data
 Universe" (React Three Fiber): a central core orbited by six navigation nodes
-(About, Experience, AI/ML, Data Viz, JTB, Chess AI) plus three AI/ML category
-satellites (Classical ML, Agents, Experiments). The 3D layer is an enhancement,
-never the only path — every node mirrors a conventional route and the site
-works without WebGL (§11.1).
+(About, Experience, AI/ML, Data Viz, JTB, Chess AI). The 3D layer is an
+enhancement, never the only path — every node mirrors a conventional route and
+the site works without WebGL (§11.1).
 
 ## Current state (2026-08-25)
 
@@ -38,8 +37,8 @@ works without WebGL (§11.1).
   homepage fallback grid all derive from it.
 - `lib/credits/constants.ts` — the credits vocabulary (10 new-user, +5 chess).
 - `lib/content/trust.ts` — placeholder + embed-allowlist rules.
-- `lib/universe/config.ts` — node registry, palette mirror, quality profiles,
-  line specs. Validated at module load (unique ids, parentId refs, routes).
+- `lib/universe/config.ts` — node registry, palette mirror, quality profiles.
+  Validated at module load (unique node ids).
 
 ### Degradation paths (load-bearing)
 - Homepage: hero copy + `IndexGrid` are server-rendered; the canvas is a lazy
@@ -53,9 +52,9 @@ works without WebGL (§11.1).
   harnesses: `npx tsx .verify-*.mts` with in-memory deps, then deleted.
 - **Deep modules over fat routes.** Routes are thin adapters; policy lives in
   `lib/*` decision cores with injected Supabase/LLM deps.
-- **Satellites are children, not a parallel subsystem.** `NodeGroup` and
-  `LiveLines` render both main nodes and category satellites; same-route
-  satellites navigate directly (no camera glide).
+- **One constellation, one renderer.** `NodeGroup` renders every node and
+  `LiveLines` draws core→node lines from the shared `nodePositions` registry —
+  no parallel subsystem for sub-nodes.
 
 ## In flight / pending
 

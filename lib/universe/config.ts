@@ -107,121 +107,15 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
   },
 ];
 
-// Category satellites fan from a parent node (currently only the AI/ML node).
-// UniverseNodeDef plus the parent node id so the faint fan lines can anchor.
-export interface UniverseCategoryDef extends UniverseNodeDef {
-  parentId: string;
-}
-
-// Mirrors the /ai-ml filter chips (§3.3): CLASSICAL ML, AGENTS, EXPERIMENTS.
-// Positions sit ~1–1.2 units from the ai-ml node ([−1.95, 0.45, 3.377]),
-// fanning outward so the satellite constellation reads as subordinate.
-export const AI_ML_CATEGORIES: UniverseCategoryDef[] = [
-  {
-    id: "category-classical-ml",
-    label: "Classical ML",
-    route: navHref("ai-ml"),
-    domain: "ai",
-    accent: "#818cf8",
-    blurb: "Classical machine learning projects.",
-    parentId: "ai-ml",
-    position: [-2.7, 1.0, 2.9],
-  },
-  {
-    id: "category-agents",
-    label: "Agents",
-    route: navHref("ai-ml"),
-    domain: "ai",
-    accent: "#818cf8",
-    blurb: "LLM agent projects.",
-    parentId: "ai-ml",
-    position: [-1.1, 0.6, 3.9],
-  },
-  {
-    id: "category-experiments",
-    label: "Experiments",
-    route: navHref("ai-ml"),
-    domain: "ai",
-    accent: "#818cf8",
-    blurb: "Exploratory experiments.",
-    parentId: "ai-ml",
-    position: [-2.6, -0.5, 3.8],
-  },
-];
-
 // --- Registry integrity (module load) --------------------------------------
 // A broken node graph must fail the build, not render a half-missing scene:
-// node ids are unique across the whole constellation, and every satellite's
-// parentId references a real parent node.
+// node ids are unique across the constellation.
 const nodeIds = new Set<string>();
 for (const node of UNIVERSE_NODES) {
   if (nodeIds.has(node.id)) {
     throw new Error(`Duplicate universe node id "${node.id}"`);
   }
   nodeIds.add(node.id);
-}
-for (const cat of AI_ML_CATEGORIES) {
-  if (nodeIds.has(cat.id)) {
-    throw new Error(`Duplicate universe node id "${cat.id}"`);
-  }
-  nodeIds.add(cat.id);
-  if (!UNIVERSE_NODES.some((n) => n.id === cat.parentId)) {
-    throw new Error(
-      `Category satellite "${cat.id}" has unknown parentId "${cat.parentId}"`,
-    );
-  }
-}
-
-/** Every node the scene draws — main constellation plus category satellites. */
-export const ALL_NODES: UniverseNodeDef[] = [
-  ...UNIVERSE_NODES,
-  ...AI_ML_CATEGORIES,
-];
-
-/** One live line: core→node (fromNodeId null) or parent→satellite (fromNodeId set). */
-export interface LiveLineDef {
-  id: string;
-  fromNodeId: string | null;
-  toNodeId: string;
-  accent: string;
-  opacity: number;
-}
-
-// Core→node lines are brighter (0.45); parent→satellite fan lines are fainter
-// (0.2) so the satellites read as subordinate.
-export const UNIVERSE_LINES: LiveLineDef[] = [
-  ...UNIVERSE_NODES.map((n) => ({
-    id: `core-${n.id}`,
-    fromNodeId: null,
-    toNodeId: n.id,
-    accent: n.accent,
-    opacity: 0.45,
-  })),
-  ...AI_ML_CATEGORIES.map((c) => ({
-    id: `fan-${c.id}`,
-    fromNodeId: c.parentId,
-    toNodeId: c.id,
-    accent: c.accent,
-    opacity: 0.2,
-  })),
-];
-
-/** Type guard: is this def a category satellite (has a parentId)? */
-export function isCategorySatellite(
-  def: UniverseNodeDef,
-): def is UniverseCategoryDef {
-  return "parentId" in def;
-}
-
-/**
- * True for a satellite whose route matches its parent's — clicking it would
- * glide the camera to a destination it is already pointed at, so the scene
- * navigates directly instead (§11.2).
- */
-export function isSameRouteSatellite(def: UniverseNodeDef): boolean {
-  if (!isCategorySatellite(def)) return false;
-  const parent = UNIVERSE_NODES.find((n) => n.id === def.parentId);
-  return parent?.route === def.route;
 }
 
 export interface QualityProfile {
@@ -240,5 +134,4 @@ export const QUALITY: Record<"desktop" | "mobile", QualityProfile> = {
 export const CAMERA_HOME_POSITION: [number, number, number] = [0, 1.2, 7.5];
 export const CAMERA_FOV = 45;
 export const NODE_RADIUS = 0.18;
-export const SATELLITE_RADIUS = 0.12; // category satellites read as subordinate
 export const APPROACH_DISTANCE = 1.2; // camera stops this far from the node on select
