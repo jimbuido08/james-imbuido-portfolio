@@ -6,17 +6,21 @@ import type { ReactNode } from "react";
 import { useRef } from "react";
 import * as THREE from "three";
 
-import { UNIVERSE_COLORS } from "@/lib/universe/config";
+import {
+  AI_ML_CATEGORIES,
+  SATELLITE_RADIUS,
+  UNIVERSE_COLORS,
+  UNIVERSE_LINES,
+  UNIVERSE_NODES,
+} from "@/lib/universe/config";
 import type { QualityProfile, UniverseNodeDef } from "@/lib/universe/config";
 
 import { CameraTransition } from "./CameraTransition";
-import { CategoryConnections } from "./CategoryConnections";
-import { ConnectionLines } from "./ConnectionLines";
 import { DataCore } from "./DataCore";
 import { Environment } from "./Environment";
+import { LiveLines } from "./LiveLines";
+import { NodeGroup } from "./NodeGroup";
 import { ParticleField } from "./ParticleField";
-import { UniverseCategories } from "./UniverseCategories";
-import { UniverseNodes } from "./UniverseNodes";
 
 /**
  * Pointer-parallax rig: the scene group eases toward the pointer (subtle),
@@ -96,16 +100,18 @@ export function UniverseScene({
           labelVisible={!selected}
           groupRef={coreRef}
         />
-        <ConnectionLines />
-        <CategoryConnections />
-        <UniverseNodes
+        <LiveLines lines={UNIVERSE_LINES} />
+        <NodeGroup
+          nodes={UNIVERSE_NODES}
           selected={selected}
           onHover={onHover}
           onSelect={onSelect}
           reducedMotion={reducedMotion}
           coreRef={coreRef}
         />
-        <UniverseCategories
+        <NodeGroup
+          nodes={AI_ML_CATEGORIES}
+          radius={SATELLITE_RADIUS}
           selected={selected}
           onHover={onHover}
           onSelect={onSelect}
