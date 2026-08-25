@@ -8,6 +8,7 @@ import { GameControls } from "@/components/chess/GameControls";
 import { GameStatus } from "@/components/chess/GameStatus";
 import { MoveList } from "@/components/chess/MoveList";
 import { PromotionDialog } from "@/components/chess/PromotionDialog";
+import { RewardClaim } from "@/components/chess/RewardClaim";
 import { createEngine } from "@/lib/chess/engine";
 import type { ChessGameEngine } from "@/lib/chess/engine";
 import { createOpponent } from "@/lib/chess/opponents";
@@ -433,6 +434,11 @@ export function ChessGame() {
   const legalTargets =
     state.selected && inputOpen ? engine.legalMoves(state.selected) : [];
   const statusLine = computeStatusLine(state);
+  // Phase 7: the claim CTA appears only for a genuine player checkmate win. The
+  // server re-verifies everything — this flag is presentation only.
+  const playerWonByCheckmate =
+    state.result?.reason === "checkmate" &&
+    state.result.winner === state.playerColor;
 
   return (
     <>
@@ -442,7 +448,22 @@ export function ChessGame() {
             statusLine={statusLine}
             result={state.result}
             onNewGame={handleNewGame}
-          />
+          >
+            {playerWonByCheckmate && (
+              <RewardClaim
+                playerColor={state.playerColor}
+                moves={state.history.map((m) => ({
+                  from: m.from,
+                  to: m.to,
+                  // MoveSnapshot.promotion is only ever set on promotion moves
+                  // (q/r/b/n) — propagate it so the replay is exact.
+                  ...(m.promotion
+                    ? { promotion: m.promotion as PromotionChoice }
+                    : {}),
+                }))}
+              />
+            )}
+          </GameStatus>
           <div className="relative w-full max-w-[36rem]">
             <ChessBoard
               squares={squares}

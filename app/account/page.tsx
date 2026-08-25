@@ -56,9 +56,9 @@ export default async function AccountPage() {
         </div>
       </dl>
       <p className="mt-4 max-w-prose text-sm text-fg-subtle">
-        JTB interactions and the chess reward activate in later phases — these
-        values are your database state. Employment status is audience analytics
-        only and never gates any feature.
+        JTB and the chess reward are live — the values above are your real
+        database state. Employment status is audience analytics only and never
+        gates any feature.
       </p>
       <div className="mt-6">
         <SignOutButton />
