@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/Card";
 import { Tag } from "@/components/ui/Tag";
+import { isPlaceholder } from "@/lib/content/trust";
 import type { Project } from "@/types/project";
 
 const externalLinkClasses =
@@ -21,11 +22,11 @@ export function ProjectCard({
   hrefBase: string;
 }) {
   const githubUrl =
-    project.githubUrl && !project.githubUrl.includes("TODO")
+    project.githubUrl && !isPlaceholder(project.githubUrl)
       ? project.githubUrl
       : undefined;
   const demoUrl =
-    project.demoUrl && !project.demoUrl.includes("TODO")
+    project.demoUrl && !isPlaceholder(project.demoUrl)
       ? project.demoUrl
       : undefined;
 

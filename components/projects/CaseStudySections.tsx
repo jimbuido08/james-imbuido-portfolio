@@ -1,6 +1,7 @@
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Tag } from "@/components/ui/Tag";
 import { Button } from "@/components/ui/Button";
+import { isPlaceholder } from "@/lib/content/trust";
 import type { Project } from "@/types/project";
 
 function CaseStudyParagraphs({ text }: { text: string }) {
@@ -26,11 +27,11 @@ export function CaseStudySections({ project }: { project: Project }) {
   ];
 
   const githubUrl =
-    project.githubUrl && !project.githubUrl.includes("TODO")
+    project.githubUrl && !isPlaceholder(project.githubUrl)
       ? project.githubUrl
       : undefined;
   const demoUrl =
-    project.demoUrl && !project.demoUrl.includes("TODO")
+    project.demoUrl && !isPlaceholder(project.demoUrl)
       ? project.demoUrl
       : undefined;
 

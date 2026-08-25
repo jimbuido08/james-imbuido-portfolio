@@ -4,23 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { NAV_ITEMS } from "@/lib/navigation";
 import { cx } from "@/lib/utils";
 
-const primaryLinks = [
-  { href: "/about", label: "About" },
-  { href: "/experience", label: "Experience" },
-  { href: "/ai-ml", label: "AI/ML" },
-  { href: "/data", label: "Data Viz" },
-] as const;
-
-/** Folded under the desktop "More ▾" menu; listed plainly in the mobile panel. */
-const moreLinks = [
-  { href: "/jtb", label: "JTB" },
-  { href: "/chess", label: "Chess" },
-  { href: "/contact", label: "Contact" },
-] as const;
-
-const allLinks = [...primaryLinks, ...moreLinks] as const;
+/** First four routes sit in the desktop bar; the rest fold under "More ▾". */
+const primaryLinks = NAV_ITEMS.slice(0, 4);
+const moreLinks = NAV_ITEMS.slice(4);
+const allLinks = NAV_ITEMS;
 
 /** The conventional navigation fallback (§11.1) — the site must work without WebGL. */
 export function Header() {
