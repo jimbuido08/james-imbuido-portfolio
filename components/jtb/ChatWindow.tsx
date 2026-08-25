@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import type { JtbError } from "@/lib/jtb/types";
+import type { JtbError, JtbSuccess } from "@/lib/jtb/types";
 import { cx } from "@/lib/utils";
 import { MessageList } from "./MessageList";
 import type { JtbChatMessage } from "./MessageBubble";
@@ -51,9 +51,7 @@ export function ChatWindow({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: trimmed }),
       });
-      const body = (await response.json()) as
-        | { reply: string; creditsRemaining: number }
-        | JtbError;
+      const body = (await response.json()) as JtbSuccess | JtbError;
 
       if (response.ok && "reply" in body) {
         // No optimistic deduction — credits update only from the server.

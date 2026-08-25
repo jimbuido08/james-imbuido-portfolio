@@ -1,154 +1,121 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { createClient } from "@/lib/supabase/server";
-import { replayMoves } from "@/lib/chess/engine";
-import { CHESS_REWARD_CREDITS } from "@/lib/chess/constants";
+import { apiError, parseJsonBody, requireUser } from "@/lib/server/http";
+import { claimChessReward } from "@/lib/chess/claim";
+import { CHESS_REWARD_CREDITS } from "@/lib/credits/constants";
 import { parseChessClaim } from "@/lib/validation/chess";
 import type {
-  ChessClaimError,
   ChessClaimErrorCode,
+  ChessClaimSuccess,
   ClaimChessRewardResult,
 } from "@/types/chess";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-function errorResponse(
-  code: ChessClaimErrorCode,
-  message: string,
-  status: number,
-  options?: { creditsRemaining?: number },
-): NextResponse {
-  const body: ChessClaimError = {
-    error: { code, message },
-    ...(options?.creditsRemaining !== undefined
-      ? { creditsRemaining: options.creditsRemaining }
-      : {}),
-  };
-  return NextResponse.json(body, { status });
-}
+// Replay is local CPU bounded by MAX_SUBMITTED_MOVES — no upstream call — so
+// attempts are not metered the way /api/jtb's are; this cap exists so a stuck
+// function never runs (or bills) indefinitely.
+export const maxDuration = 30;
 
 export async function POST(request: NextRequest) {
   // 1) Auth — the reward belongs to a verified session (§3.7, §21).
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-  if (userError || !user) {
-    return errorResponse(
-      "unauthenticated",
-      "Sign in to claim the chess reward.",
-      401,
-    );
-  }
+  const auth = await requireUser("Sign in to claim the chess reward.");
+  if (!auth.ok) return auth.response;
+  const { supabase, user } = auth;
 
   // 2) Validation — shape-check the submission before any DB work (§33.11).
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return errorResponse("invalid", "Request body must be valid JSON.", 400);
+  const parsedBody = await parseJsonBody(request);
+  if (!parsedBody.ok) {
+    return apiError<ChessClaimErrorCode>(
+      "invalid",
+      "Request body must be valid JSON.",
+      400,
+    );
   }
-  const parsed = parseChessClaim(body);
+  const parsed = parseChessClaim(parsedBody.body);
   if (!parsed.ok) {
-    return errorResponse("invalid", parsed.error, 400);
+    return apiError<ChessClaimErrorCode>("invalid", parsed.error, 400);
   }
 
-  // 3) Claimed pre-check — RLS scopes this to the caller's own profile. Cheap
-  //    and gives a clean 409 UX; the authoritative gate is the unique constraint
-  //    enforced inside claim_chess_reward.
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("credits_remaining, chess_reward_claimed")
-    .eq("id", user.id)
-    .single();
-  if (profile?.chess_reward_claimed) {
-    return errorResponse(
-      "already_claimed",
-      "You've already claimed the chess reward.",
-      409,
-      { creditsRemaining: profile.credits_remaining },
-    );
-  }
-
-  // 4) Server-side replay — always from the standard initial position, so every
-  //    move must be legal and turns must alternate. Client-provided FENs and
-  //    result verdicts are never accepted (§3.7, §21).
-  const replay = replayMoves(parsed.claim.moves);
-  if (!replay.ok) {
-    return errorResponse(
-      "illegal_game",
-      `Move ${replay.atIndex + 1} is not legal — the game was rejected.`,
-      422,
-    );
-  }
-
-  // 5) Win verification — the replayed game must be over by checkmate with the
-  //    caller's side as winner. Draws, losses, resignations, and unfinished
-  //    games earn nothing.
-  const status = replay.engine.status();
-  if (
-    status.kind !== "over" ||
-    status.reason !== "checkmate" ||
-    status.winner !== parsed.claim.playerColor
-  ) {
-    return errorResponse(
-      "not_a_win",
-      "Only a game you won by checkmate earns the reward.",
-      422,
-    );
-  }
-
-  // 6) Atomic award — one SECURITY DEFINER call inserts the reward row (the
-  //    unique(user_id, reward_type) constraint makes it once-per-user), credits
-  //    +5, and flips chess_reward_claimed in the same transaction.
-  const { data, error: claimError } = await supabase.rpc("claim_chess_reward", {
-    p_user_id: user.id,
-    p_metadata: {
-      moveCount: parsed.claim.moves.length,
-      playerColor: parsed.claim.playerColor,
-      finalFen: replay.engine.fen(),
+  // 3) The claim — §3.7's policy lives in lib/chess/claim.ts; the closures
+  //    below are the Supabase adapter it runs against. Nothing here decides.
+  const outcome = await claimChessReward(
+    {
+      getProfile: async () => {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("credits_remaining, chess_reward_claimed")
+          .eq("id", user.id)
+          .single();
+        if (error || !data) {
+          console.error(
+            "[chess] profiles read error:",
+            error?.message ?? "no profile row",
+          );
+          return { ok: false };
+        }
+        return {
+          ok: true,
+          chessRewardClaimed: data.chess_reward_claimed,
+          creditsRemaining: data.credits_remaining,
+        };
+      },
+      claimReward: async (metadata) => {
+        const { data, error } = await supabase.rpc("claim_chess_reward", {
+          p_user_id: user.id,
+          p_metadata: metadata,
+        });
+        if (error) {
+          console.error("[chess] claim_chess_reward error:", error.message);
+          return { ok: false };
+        }
+        // The RPC returns jsonb; ClaimChessRewardResult is hand-maintained
+        // against it and shape-checked inside claim.ts.
+        return { ok: true, result: data as ClaimChessRewardResult | null };
+      },
     },
-  });
-  if (claimError) {
-    console.error("[chess] claim_chess_reward error:", claimError.message);
-    return errorResponse(
-      "internal",
-      "Something went wrong on our side — please try again.",
-      500,
-    );
-  }
-  const claim = data as ClaimChessRewardResult | null;
-  if (!claim || typeof claim.claimed !== "boolean") {
-    console.error("[chess] claim_chess_reward returned unexpected shape");
-    return errorResponse(
-      "internal",
-      "Something went wrong on our side — please try again.",
-      500,
-    );
-  }
-  if (!claim.claimed) {
-    // Lost the pre-check race: the reward was claimed by a concurrent request.
-    return errorResponse(
-      "already_claimed",
-      "You've already claimed the chess reward.",
-      409,
-    );
-  }
-  if (typeof claim.creditsRemaining !== "number") {
-    console.error("[chess] claim_chess_reward claimed but no balance returned");
-    return errorResponse(
-      "internal",
-      "Something went wrong on our side — please try again.",
-      500,
-    );
-  }
+    parsed.claim,
+  );
 
-  // 7) Success.
-  return NextResponse.json({
-    ok: true,
-    creditsAwarded: CHESS_REWARD_CREDITS,
-    creditsRemaining: claim.creditsRemaining,
-  });
+  // 4) Outcome → HTTP. Every wire shape is unchanged from before.
+  switch (outcome.kind) {
+    case "ok": {
+      const body: ChessClaimSuccess = {
+        ok: true,
+        creditsAwarded: CHESS_REWARD_CREDITS,
+        creditsRemaining: outcome.creditsRemaining,
+      };
+      return NextResponse.json(body);
+    }
+    case "already_claimed":
+      return apiError<ChessClaimErrorCode>(
+        "already_claimed",
+        "You've already claimed the chess reward.",
+        409,
+        {
+          ...(outcome.creditsRemaining !== undefined
+            ? { creditsRemaining: outcome.creditsRemaining }
+            : {}),
+        },
+      );
+    case "illegal_game":
+      return apiError<ChessClaimErrorCode>(
+        "illegal_game",
+        `Move ${outcome.atIndex + 1} is not legal — the game was rejected.`,
+        422,
+      );
+    case "not_a_win":
+      return apiError<ChessClaimErrorCode>(
+        "not_a_win",
+        "Only a game you won by checkmate earns the reward.",
+        422,
+      );
+    case "internal":
+      console.error("[chess] internal:", outcome.detail);
+      return apiError<ChessClaimErrorCode>(
+        "internal",
+        "Something went wrong on our side — please try again.",
+        500,
+      );
+  }
 }

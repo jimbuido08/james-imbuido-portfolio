@@ -5,6 +5,7 @@ import { useActionState } from "react";
 
 import { signUp } from "@/lib/auth/actions";
 import { EMPLOYMENT_STATUSES } from "@/lib/auth/employment-status";
+import { MIN_PASSWORD_LENGTH } from "@/lib/auth/password";
 import { Button } from "@/components/ui/Button";
 
 const fieldClasses =
@@ -56,10 +57,12 @@ export function SignupForm({ next = "/account" }: { next?: string }) {
           type="password"
           autoComplete="new-password"
           required
-          minLength={8}
+          minLength={MIN_PASSWORD_LENGTH}
           className={fieldClasses}
         />
-        <p className="mt-1 text-xs text-fg-subtle">At least 8 characters.</p>
+        <p className="mt-1 text-xs text-fg-subtle">
+          At least {MIN_PASSWORD_LENGTH} characters.
+        </p>
       </div>
       <div>
         <label

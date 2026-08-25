@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
-import { INITIAL_CREDITS } from "@/lib/jtb/constants";
+import { INITIAL_CREDITS } from "@/lib/credits/constants";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ChatWindow } from "@/components/jtb";

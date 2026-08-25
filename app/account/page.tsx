@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
+import { CHESS_REWARD_CREDITS, INITIAL_CREDITS } from "@/lib/credits/constants";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { SignOutButton } from "./SignOutButton";
@@ -43,14 +44,14 @@ export default async function AccountPage() {
         <div className="flex items-center justify-between gap-4">
           <dt className="text-fg-muted">JTB interactions left</dt>
           <dd className="font-mono text-fg">
-            {profile?.credits_remaining ?? 10}
+            {profile?.credits_remaining ?? INITIAL_CREDITS}
           </dd>
         </div>
         <div className="flex items-center justify-between gap-4">
           <dt className="text-fg-muted">Chess reward</dt>
           <dd className="text-fg">
             {profile?.chess_reward_claimed
-              ? "Claimed (+5 JTB)"
+              ? `Claimed (+${CHESS_REWARD_CREDITS} JTB)`
               : "Not yet claimed"}
           </dd>
         </div>
