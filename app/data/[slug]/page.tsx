@@ -5,7 +5,7 @@ import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Tag } from "@/components/ui/Tag";
 import { Button } from "@/components/ui/Button";
-import { VizEmbedPlaceholder } from "@/components/visualisations/VizEmbedPlaceholder";
+import { VisualisationEmbed } from "@/components/visualisations/VisualisationEmbed";
 import {
   getVisualisationBySlug,
   getVisualisations,
@@ -77,10 +77,7 @@ export default async function VisualisationPage({
           <Paragraphs text={project.businessContext} />
         </section>
       )}
-      <VizEmbedPlaceholder
-        embedType={project.embedType ?? "interactive"}
-        title={project.title}
-      />
+      <VisualisationEmbed project={project} />
       <section>
         <SectionHeading as="h2" title="Key Insights" className="mt-14" />
         {project.keyInsights && project.keyInsights.length > 0 ? (

@@ -76,6 +76,37 @@ function validateProject(
     }
   }
 
+  const embedUrl = data.embedUrl;
+  if (embedUrl !== undefined && typeof embedUrl !== "string") {
+    throw new Error(
+      `Invalid frontmatter in ${filePath}: "embedUrl" must be a string`,
+    );
+  }
+  if (typeof embedUrl === "string" && !embedUrl.includes("TODO")) {
+    const allowlist: Record<string, (host: string) => boolean> = {
+      tableau: (h) => h === "public.tableau.com" || h.endsWith(".tableau.com"),
+      power_bi: (h) => h === "app.powerbi.com",
+    };
+    const embedType = data.embedType as string | undefined;
+    const allowed = embedType && allowlist[embedType];
+    let parsed: URL;
+    try {
+      parsed = new URL(embedUrl);
+    } catch {
+      throw new Error(
+        `Invalid frontmatter in ${filePath}: "embedUrl" is not a valid URL`,
+      );
+    }
+    if (
+      parsed.protocol !== "https:" ||
+      (allowed && !allowed(parsed.hostname))
+    ) {
+      throw new Error(
+        `Invalid frontmatter in ${filePath}: "embedUrl" must be an https URL on the vendor host for embedType "${String(embedType)}"`,
+      );
+    }
+  }
+
   return {
     slug,
     title: data.title as string,
@@ -100,6 +131,7 @@ function validateProject(
     keyInsights: data.keyInsights as string[] | undefined,
     tools: data.tools as string[] | undefined,
     embedType: data.embedType as Project["embedType"] | undefined,
+    embedUrl: data.embedUrl as string | undefined,
   };
 }
 

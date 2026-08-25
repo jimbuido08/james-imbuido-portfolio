@@ -40,4 +40,6 @@ export interface Project {
   keyInsights?: string[];
   tools?: string[];
   embedType?: EmbedType;
+  /** Public vendor URL (Tableau Public / Power BI publish-to-web). Validated host-allowlisted in lib/content/projects.ts; absent or "TODO" → poster panel, never an iframe. */
+  embedUrl?: string;
 }

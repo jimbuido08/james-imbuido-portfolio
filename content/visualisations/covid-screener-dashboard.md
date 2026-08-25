@@ -1,10 +1,10 @@
 ---
-title: "[TODO: James — dashboard title]"
-category: POWER_BI
+title: "COVID-19 Screening Dashboard"
+category: TABLEAU
 description: "[TODO: James — one sentence on what this visualisation shows]"
 featured: true
 technologies:
-  - "[TODO: James — technology]"
+  - "Tableau"
 problem: "[TODO: James — what problem were you solving?]"
 data: "[TODO: James — what data was used?]"
 approach: "[TODO: James — how did you approach the problem?]"
@@ -16,11 +16,12 @@ interactive: false
 businessContext: "[TODO: James — the business question this dashboard answers]"
 dataset: "[TODO: James — the data source behind this dashboard]"
 tools:
-  - "[TODO: James — tool]"
+  - "Tableau Public"
 keyInsights:
   - "[TODO: James — key insight one]"
   - "[TODO: James — key insight two]"
-embedType: power_bi
+embedType: tableau
+embedUrl: "TODO: James — paste the Tableau Public view URL"
 ---
 
 <!-- Body intentionally unused — all content lives in frontmatter (Phase 3). -->
