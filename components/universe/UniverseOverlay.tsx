@@ -7,6 +7,8 @@ type UniverseOverlayProps = {
   hovered: UniverseNodeDef | null;
   selected: UniverseNodeDef | null;
   reducedMotion: boolean;
+  /** The interaction hint only makes sense when the canvas is actually present. */
+  showHint: boolean;
 };
 
 /** DOM overlay inside the client boundary — pointer-events-none. */
@@ -14,6 +16,7 @@ export function UniverseOverlay({
   hovered,
   selected,
   reducedMotion,
+  showHint,
 }: UniverseOverlayProps) {
   return (
     <div className="pointer-events-none absolute inset-0 z-10 flex items-end justify-between p-6 sm:p-8">
@@ -32,7 +35,7 @@ export function UniverseOverlay({
           </p>
         </div>
       )}
-      {!reducedMotion && (
+      {showHint && !reducedMotion && (
         <p className="hidden font-mono text-xs text-fg-subtle md:block">
           Drag to rotate · Scroll to zoom · Click a node to enter
         </p>
