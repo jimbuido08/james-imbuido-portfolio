@@ -33,19 +33,25 @@ const experienceEntries: TimelineEntry[] = [
       "Pandas (Software)",
       "R",
       "PySpark",
+      "SQL",
+      "Snowflake",
+      "Teradata",
       "Data Science",
       "Data Analysis",
     ],
     sections: [
       {
         heading: "AI-Capabilities · SuperVerse",
-        items: ["Current placement — role description to come."],
+        items: [
+          "Implemented SQL queries to ensure the automated modeling software directs to the relevant data tables. Involved technologies include SQL, Snowflake, GDW, and Teradata.",
+        ],
       },
       {
         heading: "AI-Powered Engineering (AIPE) · GenFolio",
         items: [
           "As Data Science & AI lead, architected a generative-AI and agentic solution and scaled it from proof-of-concept into a deployed production web application used by ~1,000+ internal engineers — built on AWS, Vercel AI, and Anthropic's Claude foundation models.",
           "Ran generative-AI and agentic evaluations of AI solutions in production, improving evaluation scores by ~20% using LLM-as-a-judge and a fully automated, self-improving pipeline on GitHub Actions with HoneyHive.",
+          "The manual documentation and preparation for periodic managerial conversations and performance reviews were addressed by the Generative AI solution (GenFolio), streamlining this process from weeks to a few hours.",
         ],
       },
       {
