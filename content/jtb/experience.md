@@ -1,9 +1,13 @@
 ### Associate Data Scientist — Commonwealth Bank of Australia (Feb 2026 — Present)
-Full-time, hybrid, based in Melbourne, Victoria. James is currently in CBA's AI-Capabilities · SuperVerse placement, with further role detail to come.
+Full-time, hybrid, based in Melbourne, Victoria. James is currently in CBA's AI-Capabilities · SuperVerse placement.
+
+AI-Capabilities · SuperVerse:
+- Implemented SQL queries to ensure the automated modeling software directs to the relevant data tables. Involved technologies include SQL, Snowflake, GDW, and Teradata.
 
 Previously within this role, as part of AI-Powered Engineering (AIPE) · GenFolio:
 - As Data Science & AI lead, architected a generative-AI and agentic solution and scaled it from proof-of-concept into a deployed production web application used by ~1,000+ internal engineers — built on AWS, Vercel AI, and Anthropic's Claude foundation models.
 - Ran generative-AI and agentic evaluations of AI solutions in production, improving evaluation scores by ~20% using LLM-as-a-judge and a fully automated, self-improving pipeline on GitHub Actions with HoneyHive.
+- The manual documentation and preparation for periodic managerial conversations and performance reviews were addressed by the Generative AI solution (GenFolio), streamlining this process from weeks to a few hours.
 
 AI Adoption & Community Engagement:
 - Initiated and delivered CBA's Claude Code beginner workshops — 2,000+ participants across Melbourne (372), Sydney (1,000), and Perth (650) — running the Melbourne sessions independently.
