@@ -6,7 +6,7 @@ import { readMarkdownFile } from "@/lib/content/markdown";
 import { isPlaceholder } from "@/lib/content/trust";
 
 /**
- * Fixed section order (§7). Only these ten files are read — nothing else can
+ * Fixed section order (§7). Only these nine files are read — nothing else can
  * reach the model, so JTB is grounded exclusively in content/jtb/.
  */
 const KB_FILES = [
@@ -17,7 +17,6 @@ const KB_FILES = [
   "projects",
   "ml",
   "ai",
-  "visualisation",
   "career",
   "faq",
 ] as const;
