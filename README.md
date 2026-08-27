@@ -1,12 +1,12 @@
 # James Imbuido — Interactive Data Universe Portfolio
 
-A personal portfolio for **James Imbuido, Data Scientist** — built not as a conventional résumé site but as an **interactive data universe**: a full-screen 3D environment where visitors navigate James's career, machine-learning work, AI systems, and data visualisation projects by exploring nodes orbiting a central "data core".
+A personal portfolio for **James Imbuido, Data Scientist** — built not as a conventional résumé site but as an **interactive data universe**: a full-screen 3D environment where visitors navigate James's career, machine-learning work, and AI systems by exploring nodes orbiting a central "data core".
 
-The guiding idea is *show, don't tell* — the portfolio itself demonstrates the skills it describes. Visitors can talk to **JTB** (an AI chatbot grounded strictly in curated information about James), play chess against a **custom client-side chess model**, and explore real Tableau, Power BI, and Python visualisation work — including his path from nursing into data science and his experience at Commonwealth Bank of Australia.
+The guiding idea is *show, don't tell* — the portfolio itself demonstrates the skills it describes. Visitors can talk to **JTB** (an AI chatbot grounded strictly in curated information about James) and play chess against a **custom client-side chess model** — alongside his path from nursing into data science and his experience at Commonwealth Bank of Australia.
 
 ## Status
 
-**Phase 5 complete — Supabase auth.** Email/password accounts with `/login`, `/signup`, and `/account` pages, wired through Supabase's SSR clients with a `proxy.ts` session-refresh layer. Registration collects only email, password, and employment status (audience analytics only — it never gates features). The `profiles` table (10-credit JTB starting balance + chess-reward flag), `chat_interactions`, and `rewards` tables are applied to the hosted Supabase project with Row Level Security, and `/account` shows each user's real database state. **Phase 6 complete — JTB** (auth-gated, credit-based chat at `/jtb`, grounded in `content/jtb/`). **Phase 7 complete — server-verified chess reward** (`POST /api/chess` replays the submitted move history, verifies a checkmate win, then atomically awards +5 once per user via a `SECURITY DEFINER` function), with claim UI in `/chess`. Portfolio content pages remain honestly marked `[TODO: James — …]`. **Phase 8 in progress** — Tableau / Power BI embed architecture live (click-to-load iframe, vendor-host allowlist, fallback links, honest "publishing pending" panels on the two renamed project pages); awaiting James's Tableau Public / Power BI publish + real `embedUrl`s to go live.
+**Phase 5 complete — Supabase auth.** Email/password accounts with `/login`, `/signup`, and `/account` pages, wired through Supabase's SSR clients with a `proxy.ts` session-refresh layer. Registration collects only email, password, and employment status (audience analytics only — it never gates features). The `profiles` table (10-credit JTB starting balance + chess-reward flag), `chat_interactions`, and `rewards` tables are applied to the hosted Supabase project with Row Level Security, and `/account` shows each user's real database state. **Phase 6 complete — JTB** (auth-gated, credit-based chat at `/jtb`, grounded in `content/jtb/`). **Phase 7 complete — server-verified chess reward** (`POST /api/chess` replays the submitted move history, verifies a checkmate win, then atomically awards +5 once per user via a `SECURITY DEFINER` function), with claim UI in `/chess`. Portfolio content pages remain honestly marked `[TODO: James — …]`. The **Data Visualisation category was removed (2026-08)** — the `/data` routes, embed layer, and Phase 8 plan are gone to focus the site on the remaining domains.
 
 ## Development
 
@@ -29,7 +29,7 @@ Environment variables: none are required for the skeleton. When later phases nee
 - **Data Universe** — a React Three Fiber scene as the homepage's primary navigation, with a full conventional-navigation fallback so the entire site works without WebGL, on mobile, and with reduced motion.
 - **JTB chatbot** — authenticated and credit-based (10 free interactions, +5 for beating the Chess AI), grounded exclusively in an approved knowledge base. It never invents facts.
 - **James Chess AI** — a fully playable game against a custom model that runs entirely in the browser. Wins are verified server-side by replaying the submitted move history before any reward is granted.
-- **ML & Data Visualisation labs** — filterable project galleries with structured case studies and embedded Tableau / Power BI dashboards.
+- **ML labs** — a filterable project gallery with structured case studies.
 
 ## Tech stack
 

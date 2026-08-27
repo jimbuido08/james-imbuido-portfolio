@@ -32,7 +32,7 @@ Dark, premium, minimal, technical, high-contrast, restrained palette. **Avoid:**
 - `app/globals.css` is the default template (light/dark via `prefers-color-scheme`). **Replace it.** The site is dark-only.
 - `app/page.tsx` is a placeholder hero. Replace it with a version built on the new primitives.
 - `tsconfig.json` path alias: `@/*` → `./*`. Use `@/components/...`, `@/lib/...` imports everywhere.
-- `components/` contains **empty** folders: `ui/`, `navigation/`, `universe/`, `jtb/`, `chess/`, `projects/`, `visualisations/`. Only `ui/` and `navigation/` are in scope now.
+- `components/` contains **empty** folders: `ui/`, `navigation/`, `universe/`, `jtb/`, `chess/`, `projects/`. Only `ui/` and `navigation/` are in scope now.
 - `lib/` contains empty folders; only a top-level `lib/utils.ts` is in scope now.
 - npm scripts: `dev`, `build`, `lint` (eslint), `format` / `format:check` (prettier; `*.md` files are excluded via `.prettierignore`).
 - No test framework exists **by design**. "Done" = the acceptance checklist in §7 below.
@@ -56,7 +56,6 @@ All tokens live as CSS custom properties in `app/globals.css` using Tailwind v4'
 | `--color-fg-muted`     | `#A1A1AA`  | Secondary text                                 |
 | `--color-fg-subtle`    | `#71717A`  | Tertiary: captions, metadata, footer           |
 | `--color-accent-ai`    | `#818CF8`  | AI/ML domain accent (soft indigo)              |
-| `--color-accent-data`  | `#2DD4BF`  | Data Visualisation accent (muted teal)         |
 | `--color-accent-jtb`   | `#D9A03F`  | JTB chatbot accent (desaturated amber/gold)    |
 | `--color-accent-chess` | `#4DA37E`  | Chess AI accent (muted emerald)                |
 | `--color-accent-neut`  | `#9CA3AF`  | Experience / neutral domain accent             |
@@ -172,7 +171,7 @@ All components accept `className?: string` and compose with `cx(base, className)
 
 - Sticky top: `sticky top-0 z-50 border-b border-border bg-bg/80 backdrop-blur` (backdrop blur is fine; glassmorphism *panels* are not).
 - Left: wordmark `James Imbuido` (font-semibold, links to `/`).
-- Center/right desktop nav (`hidden md:flex`): links — `About`, `Experience`, `AI/ML`, `Data`, `JTB`, `Chess`, `Contact` → `/about`, `/experience`, `/ai-ml`, `/data`, `/jtb`, `/chess`, `/contact` (per §10; these routes don't exist yet — that's expected, links render anyway).
+- Center/right desktop nav (`hidden md:flex`): links — `About`, `Experience`, `AI/ML`, `JTB`, `Chess`, `Contact` → `/about`, `/experience`, `/ai-ml`, `/jtb`, `/chess`, `/contact` (per §10; these routes don't exist yet — that's expected, links render anyway).
 - Active link state using `usePathname()` from `next/navigation` → this makes Header a Client Component (`"use client"`). Active = `text-fg`, inactive = `text-fg-muted hover:text-fg transition-colors`; underline or left-border accent is optional — keep it typographic.
 - Mobile (`md:hidden`): a real accessible disclosure menu — `<button aria-expanded aria-controls="mobile-nav">` toggling a panel (simple conditional render + `useState` is fine; no Framer Motion yet). Menu icon: inline SVG hamburger/× (no icon dependency). Panel: vertical link list, same routes, closes on navigation.
 - The header is the **conventional navigation fallback** required by §11.1 — it must be fully functional with JS-disabled-at-runtime expectations aside (Next Link handles routing; the toggle requires JS, which is acceptable for V1).
@@ -190,7 +189,7 @@ All components accept `className?: string` and compose with `cx(base, className)
 
 A minimal shell homepage proving the primitives (the Data Universe replaces this in Phase 2+ — keep it simple):
 - Full-height-ish hero (`flex min-h-[70vh] items-center`): Container → kicker `Data × AI × Interactive Systems`, `h1` `James Imbuido`, subtitle `Data Scientist` in `text-fg-muted`, and a `Button` `[ Explore ]`-style CTA linking to `/about` with a secondary `Button` to `/contact`.
-- Below: one section using `SectionHeading` + a `Card` grid (`grid gap-4 sm:grid-cols-2 lg:grid-cols-3`) showing the seven domains (About, Experience, AI/ML, Data Visualisation, JTB, Chess AI, Contact) as linked Cards, each with its `Tag` domain badge and a one-line **placeholder** description. Mark descriptions clearly as placeholders, e.g. `PLACEHOLDER — describe this section` wording is NOT to be visible; instead use honest neutral copy like "Interactive overview — content in progress." **Never fabricate achievements, metrics, employers, or technologies** (content-integrity rule).
+- Below: one section using `SectionHeading` + a `Card` grid (`grid gap-4 sm:grid-cols-2 lg:grid-cols-3`) showing the five domains (About, Experience, AI/ML, JTB, Chess AI) as linked Cards, each with its `Tag` domain badge and a one-line **placeholder** description. Mark descriptions clearly as placeholders, e.g. `PLACEHOLDER — describe this section` wording is NOT to be visible; instead use honest neutral copy like "Interactive overview — content in progress." **Never fabricate achievements, metrics, employers, or technologies** (content-integrity rule).
 
 ### 4.12 `app/design/page.tsx` — internal preview page
 
