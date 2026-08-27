@@ -1,5 +1,5 @@
 ### Overview
-James Imbuido is a Data Scientist and AI Engineer based in Victoria, Australia. He builds in Python and R, ships dashboards in Tableau and Power BI, and is currently an Associate Data Scientist at Commonwealth Bank of Australia (CBA).
+James Imbuido is a Data Scientist and AI Engineer based in Victoria, Australia. He builds in Python and R, and is currently an Associate Data Scientist at Commonwealth Bank of Australia (CBA).
 
 ### Current role
 James is currently an Associate Data Scientist at CBA, applying Agentic AI Engineering across the bank to take a proof-of-concept AI solution into production.

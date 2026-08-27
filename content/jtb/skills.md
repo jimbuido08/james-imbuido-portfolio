@@ -1,7 +1,6 @@
 ### Languages & tools
 - Python and R for building and data work.
 - NumPy, Pandas, and PySpark for data manipulation and analysis.
-- Tableau and Power BI for dashboards and visualisation.
 - Amazon Web Services (AWS) for cloud infrastructure, and GitHub Actions for automated pipelines.
 
 ### Machine learning & AI
@@ -17,7 +16,7 @@
 ### Certifications & coursework
 Areas James has covered through completed certifications and structured courses (the full list is in the education section):
 - Claude ecosystem: Claude Code, Model Context Protocol (MCP), Claude Agent SDK, Anthropic API, Claude Skills, AI Subagents, and Claude Cowork.
-- Data fundamentals: Git and GitHub, SQL and PostgreSQL, Microsoft Excel (including pivot tables), data analytics, and data visualisation.
+- Data fundamentals: Git and GitHub, SQL and PostgreSQL, Microsoft Excel (including pivot tables), and data analytics.
 - Web development: HTML, CSS, JavaScript and TypeScript, React, Django, and Flask.
 - Programming foundations: Python, R, with foundational coursework in Java and C#.
 - Software design: SOLID design principles and the architecture of modern large-scale systems.
