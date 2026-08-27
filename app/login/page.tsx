@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { safeNext } from "@/lib/auth/next";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { JtbLoginInfo } from "@/components/jtb";
 import { LoginForm } from "./LoginForm";
 
 export const metadata: Metadata = {
@@ -32,6 +33,7 @@ export default async function LoginPage({
   return (
     <Container className="py-16 sm:py-24">
       <SectionHeading as="h1" title="Sign in" description="Welcome back." />
+      {nextPath === "/jtb" && <JtbLoginInfo />}
       <LoginForm next={nextPath} />
     </Container>
   );
