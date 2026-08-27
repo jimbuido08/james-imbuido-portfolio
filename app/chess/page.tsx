@@ -19,15 +19,14 @@ export default function ChessPage() {
         description="Play against a chess model that runs entirely in your browser."
       />
       <p className="mt-8 max-w-prose text-fg-muted">
-        Play a full game of chess in your browser. Every move is checked by a
-        real rules engine, and the opponent runs entirely client-side — no
-        server decides a single move.
+        Every move is checked by a real rules engine, and the opponent runs
+        entirely client-side — no server decides a single move.
       </p>
       <p className="mt-4 max-w-prose text-sm text-fg-subtle">
-        The trained model hasn&apos;t been exported for the browser yet, so
-        right now a heuristic stand-in opponent runs through the same interface
-        it will use. Beat the AI by checkmate on any difficulty while signed in
-        to claim a one-time +{CHESS_REWARD_CREDITS} JTB interaction reward.
+        The trained model hasn&apos;t been exported for the browser yet, so a
+        heuristic stand-in runs through the same interface it will use.
+        Checkmate the AI on any difficulty while signed in to claim a one-time +
+        {CHESS_REWARD_CREDITS} JTB interaction reward.
       </p>
       <ChessGame />
     </Container>

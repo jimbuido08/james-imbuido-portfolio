@@ -3,8 +3,9 @@
 import { useEffect, useReducer, useRef, useState } from "react";
 import type { KeyboardEvent, PointerEvent } from "react";
 
+import { Button } from "@/components/ui/Button";
 import { ChessBoard, GLYPHS } from "@/components/chess/ChessBoard";
-import { GameControls } from "@/components/chess/GameControls";
+import { GameSetup } from "@/components/chess/GameSetup";
 import { GameStatus } from "@/components/chess/GameStatus";
 import { MoveList } from "@/components/chess/MoveList";
 import { PromotionDialog } from "@/components/chess/PromotionDialog";
@@ -25,6 +26,7 @@ import type {
 interface GameUiState {
   engine: ChessGameEngine; // created via createEngine(), held by reference
   version: number; // bumps on every applied move / reset to re-render
+  started: boolean; // setup screen (false) vs live game (true)
   playerColor: Side;
   nextPlayerColor: Side; // pending "Play as" preference for New game
   difficulty: Difficulty; // live
@@ -51,7 +53,8 @@ type GameAction =
   | { type: "resign" }
   | { type: "setDifficulty"; difficulty: Difficulty }
   | { type: "setNextPlayerColor"; side: Side }
-  | { type: "newGame"; engine: ChessGameEngine }
+  | { type: "startGame"; engine: ChessGameEngine }
+  | { type: "toSetup" }
   | { type: "setThinking"; thinking: boolean };
 
 /** Deterministic — no randomness here; it runs on the server during SSR. */
@@ -59,6 +62,7 @@ function initialState(): GameUiState {
   return {
     engine: createEngine(),
     version: 0,
+    started: false,
     playerColor: "w",
     nextPlayerColor: "w",
     difficulty: "medium",
@@ -123,11 +127,12 @@ function reducer(state: GameUiState, action: GameAction): GameUiState {
       return { ...state, nextPlayerColor: action.side };
     case "setThinking":
       return { ...state, thinking: action.thinking };
-    case "newGame": {
+    case "startGame": {
       const color = state.nextPlayerColor;
       return {
         ...initialState(),
         engine: action.engine,
+        started: true,
         difficulty: state.difficulty,
         playerColor: color,
         nextPlayerColor: color,
@@ -135,6 +140,13 @@ function reducer(state: GameUiState, action: GameAction): GameUiState {
         version: state.version + 1,
       };
     }
+    case "toSetup":
+      // Back to the configuration screen; the previous selections carry over.
+      return {
+        ...initialState(),
+        difficulty: state.difficulty,
+        nextPlayerColor: state.nextPlayerColor,
+      };
   }
 }
 
@@ -213,6 +225,7 @@ export function ChessGame() {
   const resignTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const inputOpen =
+    state.started &&
     !state.result &&
     !state.thinking &&
     !state.pendingPromotion &&
@@ -222,6 +235,7 @@ export function ChessGame() {
   // StrictMode-safe AI trigger: effects double-invoke in dev, so each run gets
   // a token plus a per-effect cancelled flag; stale resolutions are dropped.
   useEffect(() => {
+    if (!state.started) return;
     const status = engine.status();
     if (state.result || status.kind === "over") return;
     if (engine.turn() === state.playerColor) return;
@@ -268,6 +282,7 @@ export function ChessGame() {
   }, [
     engine,
     state.version,
+    state.started,
     state.playerColor,
     state.difficulty,
     state.result,
@@ -414,12 +429,19 @@ export function ChessGame() {
     );
   }
 
+  function handleStartGame(): void {
+    aiRunRef.current += 1; // cancel any in-flight AI turn (paranoia pre-start)
+    dispatch({ type: "startGame", engine: createEngine() });
+  }
+
   function handleNewGame(): void {
     if (resignTimerRef.current) clearTimeout(resignTimerRef.current);
     aiRunRef.current += 1; // cancel any in-flight AI turn
     dragRef.current = null;
     setDrag(null);
-    dispatch({ type: "newGame", engine: createEngine() });
+    dispatch({ type: "toSetup" });
+    // Land focus on the setup screen's Start button (post-game transition).
+    document.querySelector<HTMLButtonElement>("[data-chess-start]")?.focus();
   }
 
   const squares = engine.squares();
@@ -440,6 +462,24 @@ export function ChessGame() {
     state.result?.reason === "checkmate" &&
     state.result.winner === state.playerColor;
 
+  if (!state.started) {
+    return (
+      <div className="mt-10 max-w-[36rem]">
+        <GameSetup
+          difficulty={state.difficulty}
+          nextPlayerColor={state.nextPlayerColor}
+          onDifficulty={(difficulty) =>
+            dispatch({ type: "setDifficulty", difficulty })
+          }
+          onNextPlayerColor={(side) =>
+            dispatch({ type: "setNextPlayerColor", side })
+          }
+          onStartGame={handleStartGame}
+        />
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,36rem)_18rem]">
@@ -447,6 +487,7 @@ export function ChessGame() {
           <GameStatus
             statusLine={statusLine}
             result={state.result}
+            difficulty={state.difficulty}
             onNewGame={handleNewGame}
           >
             {playerWonByCheckmate && (
@@ -491,20 +532,15 @@ export function ChessGame() {
               />
             )}
           </div>
-          <GameControls
-            difficulty={state.difficulty}
-            nextPlayerColor={state.nextPlayerColor}
-            playing={!state.result}
-            resignArmed={state.resignArmed}
-            onDifficulty={(difficulty) =>
-              dispatch({ type: "setDifficulty", difficulty })
-            }
-            onNextPlayerColor={(side) =>
-              dispatch({ type: "setNextPlayerColor", side })
-            }
-            onNewGame={handleNewGame}
-            onResign={handleResign}
-          />
+          {/* Mid-game there is no New game — resigning (or finishing) is the
+              only way out; New game lives in the game-over panel. */}
+          {!state.result && (
+            <div className="mt-6">
+              <Button size="sm" variant="ghost" onClick={handleResign}>
+                {state.resignArmed ? "Confirm resignation" : "Resign"}
+              </Button>
+            </div>
+          )}
         </div>
         <MoveList history={state.history} />
       </div>
