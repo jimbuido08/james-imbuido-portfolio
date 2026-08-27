@@ -6,7 +6,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 
 export const metadata: Metadata = {
   title: "Contact — James Imbuido",
-  description: "How to reach James Imbuido — email, LinkedIn, GitHub.",
+  description: "How to reach James Imbuido — email, LinkedIn, GitHub, Kaggle.",
 };
 
 const fieldClasses =
@@ -18,7 +18,7 @@ export default function ContactPage() {
       <SectionHeading
         as="h1"
         title="Contact"
-        description="How to reach James Imbuido — email, LinkedIn, GitHub."
+        description="How to reach James Imbuido — email, LinkedIn, GitHub, Kaggle."
       />
       <SectionHeading
         as="h2"
@@ -57,6 +57,17 @@ export default function ContactPage() {
             target="_blank"
           >
             github.com/jimbuido08 <span className="text-fg-subtle">↗</span>
+          </a>
+        </li>
+        <li>
+          <span className="text-fg">Kaggle</span> —{" "}
+          <a
+            className="text-fg underline underline-offset-4 decoration-border hover:decoration-border-strong"
+            href="https://www.kaggle.com/jamesimbuido"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            kaggle.com/jamesimbuido <span className="text-fg-subtle">↗</span>
           </a>
         </li>
       </ul>
