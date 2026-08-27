@@ -5,7 +5,6 @@
 import path from "node:path";
 
 import { contentDir, readMarkdownDir } from "@/lib/content/markdown";
-import { isAllowedEmbedUrl, isPlaceholder } from "@/lib/content/trust";
 import type { Project, ProjectCategory } from "@/types/project";
 
 const CATEGORIES: ProjectCategory[] = [
@@ -15,14 +14,11 @@ const CATEGORIES: ProjectCategory[] = [
   "LLM",
   "NLP",
   "AGENTS",
-  "DATA_VISUALISATION",
-  "TABLEAU",
-  "POWER_BI",
   "ENGINEERING",
   "EXPERIMENT",
 ];
 
-type ContentKind = "projects" | "visualisations";
+type ContentKind = "projects";
 
 /** Required §23 core fields that have no default — must exist in frontmatter. */
 const REQUIRED_FIELDS = [
@@ -65,36 +61,6 @@ function validateProject(
     );
   }
 
-  for (const field of ["keyInsights", "tools"] as const) {
-    const value = data[field];
-    if (
-      value !== undefined &&
-      (!Array.isArray(value) || value.some((item) => typeof item !== "string"))
-    ) {
-      throw new Error(
-        `Invalid frontmatter in ${filePath}: "${field}" must be a string[]`,
-      );
-    }
-  }
-
-  const embedUrl = data.embedUrl;
-  if (embedUrl !== undefined && typeof embedUrl !== "string") {
-    throw new Error(
-      `Invalid frontmatter in ${filePath}: "embedUrl" must be a string`,
-    );
-  }
-  // Placeholder URLs pass (they render the pending panel); real URLs must be
-  // https on the vendor host for their embedType — the allowlist is the boundary.
-  if (
-    typeof embedUrl === "string" &&
-    !isPlaceholder(embedUrl) &&
-    !isAllowedEmbedUrl(data.embedType as string | undefined, embedUrl)
-  ) {
-    throw new Error(
-      `Invalid frontmatter in ${filePath}: "embedUrl" must be an https URL on the vendor host for embedType "${String(data.embedType)}"`,
-    );
-  }
-
   return {
     slug,
     title: data.title as string,
@@ -115,12 +81,6 @@ function validateProject(
     demoUrl: data.demoUrl as string | undefined,
     kaggleUrl: data.kaggleUrl as string | undefined,
     image: data.image as string | undefined,
-    businessContext: data.businessContext as string | undefined,
-    dataset: data.dataset as string | undefined,
-    keyInsights: data.keyInsights as string[] | undefined,
-    tools: data.tools as string[] | undefined,
-    embedType: data.embedType as Project["embedType"] | undefined,
-    embedUrl: data.embedUrl as string | undefined,
   };
 }
 
@@ -144,12 +104,4 @@ export function getProjects(): Project[] {
 
 export function getProjectBySlug(slug: string): Project | undefined {
   return readDir("projects").find((project) => project.slug === slug);
-}
-
-export function getVisualisations(): Project[] {
-  return readDir("visualisations");
-}
-
-export function getVisualisationBySlug(slug: string): Project | undefined {
-  return readDir("visualisations").find((project) => project.slug === slug);
 }

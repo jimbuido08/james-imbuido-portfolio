@@ -26,9 +26,8 @@ export default function AboutPage() {
       />
       <p className="mt-6 max-w-prose text-base leading-relaxed text-fg-muted">
         I&apos;m James Imbuido, a Data Scientist and AI Engineer based in
-        Victoria, Australia. I build in Python and R, ship dashboards in Tableau
-        and Power BI, and I don&apos;t trust a number until I&apos;ve checked it
-        twice.
+        Victoria, Australia. I build in Python and R, and I don&apos;t trust a
+        number until I&apos;ve checked it twice.
       </p>
       <p className="mt-6 max-w-prose text-base leading-relaxed text-fg-muted">
         Before this I worked for four years as a Registered Nurse in Victorian
