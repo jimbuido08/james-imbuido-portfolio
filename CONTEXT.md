@@ -17,6 +17,10 @@ the site works without WebGL (§11.1).
 - **Phases 1–7 complete.** Design system, conventional pages, Universe, Supabase
   auth, JTB chatbot (Ollama, credits), chess reward verification (server replay +
   atomic +5).
+- **Contact form (§22) complete (2026-08-27).** Anonymous form at `/contact`
+  posts to `POST /api/contact` → `lib/contact/submit.ts` → SECURITY DEFINER RPCs
+  into `contact_messages` (RLS, zero policies). Per-IP-hash rate limit (5/hour),
+  honeypot, no email provider — James reads messages in the Supabase dashboard.
 - **Data Visualisation removed (2026-08-27).** The `/data` routes, the Tableau /
   Power BI embed layer, and the visualisation content are gone to focus the site
   on the remaining domains. The universe rebalances five nodes at 72°.
@@ -30,6 +34,8 @@ the site works without WebGL (§11.1).
   live infra.
 - `lib/chess/claim.ts` — the §3.7 chess claim: profile → rate limit → replay →
   win check → atomic award. Deps injected; clock injected for the rate window.
+- `lib/contact/submit.ts` — the §22 contact submission: rate-limit pre-check →
+  rate-checked insert RPC. Deps injected; clock injected for the rate window.
 
 ### Single sources of truth
 - `lib/navigation.ts` — the route registry. Header and universe nodes derive
