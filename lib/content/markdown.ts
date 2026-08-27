@@ -29,7 +29,9 @@ export interface MarkdownFile {
 export function readMarkdownDir(kind: string): MarkdownFile[] {
   let files: string[];
   try {
-    files = readdirSync(contentDir(kind)).filter((file) => file.endsWith(".md"));
+    files = readdirSync(contentDir(kind)).filter((file) =>
+      file.endsWith(".md"),
+    );
   } catch {
     return [];
   }
@@ -45,7 +47,10 @@ export function readMarkdownDir(kind: string): MarkdownFile[] {
  * Read one named markdown file (no extension). null on a missing/unreadable
  * file — callers decide what that means (fail closed, empty state, …).
  */
-export function readMarkdownFile(kind: string, name: string): MarkdownFile | null {
+export function readMarkdownFile(
+  kind: string,
+  name: string,
+): MarkdownFile | null {
   try {
     const { data, content } = matter(
       readFileSync(path.join(contentDir(kind), `${name}.md`), "utf8"),

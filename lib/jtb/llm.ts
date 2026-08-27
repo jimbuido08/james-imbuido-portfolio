@@ -3,10 +3,7 @@
  * Never import from client components — the base URL and API key must never
  * reach the browser (master plan §21).
  */
-import {
-  DEFAULT_OLLAMA_BASE_URL,
-  MAX_RESPONSE_TOKENS,
-} from "./constants";
+import { DEFAULT_OLLAMA_BASE_URL, MAX_RESPONSE_TOKENS } from "./constants";
 
 /** Thrown when required LLM configuration is missing. The route maps this to a 500. */
 export class LlmConfigError extends Error {

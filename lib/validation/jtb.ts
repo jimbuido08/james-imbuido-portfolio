@@ -5,8 +5,7 @@
 import { MAX_MESSAGE_LENGTH } from "@/lib/jtb/constants";
 
 export type JtbMessageResult =
-  | { ok: true; message: string }
-  | { ok: false; error: string };
+  { ok: true; message: string } | { ok: false; error: string };
 
 /** Keep printable characters plus tab (\t) and newline (\n); strip all other control chars. */
 function isAllowedChar(ch: string): boolean {

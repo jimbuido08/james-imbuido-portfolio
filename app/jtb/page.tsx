@@ -9,8 +9,7 @@ import { ChatWindow } from "@/components/jtb";
 
 export const metadata: Metadata = {
   title: "JTB — James Imbuido",
-  description:
-    "Ask JTB about James's work, experience, skills, and projects.",
+  description: "Ask JTB about James's work, experience, skills, and projects.",
 };
 
 export const dynamic = "force-dynamic";
