@@ -28,14 +28,13 @@ const colorSwatches = [
   { name: "fg-muted", className: "bg-fg-muted" },
   { name: "fg-subtle", className: "bg-fg-subtle" },
   { name: "accent-ai", className: "bg-accent-ai" },
-  { name: "accent-data", className: "bg-accent-data" },
   { name: "accent-jtb", className: "bg-accent-jtb" },
   { name: "accent-chess", className: "bg-accent-chess" },
   { name: "accent-neut", className: "bg-accent-neut" },
   { name: "focus", className: "bg-focus" },
 ];
 
-const tagDomains: TagDomain[] = ["ai", "data", "jtb", "chess", "neutral"];
+const tagDomains: TagDomain[] = ["ai", "jtb", "chess", "neutral"];
 
 export default function DesignPage() {
   return (
@@ -172,7 +171,7 @@ export default function DesignPage() {
             </Card>
             <Card interactive>
               <CardHeader>
-                <Tag domain="data">Data</Tag>
+                <Tag domain="jtb">JTB</Tag>
                 <CardTitle>Interactive card</CardTitle>
                 <CardDescription>
                   Hovering raises the border emphasis — the affordance for

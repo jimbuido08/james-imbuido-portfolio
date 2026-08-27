@@ -38,7 +38,7 @@ export function ProjectCard({
     <Card interactive>
       <CardHeader>
         <div className="flex flex-wrap gap-2">
-          <Tag domain={hrefBase === "/ai-ml" ? "ai" : "data"}>
+          <Tag domain="ai">
             {project.category.replaceAll("_", " ")}
           </Tag>
           {project.interactive && <Tag domain="neutral">Interactive</Tag>}

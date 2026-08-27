@@ -6,13 +6,8 @@ export type ProjectCategory =
   | "LLM"
   | "NLP"
   | "AGENTS" // §3.3 filter; not in §23 — documented divergence
-  | "DATA_VISUALISATION"
-  | "TABLEAU"
-  | "POWER_BI"
   | "ENGINEERING"
   | "EXPERIMENT";
-
-export type EmbedType = "tableau" | "power_bi" | "python" | "interactive";
 
 export interface Project {
   // §23 core
@@ -36,12 +31,4 @@ export interface Project {
   data: string;
   models: string;
   evaluation: string;
-  // §9/§9.1 visualisation fields (data pages)
-  businessContext?: string;
-  dataset?: string;
-  keyInsights?: string[];
-  tools?: string[];
-  embedType?: EmbedType;
-  /** Public vendor URL (Tableau Public / Power BI publish-to-web). Validated host-allowlisted in lib/content/projects.ts; absent or "TODO" → poster panel, never an iframe. */
-  embedUrl?: string;
 }

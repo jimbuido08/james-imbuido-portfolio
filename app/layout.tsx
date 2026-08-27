@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "James Imbuido — Data Scientist",
   description:
-    "Portfolio of James Imbuido, Data Scientist — machine learning, AI systems, and data visualisation. Currently under construction.",
+    "Portfolio of James Imbuido, Data Scientist — machine learning and AI systems. Currently under construction.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -1,7 +1,7 @@
 /**
  * Shared markdown substrate for everything under content/ — the one place that
  * resolves the content directory, reads files, and parses frontmatter. The
- * project/visualisation loader (lib/content/projects.ts) and the JTB knowledge
+ * project loader (lib/content/projects.ts) and the JTB knowledge
  * base (lib/jtb/knowledge-base.ts) both read through here, so path handling and
  * gray-matter parsing live in exactly one seam.
  *

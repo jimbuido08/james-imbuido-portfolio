@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { Button } from "@/components/ui/Button";
-import { AI_ML_FILTERS, VIZ_FILTERS } from "@/lib/content/filters";
+import { AI_ML_FILTERS } from "@/lib/content/filters";
 import type { Project } from "@/types/project";
 
 export function ProjectGrid({
@@ -20,7 +20,7 @@ export function ProjectGrid({
   emptyMessage: string;
 }) {
   const [active, setActive] = useState("all");
-  const filterSet = hrefBase === "/ai-ml" ? AI_ML_FILTERS : VIZ_FILTERS;
+  const filterSet = AI_ML_FILTERS;
   const activeFilter = filterSet.find((f) => f.key === active) ?? filterSet[0];
 
   if (projects.length === 0) {
