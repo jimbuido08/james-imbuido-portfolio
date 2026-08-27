@@ -18,7 +18,6 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { href: "/about", label: "About" },
   { href: "/experience", label: "Experience" },
   { href: "/ai-ml", label: "AI/ML" },
-  { href: "/data", label: "Data Viz" },
   { href: "/jtb", label: "JTB" },
   { href: "/chess", label: "Chess" },
   { href: "/contact", label: "Contact" },
