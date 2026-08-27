@@ -62,6 +62,6 @@ the site works without WebGL (§11.1).
 
 ## How to verify
 
-- `npm run lint` · `npm run build` (type-check + 13 static pages) · `npm run format:check`
+- `npm run lint` · `npm run build` (type-check + 10 static pages incl. `/ai-ml/[slug]` SSG) · `npm run format:check`
 - For a policy core: write a `.verify-*.mts` harness, run `npx tsx`, delete it.
 - Browser check (no screenshots): playwright a11y snapshot + console messages.
