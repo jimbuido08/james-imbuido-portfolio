@@ -44,6 +44,21 @@ export async function parseJsonBody(
   }
 }
 
+/**
+ * Best-effort client IP for the per-IP contact limiter. Vercel always sets
+ * x-forwarded-for; "unknown" keeps local dev working (all such traffic shares
+ * one bucket, which is acceptable for a 5/hour limit). Callers hash before
+ * storing — the raw IP never reaches the database.
+ */
+export function getClientIp(request: NextRequest): string {
+  const forwarded = request.headers.get("x-forwarded-for");
+  if (forwarded) {
+    const first = forwarded.split(",")[0]?.trim();
+    if (first) return first;
+  }
+  return request.headers.get("x-real-ip")?.trim() || "unknown";
+}
+
 export type RequireUserResult =
   | { ok: true; supabase: ServerClient; user: User }
   | { ok: false; response: NextResponse };
@@ -58,7 +73,10 @@ export async function requireUser(
     error,
   } = await supabase.auth.getUser();
   if (error || !user) {
-    return { ok: false, response: apiError("unauthenticated", signInMessage, 401) };
+    return {
+      ok: false,
+      response: apiError("unauthenticated", signInMessage, 401),
+    };
   }
   return { ok: true, supabase, user };
 }

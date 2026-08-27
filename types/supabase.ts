@@ -38,6 +38,33 @@ export type Database = {
         };
         Relationships: [];
       };
+      contact_messages: {
+        Row: {
+          created_at: string;
+          email: string;
+          id: string;
+          ip_hash: string;
+          message: string;
+          name: string;
+        };
+        Insert: {
+          created_at?: string;
+          email: string;
+          id?: string;
+          ip_hash: string;
+          message: string;
+          name: string;
+        };
+        Update: {
+          created_at?: string;
+          email?: string;
+          id?: string;
+          ip_hash?: string;
+          message?: string;
+          name?: string;
+        };
+        Relationships: [];
+      };
       chess_claim_attempts: {
         Row: {
           created_at: string;
@@ -119,6 +146,10 @@ export type Database = {
         Args: { p_metadata?: Json; p_user_id: string };
         Returns: Json;
       };
+      count_recent_contact_messages: {
+        Args: { p_ip_hash: string; p_since: string };
+        Returns: number;
+      };
       deduct_credit: { Args: { p_user_id: string }; Returns: number };
       record_chat_interaction: {
         Args: {
@@ -127,6 +158,15 @@ export type Database = {
           p_user_id: string;
         };
         Returns: undefined;
+      };
+      record_contact_message: {
+        Args: {
+          p_email: string;
+          p_ip_hash: string;
+          p_message: string;
+          p_name: string;
+        };
+        Returns: boolean;
       };
     };
     Enums: {
