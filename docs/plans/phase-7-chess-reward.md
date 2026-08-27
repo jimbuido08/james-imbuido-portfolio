@@ -764,7 +764,7 @@ The `Chess reward` row (`Claimed (+5 JTB)` / `Not yet claimed`) already reads th
 
 ### 5.6 Status lines (same commit)
 
-Update the Phase-status sentence in `CLAUDE.md`'s `## Current state` to: Phase 7 complete — chess reward verification live (`POST /api/chess`: replay from the initial position → checkmate + winner check → `claim_chess_reward` SECURITY DEFINER function; unique-gated, atomic +5) with claim UI in `/chess`. Next up: **Phase 8 — Tableau / Power BI embeds** per §34. Touch nothing else in the file — leave the fenced next-agent-rules block byte-identical. Update the equivalent `## Status` paragraph of `README.md` the same way.
+Update the Phase-status sentence in `CLAUDE.md`'s `## Current state` to: Phase 7 complete — chess reward verification live (`POST /api/chess`: replay from the initial position → checkmate + winner check → `claim_chess_reward` SECURITY DEFINER function; unique-gated, atomic +5) with claim UI in `/chess`. Next up: **Phase 8 — Performance** per §34 (the Data Visualisation category and its embed phase were removed 2026-08). Touch nothing else in the file — leave the fenced next-agent-rules block byte-identical. Update the equivalent `## Status` paragraph of `README.md` the same way.
 
 ### 5.7 Milestone B verification
 
@@ -846,7 +846,7 @@ Satisfied by this phase:
 
 Explicitly NOT satisfied here (later phases — say so in your report, do not fake):
 - [ ] The trained ONNX chess model (`TODO(MODEL)` in `lib/chess/opponents.ts`; §34 step 9) — opponents remain the honest heuristic stand-ins
-- [ ] Tableau/Power BI embeds (Phase 8); JTB KB `projects`/`visualisation`/`faq` placeholders (content tasks)
+- [ ] JTB KB `projects`/`faq` placeholders (content tasks)
 - [ ] Login `?next=` redirect-after-signin (V1 scope decision — noted, not built) 
 - [ ] Production smoke of `/api/chess` on the Vercel domain (no new env needed — it works on deploy; smoke it then)
 - [ ] Reward rate limiting (rejected, §3.7 decision 7), PGN export, leaderboard/multiplayer (§29 — never)

@@ -6,7 +6,7 @@ Build a premium, highly interactive personal portfolio website for **James Imbui
 
 The website should NOT feel like a conventional portfolio/resume site.
 
-It should feel like an **interactive personal data universe** where the visitor explores James's career, skills, projects, AI systems, machine-learning work, and data visualisation work through a central 3D interactive experience.
+It should feel like an **interactive personal data universe** where the visitor explores James's career, skills, projects, AI systems, and machine-learning work through a central 3D interactive experience.
 
 The site should take inspiration from the interaction philosophy of `https://lachinemearning.com/` — particularly the idea of using an interactive 3D environment as a navigation mechanism — but **must not copy the brain visual or its implementation**.
 
@@ -21,11 +21,8 @@ Different nodes/objects represent:
 - About
 - Experience
 - AI / Machine Learning
-- Data Visualisation
 - JTB — James's personal AI chatbot
 - James Chess AI
-- Tableau
-- Power BI
 - Projects
 - Education
 - Contact
@@ -43,15 +40,14 @@ The website should:
 1. Demonstrate James's capabilities as a Data Scientist.
 2. Demonstrate practical machine-learning experience.
 3. Demonstrate AI/LLM application development.
-4. Demonstrate data visualisation skills.
-5. Demonstrate software engineering/full-stack capabilities.
-6. Provide interactive demonstrations rather than only screenshots.
-7. Make James's professional background easy to understand.
-8. Be memorable and visually distinctive.
-9. Be performant and responsive.
-10. Be deployable entirely through Vercel + managed services.
-11. Keep recurring infrastructure costs low.
-12. Be maintainable and extensible.
+4. Demonstrate software engineering/full-stack capabilities.
+5. Provide interactive demonstrations rather than only screenshots.
+6. Make James's professional background easy to understand.
+7. Be memorable and visually distinctive.
+8. Be performant and responsive.
+9. Be deployable entirely through Vercel + managed services.
+10. Keep recurring infrastructure costs low.
+11. Be maintainable and extensible.
 
 ---
 
@@ -74,11 +70,7 @@ At the centre is a central object representing James:
              JAMES IMBUIDO
 
 
-        DATA ●           ● JTB
-
-
-                  ●
-                CHESS
+        JTB ●            ● CHESS
 ```
 
 The actual implementation should be substantially more visually sophisticated than this diagram.
@@ -202,32 +194,6 @@ NLP
 CLASSICAL ML
 AGENTS
 EXPERIMENTS
-```
-
----
-
-# 3.4 DATA VISUALISATION
-
-Contains:
-
-- Tableau projects
-- Power BI projects
-- Python visualisations
-- Interactive analytics
-- Data storytelling
-
-Interaction:
-
-Click → Data Visualisation laboratory.
-
-Filters:
-
-```text
-ALL
-TABLEAU
-POWER BI
-PYTHON
-INTERACTIVE
 ```
 
 ---
@@ -622,7 +588,6 @@ skills.md
 projects.md
 ml.md
 ai.md
-visualisation.md
 career.md
 faq.md
 ```
@@ -746,81 +711,6 @@ Do not fabricate metrics.
 
 ---
 
-# 9. DATA VISUALISATION LAB
-
-Create:
-
-```text
-/data
-```
-
-Categories:
-
-```text
-TABLEAU
-POWER BI
-PYTHON
-INTERACTIVE
-```
-
-Each visualization should have:
-
-- business/question context
-- dataset
-- methodology
-- visualization
-- key insights
-- tools
-
----
-
-# 9.1 Tableau
-
-Support embedded Tableau dashboards where publicly embeddable.
-
-Each project page:
-
-```text
-Title
-Description
-
-[ Embedded Tableau Visualization ]
-
-Key Insights
-
-Technical Approach
-
-Dataset
-
-Tools
-```
-
----
-
-# 9.2 Power BI
-
-Support embedded Power BI dashboards where publicly embeddable.
-
-Use the appropriate official embedding mechanism for the dashboard.
-
-Do not expose private credentials or sensitive datasets.
-
----
-
-# 9.3 Custom visualizations
-
-Potentially support:
-
-- D3
-- Plotly
-- Recharts
-- native SVG
-- Canvas/WebGL
-
-These should demonstrate visualization engineering, not merely decoration.
-
----
-
 # 10. Portfolio Information Architecture
 
 Primary routes:
@@ -831,8 +721,6 @@ Primary routes:
  /experience
  /ai-ml
  /ai-ml/[slug]
- /data
- /data/[slug]
  /jtb
  /chess
  /contact
@@ -1132,7 +1020,6 @@ james-portfolio/
 │   ├── about/
 │   ├── experience/
 │   ├── ai-ml/
-│   ├── data/
 │   ├── jtb/
 │   ├── chess/
 │   ├── contact/
@@ -1158,7 +1045,6 @@ james-portfolio/
 │   ├── jtb/
 │   ├── chess/
 │   ├── projects/
-│   ├── visualisations/
 │   ├── navigation/
 │   └── ui/
 │
@@ -1173,8 +1059,7 @@ james-portfolio/
 │
 ├── content/
 │   ├── jtb/
-│   ├── projects/
-│   └── visualisations/
+│   └── projects/
 │
 ├── public/
 │   ├── models/
@@ -1210,7 +1095,6 @@ DataUniverse
 │       ├── AboutNode
 │       ├── ExperienceNode
 │       ├── MLNode
-│       ├── DataNode
 │       ├── JTBNode
 │       └── ChessNode
 │
@@ -1239,7 +1123,6 @@ Target:
 - minimal blocking JavaScript
 - lazy-load heavy 3D components
 - lazy-load chess model
-- lazy-load Tableau/Power BI embeds
 - avoid loading JTB code until needed
 - responsive on mobile
 - graceful fallback on unsupported/low-power devices
@@ -1248,8 +1131,6 @@ The homepage should not download:
 
 - chess model
 - all project assets
-- Tableau dashboards
-- Power BI dashboards
 - chatbot dependencies
 
 until needed.
@@ -1326,8 +1207,6 @@ chess_completed
 chess_won
 chess_reward_claimed
 project_opened
-tableau_opened
-powerbi_opened
 contact_clicked
 ```
 
@@ -1442,9 +1321,6 @@ AI
 ML
 LLM
 NLP
-DATA_VISUALISATION
-TABLEAU
-POWER_BI
 ENGINEERING
 EXPERIMENT
 ```
@@ -1466,7 +1342,6 @@ Recommended hierarchy:
 
 3. Best ML project
 4. Best AI/LLM project
-5. Best data visualisation
 
 ## Tier 3 — Project library
 
@@ -1647,7 +1522,6 @@ Build:
 - Contact
 - project system
 - ML project pages
-- Data Visualisation project pages
 
 Deliverable:
 
@@ -1734,23 +1608,7 @@ Beat Chess AI → +5 JTB
 
 ---
 
-## Phase 8 — Tableau / Power BI
-
-Add:
-
-- embeds
-- lazy loading
-- project descriptions
-- responsive behavior
-- fallback links
-
-Deliverable:
-
-Interactive Data Visualisation Lab.
-
----
-
-## Phase 9 — Performance
+## Phase 8 — Performance
 
 Optimize:
 
@@ -1768,7 +1626,7 @@ Fast production site.
 
 ---
 
-## Phase 10 — Polish
+## Phase 9 — Polish
 
 Add:
 
@@ -1800,15 +1658,12 @@ V1 must contain:
 ✓ About
 ✓ Experience
 ✓ ML Projects
-✓ Data Visualisation Projects
 ✓ JTB
 ✓ Authentication
 ✓ 10 JTB credits
 ✓ Chess AI
 ✓ Client-side chess inference
 ✓ +5 reward for beating Chess AI
-✓ Tableau embeds
-✓ Power BI embeds
 ✓ Contact
 ✓ Responsive design
 ✓ Vercel deployment
@@ -1925,14 +1780,6 @@ Let them:
 
 Instead of:
 
-> "I know data visualization."
-
-Let them:
-
-> explore Tableau and Power BI dashboards.
-
-Instead of:
-
 > "I built a chess model."
 
 Let them:
@@ -1988,9 +1835,6 @@ The project is complete when:
 - [ ] Experience exists
 - [ ] Education exists
 - [ ] ML projects exist
-- [ ] Data visualisation projects exist
-- [ ] Tableau projects exist
-- [ ] Power BI projects exist
 - [ ] Contact exists
 
 ### Chess
@@ -2099,33 +1943,29 @@ Build in this exact order:
         ↓
 6. ML project system
         ↓
-7. Data visualisation system
+7. Chess UI
         ↓
-8. Chess UI
+8. Client-side chess model
         ↓
-9. Client-side chess model
+9. Supabase Auth
         ↓
-10. Supabase Auth
+10. JTB
         ↓
-11. JTB
+11. Credit system
         ↓
-12. Credit system
+12. Chess reward verification
         ↓
-13. Chess reward verification
+13. Performance
         ↓
-14. Tableau / Power BI embeds
+14. Accessibility
         ↓
-15. Performance
+15. SEO
         ↓
-16. Accessibility
+16. Analytics
         ↓
-17. SEO
+17. Final visual polish
         ↓
-18. Analytics
-        ↓
-19. Final visual polish
-        ↓
-20. Production deployment
+18. Production deployment
 ```
 
 Do not attempt to build every system simultaneously.
@@ -2153,13 +1993,13 @@ The visitor should be able to explore:
 ```text
                      JAMES
                        │
-          ┌────────────┼────────────┐
-          │            │            │
-        AI / ML       DATA       EXPERIENCE
-          │            │            │
-      ┌───┴───┐    ┌───┴───┐       CBA
-      │       │    │       │
-     JTB    CHESS Tableau Power BI
+          ┌────────────┴────────────┐
+          │                         │
+        AI / ML              EXPERIENCE
+          │                         │
+      ┌───┴───┐                     │
+      │       │                     │
+     JTB    CHESS                  CBA
       │       │
       └───┬───┘
           │

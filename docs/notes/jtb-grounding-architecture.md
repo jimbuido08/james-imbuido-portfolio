@@ -17,7 +17,7 @@ lib/jtb/prompt.ts — buildSystemPrompt(KB)  →  system prompt = rules + <knowl
 app/api/jtb/route.ts → lib/jtb/llm.ts → POST {OLLAMA_BASE_URL}/api/chat with that prompt
 ```
 
-There is **no retrieval step**: no embeddings, no vector store, no chunking, no query-time relevance filtering. Every question sends the same fixed KB (~15 KB as of 2026-08-24, 7 of 10 sections populated).
+There is **no retrieval step**: no embeddings, no vector store, no chunking, no query-time relevance filtering. Every question sends the same fixed KB (~15 KB as of 2026-08-24, 6 of 9 sections populated).
 
 ## Why this is the right call for V1
 
@@ -28,7 +28,7 @@ There is **no retrieval step**: no embeddings, no vector store, no chunking, no 
 
 ## When to revisit
 
-Prompt-stuffing degrades as the KB grows (projects, visualisations, FAQ, more certifications): every request pays to send everything, and the model's attention dilutes. Revisit when the KB is materially larger or when reply latency/token cost matters.
+Prompt-stuffing degrades as the KB grows (projects, FAQ, more certifications): every request pays to send everything, and the model's attention dilutes. Revisit when the KB is materially larger or when reply latency/token cost matters.
 
 ## What a RAG upgrade would look like
 
