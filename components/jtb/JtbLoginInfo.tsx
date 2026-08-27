@@ -16,11 +16,11 @@ export function JtbLoginInfo() {
         <CardTitle>Why sign in to use JTB?</CardTitle>
         <CardDescription>
           JTB is a per-account feature — new accounts get {INITIAL_CREDITS} free
-          interactions, and beating James&apos;s chess AI earns {CHESS_REWARD_CREDITS}{" "}
-          more, once per account. Your balance lives in the database, so signing
-          in is how JTB knows who you are and how many interactions you have
-          left. Sign in or create an account below and you&apos;ll land back on
-          JTB, ready to chat.
+          interactions, and beating James&apos;s chess AI earns{" "}
+          {CHESS_REWARD_CREDITS} more, once per account. Your balance lives in
+          the database, so signing in is how JTB knows who you are and how many
+          interactions you have left. Sign in or create an account below and
+          you&apos;ll land back on JTB, ready to chat.
         </CardDescription>
       </CardHeader>
     </Card>

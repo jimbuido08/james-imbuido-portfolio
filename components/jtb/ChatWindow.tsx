@@ -10,8 +10,7 @@ import { ChatInput } from "./ChatInput";
 import { CreditsBadge } from "./CreditsBadge";
 import { ExhaustedState } from "./ExhaustedState";
 
-const NETWORK_ERROR =
-  "Something went wrong — your credit was not used.";
+const NETWORK_ERROR = "Something went wrong — your credit was not used.";
 
 let nextId = 1;
 

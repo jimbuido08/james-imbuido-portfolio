@@ -8,10 +8,7 @@
  */
 import { RATE_LIMIT_MAX_ATTEMPTS, RATE_LIMIT_WINDOW_MS } from "./constants";
 import { replayMoves } from "./engine";
-import type {
-  ChessClaimRequest,
-  ClaimChessRewardResult,
-} from "@/types/chess";
+import type { ChessClaimRequest, ClaimChessRewardResult } from "@/types/chess";
 import type { JsonObject } from "@/types/json";
 
 export interface ChessClaimDeps {
@@ -26,9 +23,9 @@ export interface ChessClaimDeps {
     | { ok: false }
   >;
   /** Count of the caller's recorded claim attempts in the trailing window. */
-  countRecentAttempts(windowStartIso: string): Promise<
-    { ok: true; count: number } | { ok: false }
-  >;
+  countRecentAttempts(
+    windowStartIso: string,
+  ): Promise<{ ok: true; count: number } | { ok: false }>;
   /**
    * Meter one claim attempt — best-effort, so a dropped write never denies a
    * claim. Written for every attempt that passes the rate-limit check (win or
@@ -76,7 +73,8 @@ export async function claimChessReward(
   const attempts = await deps.countRecentAttempts(windowStart);
   if (!attempts.ok)
     return { kind: "internal", detail: "rate-limit count failed" };
-  if (attempts.count >= RATE_LIMIT_MAX_ATTEMPTS) return { kind: "rate_limited" };
+  if (attempts.count >= RATE_LIMIT_MAX_ATTEMPTS)
+    return { kind: "rate_limited" };
   await deps.recordAttempt();
 
   // Server-side replay — always from the standard initial position, so every
@@ -103,11 +101,15 @@ export async function claimChessReward(
     playerColor: claim.playerColor,
     finalFen: replay.engine.fen(),
   });
-  if (!award.ok) return { kind: "internal", detail: "claim_chess_reward rpc failed" };
+  if (!award.ok)
+    return { kind: "internal", detail: "claim_chess_reward rpc failed" };
 
   const result = award.result;
   if (!result || typeof result.claimed !== "boolean") {
-    return { kind: "internal", detail: "claim_chess_reward returned unexpected shape" };
+    return {
+      kind: "internal",
+      detail: "claim_chess_reward returned unexpected shape",
+    };
   }
   if (!result.claimed) {
     // Lost the pre-check race: a concurrent request claimed first.

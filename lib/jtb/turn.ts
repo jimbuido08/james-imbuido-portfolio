@@ -23,9 +23,9 @@ export interface JtbTurnDeps {
     { ok: true; creditsRemaining: number } | { ok: false }
   >;
   /** Count of the caller's recorded attempts in the trailing window. */
-  countRecentAttempts(windowStartIso: string): Promise<
-    { ok: true; count: number } | { ok: false }
-  >;
+  countRecentAttempts(
+    windowStartIso: string,
+  ): Promise<{ ok: true; count: number } | { ok: false }>;
   /** The knowledge base, or null when nothing real is loaded (fail closed). */
   loadKnowledgeBase(): string | null;
   /** The one expensive step — throws LlmConfigError / LlmUpstreamError. */

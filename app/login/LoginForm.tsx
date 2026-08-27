@@ -15,7 +15,9 @@ export function LoginForm({ next = "/account" }: { next?: string }) {
   const [state, formAction, isPending] = useActionState(signIn, initialState);
 
   const crossLink =
-    next !== "/account" ? `/signup?next=${encodeURIComponent(next)}` : "/signup";
+    next !== "/account"
+      ? `/signup?next=${encodeURIComponent(next)}`
+      : "/signup";
 
   return (
     <form action={formAction} className="mt-6 max-w-prose space-y-5">
