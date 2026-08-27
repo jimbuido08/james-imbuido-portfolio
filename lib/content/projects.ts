@@ -113,6 +113,7 @@ function validateProject(
     lessons: data.lessons as string,
     githubUrl: data.githubUrl as string | undefined,
     demoUrl: data.demoUrl as string | undefined,
+    kaggleUrl: data.kaggleUrl as string | undefined,
     image: data.image as string | undefined,
     businessContext: data.businessContext as string | undefined,
     dataset: data.dataset as string | undefined,

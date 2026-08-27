@@ -34,6 +34,10 @@ export function CaseStudySections({ project }: { project: Project }) {
     project.demoUrl && !isPlaceholder(project.demoUrl)
       ? project.demoUrl
       : undefined;
+  const kaggleUrl =
+    project.kaggleUrl && !isPlaceholder(project.kaggleUrl)
+      ? project.kaggleUrl
+      : undefined;
 
   return (
     <>
@@ -56,7 +60,7 @@ export function CaseStudySections({ project }: { project: Project }) {
           ))}
         </ul>
       </section>
-      {(githubUrl || demoUrl) && (
+      {(githubUrl || demoUrl || kaggleUrl) && (
         <section>
           <SectionHeading as="h2" title="Links" className="mt-14" />
           <div className="mt-4 flex gap-2">
@@ -68,6 +72,11 @@ export function CaseStudySections({ project }: { project: Project }) {
             {demoUrl && (
               <Button href={demoUrl} variant="ghost">
                 ↗ Live demo
+              </Button>
+            )}
+            {kaggleUrl && (
+              <Button href={kaggleUrl} variant="ghost">
+                ↗ Kaggle
               </Button>
             )}
           </div>

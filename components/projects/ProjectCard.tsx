@@ -29,6 +29,10 @@ export function ProjectCard({
     project.demoUrl && !isPlaceholder(project.demoUrl)
       ? project.demoUrl
       : undefined;
+  const kaggleUrl =
+    project.kaggleUrl && !isPlaceholder(project.kaggleUrl)
+      ? project.kaggleUrl
+      : undefined;
 
   return (
     <Card interactive>
@@ -53,7 +57,7 @@ export function ProjectCard({
         <p className="font-mono text-xs text-fg-subtle">
           {project.technologies.join(" · ")}
         </p>
-        {(githubUrl || demoUrl) && (
+        {(githubUrl || demoUrl || kaggleUrl) && (
           <div className="mt-3 flex flex-wrap gap-4">
             {githubUrl && (
               <a href={githubUrl} className={externalLinkClasses}>
@@ -63,6 +67,11 @@ export function ProjectCard({
             {demoUrl && (
               <a href={demoUrl} className={externalLinkClasses}>
                 ↗ Demo
+              </a>
+            )}
+            {kaggleUrl && (
+              <a href={kaggleUrl} className={externalLinkClasses}>
+                ↗ Kaggle
               </a>
             )}
           </div>

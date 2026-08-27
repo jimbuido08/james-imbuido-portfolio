@@ -28,6 +28,8 @@ export interface Project {
   lessons: string;
   githubUrl?: string;
   demoUrl?: string;
+  /** Kaggle notebook / competition submission URL (AI/ML projects). */
+  kaggleUrl?: string;
   image?: string;
   interactive: boolean;
   // §8.1 case-study fields (ML pages); empty string = section omitted
