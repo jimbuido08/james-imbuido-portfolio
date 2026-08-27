@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { safeNext } from "@/lib/auth/next";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { JtbLoginInfo } from "@/components/jtb";
 import { SignupForm } from "./SignupForm";
 
 export const metadata: Metadata = {
@@ -36,6 +37,7 @@ export default async function SignupPage({
         title="Sign up"
         description="Create an account — email, password, and employment status."
       />
+      {nextPath === "/jtb" && <JtbLoginInfo />}
       <SignupForm next={nextPath} />
     </Container>
   );
