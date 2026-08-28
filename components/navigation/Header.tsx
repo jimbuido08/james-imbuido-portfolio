@@ -22,167 +22,186 @@ export function Header() {
   const isActive = (href: string) => pathname.startsWith(href);
   const moreActive = moreLinks.some((link) => isActive(link.href));
 
-  // Close the "More" dropdown on outside click or Escape.
+  // Close the "More" dropdown or the mobile panel on Escape (outside click is
+  // handled by the scrim for the panel, and by this listener for the dropdown).
   useEffect(() => {
-    if (!moreOpen) return;
-    const onPointerDown = (e: MouseEvent) => {
-      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
+    if (!moreOpen && !open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
         setMoreOpen(false);
+        setOpen(false);
       }
     };
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMoreOpen(false);
-    };
-    document.addEventListener("mousedown", onPointerDown);
+    const onPointerDown = moreOpen
+      ? (e: MouseEvent) => {
+          if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
+            setMoreOpen(false);
+          }
+        }
+      : null;
+    if (onPointerDown) document.addEventListener("mousedown", onPointerDown);
     document.addEventListener("keydown", onKeyDown);
     return () => {
-      document.removeEventListener("mousedown", onPointerDown);
+      if (onPointerDown)
+        document.removeEventListener("mousedown", onPointerDown);
       document.removeEventListener("keydown", onKeyDown);
     };
-  }, [moreOpen]);
+  }, [moreOpen, open]);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-bg/80 backdrop-blur">
-      <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="font-semibold">
-          James Imbuido | Data Scientist & AI Engineer
-        </Link>
-
-        {/* Desktop nav — primary links + "More" dropdown + Account icon */}
-        <nav aria-label="Primary" className="hidden md:block">
-          <div className="flex items-center gap-5">
-            <ul className="flex items-center gap-5">
-              {primaryLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className={cx(
-                      "text-sm transition-colors",
-                      isActive(link.href)
-                        ? "text-fg"
-                        : "text-fg-muted hover:text-fg",
-                    )}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-              <li ref={moreRef} className="relative">
-                <button
-                  type="button"
-                  aria-haspopup="menu"
-                  aria-expanded={moreOpen}
-                  onClick={() => setMoreOpen((v) => !v)}
-                  className={cx(
-                    "inline-flex items-center gap-1 text-sm transition-colors",
-                    moreActive || moreOpen
-                      ? "text-fg"
-                      : "text-fg-muted hover:text-fg",
-                  )}
-                >
-                  More
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                    className={cx(
-                      "transition-transform",
-                      moreOpen && "rotate-180",
-                    )}
-                  >
-                    <path d="M5 8l5 5 5-5" />
-                  </svg>
-                </button>
-                {moreOpen && (
-                  <ul
-                    role="menu"
-                    className="absolute right-0 top-full mt-2 min-w-40 rounded-md border border-border bg-bg py-1 shadow-lg"
-                  >
-                    {moreLinks.map((link) => (
-                      <li key={link.href} role="none">
-                        <Link
-                          href={link.href}
-                          role="menuitem"
-                          onClick={() => setMoreOpen(false)}
-                          className={cx(
-                            "block px-4 py-2 text-sm transition-colors",
-                            isActive(link.href)
-                              ? "text-fg"
-                              : "text-fg-muted hover:bg-surface-2 hover:text-fg",
-                          )}
-                        >
-                          {link.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            </ul>
-            <Link
-              href="/account"
-              aria-label="Account"
-              className={cx(
-                "ml-1 transition-colors",
-                isActive("/account")
-                  ? "text-fg"
-                  : "text-fg-muted hover:text-fg",
-              )}
-            >
-              <AccountIcon />
-            </Link>
-          </div>
-        </nav>
-
-        {/* Mobile toggle */}
-        <button
-          type="button"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg md:hidden"
-          aria-expanded={open}
-          aria-controls="mobile-nav"
-          onClick={() => setOpen((v) => !v)}
-        >
-          <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
-          {open ? <CloseIcon /> : <MenuIcon />}
-        </button>
-      </div>
-
-      {/* Mobile disclosure panel — full link list */}
+    <>
+      {/* Mobile disclosure scrim — closes the panel on outside click. Lives
+          outside <header> because the header's backdrop-blur would otherwise
+          become the containing block for this fixed element. */}
       {open && (
-        <nav
-          id="mobile-nav"
-          aria-label="Mobile"
-          className="border-t border-border bg-bg md:hidden"
-        >
-          <ul className="flex flex-col px-4 sm:px-6 lg:px-8">
-            {[...allLinks, { href: "/account", label: "Account" }].map(
-              (link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    onClick={() => setOpen(false)}
+        <div
+          aria-hidden="true"
+          onClick={() => setOpen(false)}
+          className="fixed inset-0 z-40 bg-bg/70 md:hidden"
+        />
+      )}
+      <header className="sticky top-0 z-50 border-b border-border bg-bg/80 backdrop-blur">
+        <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between px-4 sm:px-6 lg:px-8">
+          <Link href="/" className="font-semibold">
+            James Imbuido | Data Scientist & AI Engineer
+          </Link>
+
+          {/* Desktop nav — primary links + "More" dropdown + Account icon */}
+          <nav aria-label="Primary" className="hidden md:block">
+            <div className="flex items-center gap-5">
+              <ul className="flex items-center gap-5">
+                {primaryLinks.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className={cx(
+                        "text-sm transition-colors",
+                        isActive(link.href)
+                          ? "text-fg"
+                          : "text-fg-muted hover:text-fg",
+                      )}
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+                <li ref={moreRef} className="relative">
+                  <button
+                    type="button"
+                    aria-haspopup="menu"
+                    aria-expanded={moreOpen}
+                    onClick={() => setMoreOpen((v) => !v)}
                     className={cx(
-                      "block border-b border-border/60 py-3 text-sm transition-colors last:border-b-0",
-                      isActive(link.href)
+                      "inline-flex items-center gap-1 text-sm transition-colors",
+                      moreActive || moreOpen
                         ? "text-fg"
                         : "text-fg-muted hover:text-fg",
                     )}
                   >
-                    {link.label}
-                  </Link>
+                    More
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                      className={cx(
+                        "transition-transform",
+                        moreOpen && "rotate-180",
+                      )}
+                    >
+                      <path d="M5 8l5 5 5-5" />
+                    </svg>
+                  </button>
+                  {moreOpen && (
+                    <ul
+                      role="menu"
+                      className="absolute right-0 top-full mt-2 min-w-40 rounded-md border border-border bg-bg py-1 shadow-lg"
+                    >
+                      {moreLinks.map((link) => (
+                        <li key={link.href} role="none">
+                          <Link
+                            href={link.href}
+                            role="menuitem"
+                            onClick={() => setMoreOpen(false)}
+                            className={cx(
+                              "block px-4 py-2 text-sm transition-colors",
+                              isActive(link.href)
+                                ? "text-fg"
+                                : "text-fg-muted hover:bg-surface-2 hover:text-fg",
+                            )}
+                          >
+                            {link.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </li>
-              ),
-            )}
-          </ul>
-        </nav>
-      )}
-    </header>
+              </ul>
+              <Link
+                href="/account"
+                aria-label="Account"
+                className={cx(
+                  "ml-1 transition-colors",
+                  isActive("/account")
+                    ? "text-fg"
+                    : "text-fg-muted hover:text-fg",
+                )}
+              >
+                <AccountIcon />
+              </Link>
+            </div>
+          </nav>
+
+          {/* Mobile toggle */}
+          <button
+            type="button"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg md:hidden"
+            aria-expanded={open}
+            aria-controls="mobile-nav"
+            onClick={() => setOpen((v) => !v)}
+          >
+            <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
+            {open ? <CloseIcon /> : <MenuIcon />}
+          </button>
+        </div>
+
+        {/* Mobile disclosure panel — full link list, superimposed over the page */}
+        {open && (
+          <nav
+            id="mobile-nav"
+            aria-label="Mobile"
+            className="absolute inset-x-0 top-full z-50 border-b border-border bg-bg shadow-lg md:hidden"
+          >
+            <ul className="flex flex-col px-4 sm:px-6 lg:px-8">
+              {[...allLinks, { href: "/account", label: "Account" }].map(
+                (link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      onClick={() => setOpen(false)}
+                      className={cx(
+                        "block border-b border-border/60 py-3 text-sm transition-colors last:border-b-0",
+                        isActive(link.href)
+                          ? "text-fg"
+                          : "text-fg-muted hover:text-fg",
+                      )}
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ),
+              )}
+            </ul>
+          </nav>
+        )}
+      </header>
+    </>
   );
 }
 
