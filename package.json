@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "kb:sync": "npx tsx --env-file=.env.local scripts/kb-sync.ts"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",
