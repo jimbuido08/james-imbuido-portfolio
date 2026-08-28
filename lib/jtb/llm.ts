@@ -1,7 +1,9 @@
 /**
- * Server-only module: Ollama chat client (native /api/chat REST API).
- * Never import from client components — the base URL and API key must never
- * reach the browser (master plan §21).
+ * Server-only module: the Ollama chat client (cloud /api/chat). Never import
+ * from client components — the base URL and API key must never reach the
+ * browser (master plan §21). Embeddings are a different provider entirely:
+ * lib/jtb/embeddings.ts (Supabase edge function), which imports the error
+ * classes from here.
  */
 import { DEFAULT_OLLAMA_BASE_URL, MAX_RESPONSE_TOKENS } from "./constants";
 
@@ -32,8 +34,13 @@ export interface LlmChatResult {
   latencyMs: number;
 }
 
-/** Abort the upstream request this long after starting (route maxDuration is 60s). */
-const TIMEOUT_MS = 55_000;
+/**
+ * Abort the chat request this long after starting (route maxDuration is 60s).
+ * Retrieval's embed is now an edge-function call budgeted at 5s
+ * (lib/jtb/embeddings.ts), so the 60s budget still must fit both
+ * (5 + 52 + ~1s overhead ≈ 58s) — chat gets 52s, not 55s.
+ */
+const TIMEOUT_MS = 52_000;
 
 export async function completeChat(params: {
   model: string;

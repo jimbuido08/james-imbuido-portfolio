@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.15";
+    PostgrestVersion: "14.17";
   };
   public: {
     Tables: {
@@ -34,6 +34,24 @@ export type Database = {
           id?: string;
           request_metadata?: Json | null;
           response_metadata?: Json | null;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      chess_claim_attempts: {
+        Row: {
+          created_at: string;
+          id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
           user_id?: string;
         };
         Relationships: [];
@@ -65,21 +83,36 @@ export type Database = {
         };
         Relationships: [];
       };
-      chess_claim_attempts: {
+      jtb_chunks: {
         Row: {
+          chunk_index: number;
+          content: string;
+          content_hash: string;
           created_at: string;
-          id: string;
-          user_id: string;
+          embedding: string;
+          embedding_model: string;
+          section: string;
+          updated_at: string;
         };
         Insert: {
+          chunk_index: number;
+          content: string;
+          content_hash: string;
           created_at?: string;
-          id?: string;
-          user_id: string;
+          embedding: string;
+          embedding_model: string;
+          section: string;
+          updated_at?: string;
         };
         Update: {
+          chunk_index?: number;
+          content?: string;
+          content_hash?: string;
           created_at?: string;
-          id?: string;
-          user_id?: string;
+          embedding?: string;
+          embedding_model?: string;
+          section?: string;
+          updated_at?: string;
         };
         Relationships: [];
       };
@@ -151,6 +184,16 @@ export type Database = {
         Returns: number;
       };
       deduct_credit: { Args: { p_user_id: string }; Returns: number };
+      match_jtb_chunks: {
+        Args: { p_match_count?: number; p_query_embedding: string };
+        Returns: {
+          chunk_index: number;
+          content: string;
+          embedding_model: string;
+          section: string;
+          similarity: number;
+        }[];
+      };
       record_chat_interaction: {
         Args: {
           p_request_metadata: Json;

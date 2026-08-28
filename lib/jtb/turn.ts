@@ -9,9 +9,11 @@
  * and the Ollama credentials in the route. Never import from client components.
  */
 import { RATE_LIMIT_MAX_MESSAGES, RATE_LIMIT_WINDOW_MS } from "./constants";
+import { formatKnowledgeBaseSections, type JtbSection } from "./knowledge-base";
 import { LlmConfigError } from "./llm";
 import type { LlmChatResult } from "./llm";
 import { buildSystemPrompt } from "./prompt";
+import type { JtbRetrieval } from "./retrieval";
 import type { JsonObject } from "@/types/json";
 
 export interface JtbTurnDeps {
@@ -26,8 +28,18 @@ export interface JtbTurnDeps {
   countRecentAttempts(
     windowStartIso: string,
   ): Promise<{ ok: true; count: number } | { ok: false }>;
-  /** The knowledge base, or null when nothing real is loaded (fail closed). */
-  loadKnowledgeBase(): string | null;
+  /**
+   * Per-section knowledge base. The §7 gate: null (an approved file unreadable
+   * or nothing real loaded) is the ONLY thing that may produce
+   * kb_unavailable — retrieval can narrow a healthy KB, never mask a broken
+   * one.
+   */
+  loadKnowledgeBaseSections(): JtbSection[] | null;
+  /**
+   * Grounding for this message, or why retrieval was skipped. Never throws;
+   * every { ok:false } degrades to the whole KB (pre-RAG behaviour).
+   */
+  retrieveContext(query: string): Promise<JtbRetrieval>;
   /** The one expensive step — throws LlmConfigError / LlmUpstreamError. */
   completeChat(params: {
     model: string;
@@ -86,8 +98,38 @@ export async function runJtbTurn(
 
   // Knowledge base — fail closed if nothing real is loaded (§7). No audit
   // row: without the KB we never reach Ollama, so there is nothing to meter.
-  const knowledgeBase = deps.loadKnowledgeBase();
-  if (!knowledgeBase) return { kind: "kb_unavailable" };
+  const sections = deps.loadKnowledgeBaseSections();
+  if (!sections) return { kind: "kb_unavailable" };
+
+  // Grounding: retrieval narrows the healthy KB to the relevant sections, and
+  // any retrieval failure degrades to the whole KB (pre-RAG behaviour). The
+  // prompt is ALWAYS rebuilt from loader sections — retrieval returns section
+  // slugs, never text — so the framing invariant holds structurally and a
+  // stale index row can never leak old copy into a prompt. (filter preserves
+  // loader order; an empty filter is paranoia-guarded to the whole KB.)
+  const retrieval = await deps.retrieveContext(input.message);
+  const retrieved = retrieval.ok
+    ? sections.filter((s) => retrieval.sections.includes(s.section))
+    : [];
+  const knowledgeBase = formatKnowledgeBaseSections(
+    retrieved.length > 0 ? retrieved : sections,
+  );
+
+  // One shared request-meta object for every outcome that reaches Ollama —
+  // success, llm_failure, and the lost deduct race all carry the same context
+  // provenance. Metadata only, never message content (§21).
+  const requestMeta: JsonObject = {
+    messageLength: input.message.length,
+    model: input.model,
+    contextSource: retrieval.ok ? "retrieval" : "full_kb",
+    contextChars: knowledgeBase.length,
+    ...(retrieval.ok
+      ? {
+          retrievedSections: retrieval.sections.join(","),
+          topSimilarity: Number(retrieval.topSimilarity.toFixed(4)),
+        }
+      : { retrievalReason: retrieval.reason }),
+  };
 
   // The one expensive step. No credit is deducted until it succeeds (§5.1).
   let result: LlmChatResult;
@@ -106,7 +148,7 @@ export async function runJtbTurn(
     // Upstream failure: meter it. Unlimited free Ollama hammering via failing
     // calls is exactly what the rate limit exists to stop.
     await deps.recordInteraction({
-      request: { messageLength: input.message.length, model: input.model },
+      request: requestMeta,
       response: { outcome: "llm_failure", model: input.model },
     });
     return { kind: "llm_failure", detail };
@@ -120,14 +162,14 @@ export async function runJtbTurn(
     // deliver the reply — the caller has no balance left to pay for it. The
     // attempt did reach Ollama, so it is still metered.
     await deps.recordInteraction({
-      request: { messageLength: input.message.length, model: input.model },
+      request: requestMeta,
       response: { outcome: "exhausted_race", model: input.model },
     });
     return { kind: "exhausted" };
   }
 
   await deps.recordInteraction({
-    request: { messageLength: input.message.length, model: input.model },
+    request: requestMeta,
     response: {
       outcome: "success",
       model: input.model,
