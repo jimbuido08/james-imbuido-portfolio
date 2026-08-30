@@ -76,8 +76,11 @@ export interface ChessClaimSuccess {
   creditsRemaining: number;
 }
 
-/** Shape of the claim_chess_reward RPC's jsonb return. */
+/** Shape of the claim_chess_reward RPC's jsonb return. rateLimited (with
+ *  claimed=false) is the RPC's authoritative rate gate refusing the caller
+ *  — the once-per-user gate is claimed=false without it. */
 export interface ClaimChessRewardResult {
   claimed: boolean;
   creditsRemaining: number | null;
+  rateLimited?: boolean;
 }

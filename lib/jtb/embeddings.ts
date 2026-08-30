@@ -8,6 +8,9 @@
  * different providers by design: the edge function is the one embeddings host
  * reachable from Vercel, so retrieval runs in production, not just dev.
  */
+import { jtbEmbeddingUrl } from "@/lib/config";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
 import { LlmUpstreamError } from "./llm";
 
 /** Per-invocation compute caps for the edge function: it is killed with HTTP
@@ -21,6 +24,22 @@ const MAX_BATCH_CHARS = 4000;
  *  bounded well below this by the CPU kill, so hitting it means the function
  *  is unreachable — a slow embed is a retrieval miss, not a hung reply. */
 const EMBED_TIMEOUT_MS = 5_000;
+
+/**
+ * The bearer token for request-path embeds: the user's access token (an anon
+ * key is rejected 403). requireUser just verified the session via getUser and
+ * the proxy keeps cookies fresh, so the session's access token is current. A
+ * missing token only means the embed 401s → retrieval degrades to the whole
+ * KB, never a failed reply — hence the empty-string fallback.
+ */
+export async function embedBearerToken(
+  supabase: Pick<SupabaseClient, "auth">,
+): Promise<string> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  return session?.access_token ?? "";
+}
 
 /**
  * Embed a batch of texts via the deployed jtb-embed edge function. The URL
@@ -44,12 +63,12 @@ export async function embedTexts(params: {
 }): Promise<number[][]> {
   if (params.inputs.length === 0) return [];
 
-  const baseUrl = process.env.JTB_EMBEDDING_URL
-    ? process.env.JTB_EMBEDDING_URL.replace(/\/+$/, "")
-    : `${(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").replace(/\/+$/, "")}/functions/v1/jtb-embed`;
-  if (!baseUrl.replace("https://", "")) {
+  let baseUrl: string;
+  try {
+    baseUrl = jtbEmbeddingUrl();
+  } catch (error) {
     throw new LlmUpstreamError(
-      "No embed endpoint — NEXT_PUBLIC_SUPABASE_URL and JTB_EMBEDDING_URL are both unset",
+      error instanceof Error ? error.message : "No embed endpoint configured",
     );
   }
 

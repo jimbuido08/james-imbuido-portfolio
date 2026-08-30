@@ -1,21 +1,25 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { apiError, parseJsonBody, requireUser } from "@/lib/server/http";
+import { llmModel } from "@/lib/config";
+import {
+  apiError,
+  invalidJsonError,
+  outcomeError,
+  parseJsonBody,
+  requireUser,
+} from "@/lib/server/http";
 import {
   DEFAULT_EMBEDDING_MODEL,
-  DEFAULT_LLM_MODEL,
   RETRIEVAL_MATCH_COUNT,
   RETRIEVAL_MIN_SIMILARITY,
   RETRIEVAL_TOP_K,
-  RATE_LIMIT_WINDOW_MS,
 } from "@/lib/jtb/constants";
-import { embedTexts } from "@/lib/jtb/embeddings";
+import { embedBearerToken, embedTexts } from "@/lib/jtb/embeddings";
 import { loadKnowledgeBaseSections } from "@/lib/jtb/knowledge-base";
 import { completeChat } from "@/lib/jtb/llm";
-import { retrieveContext } from "@/lib/jtb/retrieval";
-import type { JtbChunkMatch } from "@/lib/jtb/retrieval";
-import { runJtbTurn } from "@/lib/jtb/turn";
-import type { JtbErrorCode, JtbSuccess } from "@/lib/jtb/types";
+import { normalizeChunkMatchRows, retrieveContext } from "@/lib/jtb/retrieval";
+import { describeOutcome, runJtbTurn } from "@/lib/jtb/turn";
+import type { JtbSuccess } from "@/lib/jtb/types";
 import { parseJtbMessage } from "@/lib/validation/jtb";
 
 export const runtime = "nodejs";
@@ -34,30 +38,16 @@ export async function POST(request: NextRequest) {
 
   // 2) Validation — parse the body, then validate the message.
   const parsedBody = await parseJsonBody(request);
-  if (!parsedBody.ok) {
-    return apiError<JtbErrorCode>(
-      "invalid",
-      "Request body must be valid JSON.",
-      400,
-    );
-  }
+  if (!parsedBody.ok) return invalidJsonError();
   const parsed = parseJtbMessage(parsedBody.body);
   if (!parsed.ok) {
-    return apiError<JtbErrorCode>("invalid", parsed.error, 400);
+    return apiError<"invalid">("invalid", parsed.error, 400);
   }
 
   // 3) The turn — §5.1's policy lives in lib/jtb/turn.ts; the closures below
   //    are the Supabase/edge-function/Ollama adapter it runs against. Nothing
   //    here decides.
-  const model = process.env.LLM_MODEL ?? DEFAULT_LLM_MODEL;
-  // The user's access token authorizes the jtb-embed edge function
-  // (role=authenticated; an anon key is rejected). requireUser just verified
-  // the session via getUser, and the proxy keeps cookies fresh, so the
-  // session's access token is current. A missing token only means the embed
-  // 401s → retrieval degrades to the whole KB, never a failed reply.
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const authToken = await embedBearerToken(supabase);
   const outcome = await runJtbTurn(
     {
       getCreditsRemaining: async () => {
@@ -92,10 +82,7 @@ export async function POST(request: NextRequest) {
         retrieveContext(
           {
             embedTexts: (params) =>
-              embedTexts({
-                inputs: params.inputs,
-                authToken: session?.access_token ?? "",
-              }),
+              embedTexts({ inputs: params.inputs, authToken }),
             model: DEFAULT_EMBEDDING_MODEL,
             matchCount: RETRIEVAL_MATCH_COUNT,
             topK: RETRIEVAL_TOP_K,
@@ -110,39 +97,15 @@ export async function POST(request: NextRequest) {
                 console.error("[jtb] match_jtb_chunks error:", error.message);
                 return { ok: false as const };
               }
-              // types/supabase.ts can't prove the row shape across the RPC
-              // seam (the deduct_credit lesson) — shape-check every row and
-              // drop malformed ones rather than trust the cast.
-              const matches: JtbChunkMatch[] = [];
-              for (const row of (data ?? []) as unknown[]) {
-                const r = row as Record<string, unknown> | null;
-                if (
-                  r &&
-                  typeof r.section === "string" &&
-                  typeof r.chunk_index === "number" &&
-                  typeof r.content === "string" &&
-                  typeof r.similarity === "number" &&
-                  typeof r.embedding_model === "string"
-                ) {
-                  matches.push({
-                    section: r.section,
-                    chunk_index: r.chunk_index,
-                    content: r.content,
-                    similarity: r.similarity,
-                    embedding_model: r.embedding_model,
-                  });
-                } else {
-                  console.error(
-                    "[jtb] match_jtb_chunks: dropping malformed row",
-                  );
-                }
-              }
-              return { ok: true as const, matches };
+              return {
+                ok: true as const,
+                matches: normalizeChunkMatchRows(data),
+              };
             },
           },
           query,
         ),
-      completeChat: (params) => completeChat(params),
+      completeChat,
       deductCredit: async () => {
         const { data, error } = await supabase.rpc("deduct_credit", {
           p_user_id: user.id,
@@ -151,10 +114,27 @@ export async function POST(request: NextRequest) {
           console.error("[jtb] deduct_credit error:", error.message);
           return { ok: false };
         }
-        // types/supabase.ts declares Returns: number, but the SQL returns NULL
-        // on exhaustion — the null is contained at this seam (turn.ts decides
-        // what it means).
-        return { ok: true, creditsRemaining: data as number | null };
+        // The RPC returns jsonb since the rate-gate migration:
+        // { rateLimited: true } or { creditsRemaining: number | null }.
+        // types/supabase.ts can't prove the shape across the RPC seam (the
+        // match_jtb_chunks lesson) — unwrap through a narrow check and let
+        // turn.ts decide what it means.
+        const unwrap = data as {
+          rateLimited?: unknown;
+          creditsRemaining?: unknown;
+        } | null;
+        if (unwrap?.rateLimited === true) {
+          return { ok: true, rateLimited: true as const };
+        }
+        if (!unwrap || !("creditsRemaining" in unwrap)) {
+          return { ok: false };
+        }
+        const creditsRemaining = unwrap.creditsRemaining;
+        return {
+          ok: true,
+          creditsRemaining:
+            typeof creditsRemaining === "number" ? creditsRemaining : null,
+        };
       },
       recordInteraction: async ({ request: req, response: res }) => {
         const { error } = await supabase.rpc("record_chat_interaction", {
@@ -170,59 +150,23 @@ export async function POST(request: NextRequest) {
         }
       },
     },
-    { model, message: parsed.message, nowMs: Date.now() },
+    { model: llmModel(), message: parsed.message, nowMs: Date.now() },
   );
 
-  // 4) Outcome → HTTP. Every wire shape is unchanged from before.
-  switch (outcome.kind) {
-    case "ok": {
-      const body: JtbSuccess = {
-        reply: outcome.reply,
-        creditsRemaining: outcome.creditsRemaining,
-      };
-      return NextResponse.json(body);
-    }
-    case "exhausted":
-      return apiError<JtbErrorCode>(
-        "exhausted",
-        "You've used all your JTB interactions.",
-        402,
-        { creditsRemaining: 0 },
-      );
-    case "rate_limited":
-      return apiError<JtbErrorCode>(
-        "rate_limited",
-        "You're sending messages too quickly — please wait a moment.",
-        429,
-        { retryAfterSeconds: RATE_LIMIT_WINDOW_MS / 1000 },
-      );
-    case "kb_unavailable":
+  // 4) Outcome → HTTP. Success is built here; every error view comes from the
+  //    outcome table in lib/jtb/turn.ts (describeOutcome).
+  if (outcome.kind !== "ok") {
+    if (outcome.kind === "kb_unavailable") {
       console.error("[jtb] knowledge base unavailable — refusing to answer");
-      return apiError<JtbErrorCode>(
-        "unavailable",
-        "JTB isn't ready yet — please check back soon.",
-        503,
-      );
-    case "llm_config_error":
-      console.error("[jtb] LLM config error:", outcome.detail);
-      return apiError<JtbErrorCode>(
-        "internal",
-        "JTB is temporarily misconfigured.",
-        500,
-      );
-    case "llm_failure":
-      console.error("[jtb] LLM failure:", outcome.detail);
-      return apiError<JtbErrorCode>(
-        "llm_failure",
-        "Something went wrong — your credit was not used.",
-        502,
-      );
-    case "internal":
-      console.error("[jtb] internal:", outcome.detail);
-      return apiError<JtbErrorCode>(
-        "internal",
-        "Something went wrong on our side — please try again.",
-        500,
-      );
+    } else if ("detail" in outcome) {
+      console.error(`[jtb] ${outcome.kind}:`, outcome.detail);
+    }
+    return outcomeError(describeOutcome(outcome));
   }
+
+  const body: JtbSuccess = {
+    reply: outcome.reply,
+    creditsRemaining: outcome.creditsRemaining,
+  };
+  return NextResponse.json(body);
 }

@@ -7,9 +7,23 @@
 import { NextResponse, type NextRequest } from "next/server";
 import type { User } from "@supabase/supabase-js";
 
+import { INVALID_JSON_MESSAGE } from "@/lib/api/messages";
 import { createClient } from "@/lib/supabase/server";
 
 export type ServerClient = Awaited<ReturnType<typeof createClient>>;
+
+/**
+ * A decision core's outcome → HTTP table entry (describeOutcome per core).
+ * The route adapter turns this into the envelope with outcomeError — cores
+ * themselves stay framework-free, so this rides along as a plain object.
+ */
+export type OutcomeView<C extends string> = {
+  status: number;
+  code: C;
+  message: string;
+  retryAfterSeconds?: number;
+  creditsRemaining?: number;
+};
 
 /** Uniform error envelope: { error: { code, message, retryAfterSeconds? }, creditsRemaining? }. */
 export function apiError<C extends string>(
@@ -42,6 +56,25 @@ export async function parseJsonBody(
   } catch {
     return { ok: false };
   }
+}
+
+/** The one invalid-JSON 400, so its wording and status live here only. */
+export function invalidJsonError(): NextResponse {
+  return apiError("invalid", INVALID_JSON_MESSAGE, 400);
+}
+
+/** Envelope an outcome view (from a core's describeOutcome) for the client. */
+export function outcomeError<C extends string>(
+  view: OutcomeView<C>,
+): NextResponse {
+  return apiError<C>(view.code, view.message, view.status, {
+    ...(view.retryAfterSeconds !== undefined
+      ? { retryAfterSeconds: view.retryAfterSeconds }
+      : {}),
+    ...(view.creditsRemaining !== undefined
+      ? { creditsRemaining: view.creditsRemaining }
+      : {}),
+  });
 }
 
 /**

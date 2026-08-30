@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 
 import { cx } from "@/lib/utils";
 import type { MoveSnapshot } from "@/types/chess";
+import { MonoKicker } from "@/components/ui/MonoKicker";
 
 /** SAN move history, paired by full move. Auto-scrolls to the latest row. */
 export function MoveList({ history }: { history: MoveSnapshot[] }) {
@@ -24,9 +25,7 @@ export function MoveList({ history }: { history: MoveSnapshot[] }) {
 
   return (
     <div>
-      <p className="font-mono text-xs uppercase tracking-widest text-fg-subtle">
-        Moves
-      </p>
+      <MonoKicker>Moves</MonoKicker>
       {pairs.length === 0 ? (
         <p className="mt-4 text-sm text-fg-subtle">No moves yet.</p>
       ) : (

@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 
-import { createClient } from "@/lib/supabase/server";
-import { safeNext } from "@/lib/auth/next";
-import { Container } from "@/components/ui/Container";
-import { SectionHeading } from "@/components/ui/SectionHeading";
+import { redirectIfAuthed, safeNext } from "@/lib/auth/next";
+import { PageShell } from "@/components/ui/PageShell";
 import { JtbLoginInfo } from "@/components/jtb";
 import { SignupForm } from "./SignupForm";
 
@@ -22,23 +19,12 @@ export default async function SignupPage({
 }) {
   const { next } = await searchParams;
   const nextPath = safeNext(next);
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-  if (!error && user) redirect("/account");
+  await redirectIfAuthed();
 
   return (
-    <Container className="py-16 sm:py-24">
-      <SectionHeading
-        as="h1"
-        title="Sign up"
-        description="Create an account — email, password, and employment status."
-      />
+    <PageShell href="/signup">
       {nextPath === "/jtb" && <JtbLoginInfo />}
       <SignupForm next={nextPath} />
-    </Container>
+    </PageShell>
   );
 }

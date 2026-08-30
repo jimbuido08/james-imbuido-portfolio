@@ -28,6 +28,38 @@ export interface JtbChunkMatch {
   embedding_model: string;
 }
 
+/**
+ * Normalize raw match_jtb_chunks rows into JtbChunkMatch. types/supabase.ts
+ * can't prove the row shape across the RPC seam (the deduct_credit lesson) —
+ * shape-check every row and drop malformed ones rather than trust the cast.
+ */
+export function normalizeChunkMatchRows(data: unknown): JtbChunkMatch[] {
+  const matches: JtbChunkMatch[] = [];
+  const rows = Array.isArray(data) ? data : data == null ? [] : [data];
+  for (const row of rows as unknown[]) {
+    const r = row as Record<string, unknown> | null;
+    if (
+      r &&
+      typeof r.section === "string" &&
+      typeof r.chunk_index === "number" &&
+      typeof r.content === "string" &&
+      typeof r.similarity === "number" &&
+      typeof r.embedding_model === "string"
+    ) {
+      matches.push({
+        section: r.section,
+        chunk_index: r.chunk_index,
+        content: r.content,
+        similarity: r.similarity,
+        embedding_model: r.embedding_model,
+      });
+    } else {
+      console.error("[jtb] match_jtb_chunks: dropping malformed row");
+    }
+  }
+  return matches;
+}
+
 export type JtbRetrievalFailureReason =
   | "embed_failed"
   | "rpc_failed"

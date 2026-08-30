@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 import { ContactForm } from "@/components/contact/ContactForm";
-import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { PageShell } from "@/components/ui/PageShell";
 
 export const metadata: Metadata = {
   title: "Contact — James Imbuido",
@@ -11,12 +11,7 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <Container className="py-16 sm:py-24">
-      <SectionHeading
-        as="h1"
-        title="Contact"
-        description="How to reach James Imbuido — email, LinkedIn, GitHub, Kaggle."
-      />
+    <PageShell href="/contact">
       <SectionHeading
         as="h2"
         kicker="Direct"
@@ -75,6 +70,6 @@ export default function ContactPage() {
         className="mt-16"
       />
       <ContactForm />
-    </Container>
+    </PageShell>
   );
 }

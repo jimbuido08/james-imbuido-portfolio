@@ -2,10 +2,16 @@ import { createHash } from "node:crypto";
 
 import { NextResponse, type NextRequest } from "next/server";
 
-import { apiError, getClientIp, parseJsonBody } from "@/lib/server/http";
+import { contactIpSalt } from "@/lib/config";
+import {
+  apiError,
+  getClientIp,
+  invalidJsonError,
+  outcomeError,
+  parseJsonBody,
+} from "@/lib/server/http";
 import { createClient } from "@/lib/supabase/server";
-import { submitContactMessage } from "@/lib/contact/submit";
-import { RATE_LIMIT_WINDOW_MS } from "@/lib/contact/constants";
+import { describeOutcome, submitContactMessage } from "@/lib/contact/submit";
 import { parseContactMessage } from "@/lib/validation/contact";
 import type { ContactErrorCode, ContactSuccess } from "@/lib/contact/types";
 
@@ -15,20 +21,12 @@ export const dynamic = "force-dynamic";
 // RPC plus one insert RPC, and the rate limit bounds hammering.
 
 /**
- * Salt for hashing client IPs into contact_messages.ip_hash. Unsalted hashing
- * still avoids storing raw IPs; the salt only prevents trivial rainbow-matching
- * against a known IP list, so a missing salt warns once and proceeds.
+ * The IP salt is read through lib/config.ts inside the handler: a missing
+ * salt throws EnvConfigError (→ 500) rather than silently recording an
+ * unsalted hash — see that module for the rationale.
  */
-const CONTACT_IP_SALT = process.env.CONTACT_IP_SALT ?? "";
-let saltWarned = false;
-
 export async function POST(request: NextRequest) {
-  if (!CONTACT_IP_SALT && !saltWarned) {
-    saltWarned = true;
-    console.warn(
-      "[contact] CONTACT_IP_SALT is unset — ip_hash is unsalted. Set it in .env.local and Vercel.",
-    );
-  }
+  const ipSalt = contactIpSalt();
 
   // 1) Same-origin guard — a cross-origin browser form post carries an origin
   //    header that cannot match this host. Cheap, and complements the honeypot.
@@ -46,18 +44,12 @@ export async function POST(request: NextRequest) {
 
   // 2) Client identity — hashed IP (§21: never store raw visitor identifiers).
   const ipHash = createHash("sha256")
-    .update(CONTACT_IP_SALT + getClientIp(request))
+    .update(ipSalt + getClientIp(request))
     .digest("hex");
 
   // 3) Validation — shape-check the submission before any DB work (§33.11).
   const parsedBody = await parseJsonBody(request);
-  if (!parsedBody.ok) {
-    return apiError<ContactErrorCode>(
-      "invalid",
-      "Request body must be valid JSON.",
-      400,
-    );
-  }
+  if (!parsedBody.ok) return invalidJsonError();
   const parsed = parseContactMessage(parsedBody.body);
   if (!parsed.ok) {
     return apiError<ContactErrorCode>("invalid", parsed.error, 400);
@@ -109,25 +101,15 @@ export async function POST(request: NextRequest) {
     Date.now(),
   );
 
-  // 5) Outcome → HTTP. Every wire shape mirrors the jtb/chess routes.
-  switch (outcome.kind) {
-    case "ok": {
-      const body: ContactSuccess = { ok: true };
-      return NextResponse.json(body);
+  // 5) Outcome → HTTP. Success is an empty body; every error view comes from
+  //    the outcome table in lib/contact/submit.ts (describeOutcome).
+  if (outcome.kind !== "ok") {
+    if ("detail" in outcome) {
+      console.error(`[contact] ${outcome.kind}:`, outcome.detail);
     }
-    case "rate_limited":
-      return apiError<ContactErrorCode>(
-        "rate_limited",
-        "Too many messages from this network — please try again later or email directly.",
-        429,
-        { retryAfterSeconds: RATE_LIMIT_WINDOW_MS / 1000 },
-      );
-    case "internal":
-      console.error("[contact] internal:", outcome.detail);
-      return apiError<ContactErrorCode>(
-        "internal",
-        "Something went wrong on our side — please try again.",
-        500,
-      );
+    return outcomeError(describeOutcome(outcome));
   }
+
+  const body: ContactSuccess = { ok: true };
+  return NextResponse.json(body);
 }

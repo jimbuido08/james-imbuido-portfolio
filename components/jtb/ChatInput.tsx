@@ -4,9 +4,7 @@ import { useState, type FormEvent, type KeyboardEvent } from "react";
 
 import { MAX_MESSAGE_LENGTH } from "@/lib/jtb/constants";
 import { Button } from "@/components/ui/Button";
-
-const fieldClasses =
-  "w-full resize-none rounded-md border border-border bg-surface-2 px-3 py-2 text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-40";
+import { chatFieldClasses } from "@/components/ui/fieldClasses";
 
 export function ChatInput({
   onSend,
@@ -46,7 +44,7 @@ export function ChatInput({
         rows={3}
         disabled={disabled}
         placeholder="Ask about James's work, experience, or projects…"
-        className={fieldClasses}
+        className={chatFieldClasses}
       />
       <div className="flex items-center justify-between gap-4">
         <p className="text-xs text-fg-subtle">

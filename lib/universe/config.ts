@@ -22,10 +22,6 @@ export type UniverseDomain =
 export interface UniverseNodeDef {
   id: string; // "about"
   label: string; // "About"
-  // Shorter display name for the always-visible label, matching the header
-  // nav. Used where the full label is too wide to sit centered under the
-  // node without colliding with a neighbouring label.
-  shortLabel?: string;
   route: string; // "/about"
   domain: UniverseDomain;
   accent: string; // hex, mirror of the domain accent token

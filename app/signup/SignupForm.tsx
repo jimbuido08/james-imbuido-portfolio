@@ -7,9 +7,7 @@ import { signUp } from "@/lib/auth/actions";
 import { EMPLOYMENT_STATUSES } from "@/lib/auth/employment-status";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth/password";
 import { Button } from "@/components/ui/Button";
-
-const fieldClasses =
-  "mt-2 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-40";
+import { fieldClasses } from "@/components/ui/fieldClasses";
 
 const initialState = { error: null as string | null, sent: false };
 

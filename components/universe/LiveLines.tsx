@@ -7,8 +7,7 @@ import * as THREE from "three";
 import type { Line2, LineSegments2 } from "three-stdlib";
 
 import { UNIVERSE_NODES } from "@/lib/universe/config";
-
-import { nodePositions } from "./nodePositions";
+import { nodePositions } from "@/lib/universe/nodePositions";
 
 const tmp = new THREE.Vector3();
 
@@ -17,18 +16,19 @@ const tmp = new THREE.Vector3();
  * colour so the connections are legible. lineWidth is 1px on most GPUs
  * regardless — thin is intended; no fat lines.
  *
- * Endpoints track each node's live world position (see nodePositions): the
- * nodes drift under drei `Float`, so a static origin→rest-position line would
- * visibly miss the node center. The tracked position is world space, so it is
- * converted back into the line's local frame (inside the pointer-parallax
- * `Rig`).
+ * Endpoints track each node's live world position (see
+ * lib/universe/nodePositions): the nodes drift under drei `Float`, so a static
+ * origin→rest-position line would visibly miss the node center. The tracked
+ * position is world space, so it is converted back into the line's local frame
+ * (inside the pointer-parallax `Rig`). Lines are keyed by node id, matching
+ * how the positions registry is indexed.
  */
 export function LiveLines() {
-  const lines = useRef<Array<Line2 | LineSegments2 | null>>([]);
+  const lines = useRef<Map<string, Line2 | LineSegments2 | null>>(new Map());
 
   useFrame(() => {
-    UNIVERSE_NODES.forEach((node, i) => {
-      const line = lines.current[i];
+    UNIVERSE_NODES.forEach((node) => {
+      const line = lines.current.get(node.id);
       const world = nodePositions.get(node.id);
       if (!line || !world) return;
       line.worldToLocal(tmp.copy(world));
@@ -38,11 +38,11 @@ export function LiveLines() {
 
   return (
     <>
-      {UNIVERSE_NODES.map((node, i) => (
+      {UNIVERSE_NODES.map((node) => (
         <Line
           key={node.id}
           ref={(el) => {
-            lines.current[i] = el;
+            lines.current.set(node.id, el);
           }}
           points={[[0, 0, 0], node.position]}
           color={node.accent}

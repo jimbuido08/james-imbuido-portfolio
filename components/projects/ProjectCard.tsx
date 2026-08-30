@@ -8,7 +8,6 @@ import {
   CardTitle,
 } from "@/components/ui/Card";
 import { Tag } from "@/components/ui/Tag";
-import { isPlaceholder } from "@/lib/content/trust";
 import type { Project } from "@/types/project";
 
 const externalLinkClasses =
@@ -21,18 +20,8 @@ export function ProjectCard({
   project: Project;
   hrefBase: string;
 }) {
-  const githubUrl =
-    project.githubUrl && !isPlaceholder(project.githubUrl)
-      ? project.githubUrl
-      : undefined;
-  const demoUrl =
-    project.demoUrl && !isPlaceholder(project.demoUrl)
-      ? project.demoUrl
-      : undefined;
-  const kaggleUrl =
-    project.kaggleUrl && !isPlaceholder(project.kaggleUrl)
-      ? project.kaggleUrl
-      : undefined;
+  // Placeholder URLs are already undefined — the loader owns that rule.
+  const { githubUrl, demoUrl, kaggleUrl } = project;
 
   return (
     <Card interactive>

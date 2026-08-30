@@ -4,24 +4,21 @@ import { useState } from "react";
 
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { Button } from "@/components/ui/Button";
-import { AI_ML_FILTERS } from "@/lib/content/filters";
+import { AI_ML_FILTERS, projectMatchesFilter } from "@/lib/content/filters";
 import type { Project } from "@/types/project";
 
 export function ProjectGrid({
   projects,
-  filters,
   hrefBase,
   emptyMessage,
 }: {
   projects: Project[];
-  /** Serializable projection of the filter defs from the SERVER page. */
-  filters: { key: string; label: string }[];
   hrefBase: string;
   emptyMessage: string;
 }) {
   const [active, setActive] = useState("all");
-  const filterSet = AI_ML_FILTERS;
-  const activeFilter = filterSet.find((f) => f.key === active) ?? filterSet[0];
+  const activeFilter =
+    AI_ML_FILTERS.find((f) => f.key === active) ?? AI_ML_FILTERS[0];
 
   if (projects.length === 0) {
     return (
@@ -31,7 +28,9 @@ export function ProjectGrid({
     );
   }
 
-  const visible = projects.filter(activeFilter.matches);
+  const visible = projects.filter((project) =>
+    projectMatchesFilter(project, activeFilter),
+  );
 
   return (
     <>
@@ -40,7 +39,7 @@ export function ProjectGrid({
         role="group"
         aria-label="Project filters"
       >
-        {filters.map((filter) => (
+        {AI_ML_FILTERS.map((filter) => (
           <Button
             key={filter.key}
             variant={filter.key === active ? "secondary" : "ghost"}

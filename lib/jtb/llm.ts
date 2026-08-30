@@ -5,7 +5,9 @@
  * lib/jtb/embeddings.ts (Supabase edge function), which imports the error
  * classes from here.
  */
-import { DEFAULT_OLLAMA_BASE_URL, MAX_RESPONSE_TOKENS } from "./constants";
+import { ollamaApiKey, ollamaBaseUrl } from "@/lib/config";
+
+import { MAX_RESPONSE_TOKENS } from "./constants";
 
 /** Thrown when required LLM configuration is missing. The route maps this to a 500. */
 export class LlmConfigError extends Error {
@@ -47,15 +49,17 @@ export async function completeChat(params: {
   system: string;
   userMessage: string;
 }): Promise<LlmChatResult> {
-  const apiKey = process.env.OLLAMA_API_KEY;
-  if (!apiKey) {
-    throw new LlmConfigError("OLLAMA_API_KEY is not set");
+  let apiKey: string;
+  let url: string;
+  try {
+    apiKey = ollamaApiKey();
+    url = `${ollamaBaseUrl()}/api/chat`;
+  } catch (error) {
+    // Keep the route's error contract: missing LLM config is LlmConfigError.
+    throw new LlmConfigError(
+      error instanceof Error ? error.message : "LLM config missing",
+    );
   }
-
-  const baseUrl = (
-    process.env.OLLAMA_BASE_URL ?? DEFAULT_OLLAMA_BASE_URL
-  ).replace(/\/+$/, "");
-  const url = `${baseUrl}/api/chat`;
 
   const startedAt = performance.now();
   const controller = new AbortController();

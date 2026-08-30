@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 
 import { GLYPHS } from "@/components/chess/ChessBoard";
 import type { PromotionChoice, Side } from "@/types/chess";
+import { MonoKicker } from "@/components/ui/MonoKicker";
 
 const CHOICES: Array<{ key: PromotionChoice; label: string }> = [
   { key: "q", label: "queen" },
@@ -41,9 +42,7 @@ export function PromotionDialog({
         className="rounded-lg border border-border bg-surface p-4"
         onClick={(e) => e.stopPropagation()}
       >
-        <p className="font-mono text-xs uppercase tracking-widest text-fg-subtle">
-          Promote to
-        </p>
+        <MonoKicker>Promote to</MonoKicker>
         <div className="mt-3 flex gap-2">
           {CHOICES.map((choice, i) => (
             <button

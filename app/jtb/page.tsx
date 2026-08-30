@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 
-import { createClient } from "@/lib/supabase/server";
+import { requireUser } from "@/lib/auth/next";
 import { INITIAL_CREDITS } from "@/lib/credits/constants";
-import { Container } from "@/components/ui/Container";
-import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ChatWindow } from "@/components/jtb";
+import { PageShell } from "@/components/ui/PageShell";
 
 export const metadata: Metadata = {
   title: "JTB — James Imbuido",
@@ -15,12 +13,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function JtbPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-  if (error || !user) redirect("/login?next=/jtb");
+  const { supabase, user } = await requireUser("/jtb");
 
   // RLS guarantees this returns only this user's own row (or null).
   const { data: profile } = await supabase
@@ -30,16 +23,11 @@ export default async function JtbPage() {
     .single();
 
   return (
-    <Container className="py-16 sm:py-24">
-      <SectionHeading
-        as="h1"
-        title="JTB — James Talks Back"
-        description="A chatbot grounded in approved information about James's work."
-      />
+    <PageShell href="/jtb">
       <ChatWindow
         initialCredits={profile?.credits_remaining ?? INITIAL_CREDITS}
         className="mt-8"
       />
-    </Container>
+    </PageShell>
   );
 }

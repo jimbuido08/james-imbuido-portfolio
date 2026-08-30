@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 
-import { createClient } from "@/lib/supabase/server";
+import { requireUser } from "@/lib/auth/next";
 import { CHESS_REWARD_CREDITS, INITIAL_CREDITS } from "@/lib/credits/constants";
-import { Container } from "@/components/ui/Container";
-import { SectionHeading } from "@/components/ui/SectionHeading";
+import { PageShell } from "@/components/ui/PageShell";
 import { SignOutButton } from "./SignOutButton";
 
 export const metadata: Metadata = {
@@ -15,12 +13,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function AccountPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-  if (error || !user) redirect("/login?next=/account");
+  const { supabase, user } = await requireUser("/account");
 
   // RLS guarantees this returns only this user's own row (or null).
   const { data: profile } = await supabase
@@ -30,8 +23,7 @@ export default async function AccountPage() {
     .single();
 
   return (
-    <Container className="py-16 sm:py-24">
-      <SectionHeading as="h1" title="Account" description="Signed in as you." />
+    <PageShell href="/account">
       <dl className="mt-8 max-w-prose space-y-4 rounded-lg border border-border bg-surface p-6">
         <div className="flex items-center justify-between gap-4">
           <dt className="text-fg-muted">Email</dt>
@@ -64,6 +56,6 @@ export default async function AccountPage() {
       <div className="mt-6">
         <SignOutButton />
       </div>
-    </Container>
+    </PageShell>
   );
 }

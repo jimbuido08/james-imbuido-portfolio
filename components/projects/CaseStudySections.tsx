@@ -1,19 +1,8 @@
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Tag } from "@/components/ui/Tag";
 import { Button } from "@/components/ui/Button";
-import { isPlaceholder } from "@/lib/content/trust";
+import { ProseParagraphs } from "@/components/ui/Prose";
 import type { Project } from "@/types/project";
-
-function CaseStudyParagraphs({ text }: { text: string }) {
-  return text.split("\n\n").map((paragraph, index) => (
-    <p
-      key={index}
-      className="mt-4 max-w-prose text-base leading-relaxed text-fg-muted"
-    >
-      {paragraph}
-    </p>
-  ));
-}
 
 export function CaseStudySections({ project }: { project: Project }) {
   const sections: { label: string; field: string }[] = [
@@ -26,18 +15,8 @@ export function CaseStudySections({ project }: { project: Project }) {
     { label: "Lessons", field: project.lessons },
   ];
 
-  const githubUrl =
-    project.githubUrl && !isPlaceholder(project.githubUrl)
-      ? project.githubUrl
-      : undefined;
-  const demoUrl =
-    project.demoUrl && !isPlaceholder(project.demoUrl)
-      ? project.demoUrl
-      : undefined;
-  const kaggleUrl =
-    project.kaggleUrl && !isPlaceholder(project.kaggleUrl)
-      ? project.kaggleUrl
-      : undefined;
+  // Placeholder URLs are already undefined — the loader owns that rule.
+  const { githubUrl, demoUrl, kaggleUrl } = project;
 
   return (
     <>
@@ -46,7 +25,7 @@ export function CaseStudySections({ project }: { project: Project }) {
           field !== "" && (
             <section key={label}>
               <SectionHeading as="h2" title={label} className="mt-14" />
-              <CaseStudyParagraphs text={field} />
+              <ProseParagraphs text={field} className="mt-4" />
             </section>
           ),
       )}

@@ -6,6 +6,7 @@ import type { RefObject } from "react";
 import type * as THREE from "three";
 
 import { UNIVERSE_COLORS } from "@/lib/universe/config";
+import { CANVAS_LABEL_Z_RANGE } from "@/lib/universe/zIndex";
 
 /**
  * Central "data core" (§2.1): a wireframe icosahedron shell around an emissive
@@ -63,13 +64,11 @@ export function DataCore({
       </mesh>
       {labelVisible && (
         // On the Y rotation axis, so the core's spin never moves the label.
-        // Low z-range keeps the label under the header (z-50); drei's default
-        // inline z-index (≈16.7M) escapes the canvas and paints over the mobile menu.
         <Html
           position={[0, -1.4, 0]}
           center
           pointerEvents="none"
-          zIndexRange={[10, 0]}
+          zIndexRange={CANVAS_LABEL_Z_RANGE}
         >
           <span
             className="whitespace-nowrap font-mono text-xs uppercase tracking-wider"
