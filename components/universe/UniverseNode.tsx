@@ -98,13 +98,16 @@ export function UniverseNode({
       {/* Always-visible name + subtitle, glued to the node. Hidden while any
           node is selected so labels don't clutter the camera glide. Occluded
           against the core so the label disappears when the node orbits behind
-          it — scoped to coreRef only so the particle field can't falsely hide it. */}
+          it — scoped to coreRef only so the particle field can't falsely hide it.
+          The low z-range keeps the inline z-index under the header (z-50); drei's
+          default (≈16.7M) escapes the canvas and paints over the mobile menu. */}
       {selectedId === null && (
         <Html
           position={[def.position[0], def.position[1] - 0.5, def.position[2]]}
           center
           pointerEvents="none"
           occlude={[coreRef as RefObject<THREE.Object3D>]}
+          zIndexRange={[10, 0]}
         >
           <NodeLabel def={def} />
         </Html>
