@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 import { Button } from "@/components/ui/Button";
-import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { PageShell } from "@/components/ui/PageShell";
 
 export const metadata: Metadata = {
   title: "About — James Imbuido",
@@ -12,12 +12,7 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <Container className="py-16 sm:py-24">
-      <SectionHeading
-        as="h1"
-        title="About"
-        description="Who James Imbuido is — from nursing to data science, and how he thinks about technology."
-      />
+    <PageShell href="/about">
       <SectionHeading
         as="h2"
         kicker="Introduction"
@@ -69,6 +64,6 @@ export default function AboutPage() {
           See experience
         </Button>
       </div>
-    </Container>
+    </PageShell>
   );
 }

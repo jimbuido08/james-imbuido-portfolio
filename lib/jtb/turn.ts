@@ -8,12 +8,17 @@
  * Server-only in effect: deps are constructed with the server Supabase client
  * and the Ollama credentials in the route. Never import from client components.
  */
+import { INTERNAL_SERVER_MESSAGE } from "@/lib/api/messages";
+import { rateWindowStart } from "@/lib/ratelimit/window";
+import type { OutcomeView } from "@/lib/server/http";
+
 import { RATE_LIMIT_MAX_MESSAGES, RATE_LIMIT_WINDOW_MS } from "./constants";
 import { formatKnowledgeBaseSections, type JtbSection } from "./knowledge-base";
 import { LlmConfigError } from "./llm";
 import type { LlmChatResult } from "./llm";
 import { buildSystemPrompt } from "./prompt";
 import type { JtbRetrieval } from "./retrieval";
+import type { JtbErrorCode } from "./types";
 import type { JsonObject } from "@/types/json";
 
 export interface JtbTurnDeps {
@@ -46,9 +51,15 @@ export interface JtbTurnDeps {
     system: string;
     userMessage: string;
   }): Promise<LlmChatResult>;
-  /** Atomic −1 in the DB. creditsRemaining null = lost the race to zero. */
+  /**
+   * Atomic −1 in the DB. creditsRemaining null = lost the race to zero.
+   * rateLimited = the RPC's authoritative rate gate refused (the caller
+   * raced past, or bypassed, the pre-check).
+   */
   deductCredit(): Promise<
-    { ok: true; creditsRemaining: number | null } | { ok: false }
+    | { ok: true; creditsRemaining: number | null }
+    | { ok: true; rateLimited: true }
+    | { ok: false }
   >;
   /**
    * Metadata-only audit row — never message content (§21). Written for the
@@ -78,6 +89,59 @@ export type JtbTurnOutcome =
   | { kind: "llm_failure"; detail: string }
   | { kind: "internal"; detail: string };
 
+/**
+ * The outcome → HTTP table for the JTB route: the wire half of the outcome
+ * vocabulary, ruled out per outcome kind. "ok" and its success body stay in
+ * the route adapter. Two distinct internal wordings by design: llm_config_error
+ * is our misconfiguration (500, "misconfigured"), while the other internal
+ * outcomes carry the shared sentence. Detailed reasons never reach the wire —
+ * they stay on the outcome for the route to log.
+ */
+export function describeOutcome(
+  outcome: Exclude<JtbTurnOutcome, { kind: "ok" }>,
+): OutcomeView<JtbErrorCode> {
+  switch (outcome.kind) {
+    case "exhausted":
+      return {
+        status: 402,
+        code: "exhausted",
+        message: "You've used all your JTB interactions.",
+        creditsRemaining: 0,
+      };
+    case "rate_limited":
+      return {
+        status: 429,
+        code: "rate_limited",
+        message: "You're sending messages too quickly — please wait a moment.",
+        retryAfterSeconds: RATE_LIMIT_WINDOW_MS / 1000,
+      };
+    case "kb_unavailable":
+      return {
+        status: 503,
+        code: "unavailable",
+        message: "JTB isn't ready yet — please check back soon.",
+      };
+    case "llm_config_error":
+      return {
+        status: 500,
+        code: "internal",
+        message: "JTB is temporarily misconfigured.",
+      };
+    case "llm_failure":
+      return {
+        status: 502,
+        code: "llm_failure",
+        message: "Something went wrong — your credit was not used.",
+      };
+    case "internal":
+      return {
+        status: 500,
+        code: "internal",
+        message: INTERNAL_SERVER_MESSAGE,
+      };
+  }
+}
+
 export async function runJtbTurn(
   deps: JtbTurnDeps,
   input: JtbTurnInput,
@@ -88,9 +152,7 @@ export async function runJtbTurn(
   if (profile.creditsRemaining <= 0) return { kind: "exhausted" };
 
   // Rate limit — count of this caller's recorded attempts in the window.
-  const windowStart = new Date(
-    input.nowMs - (RATE_LIMIT_WINDOW_MS + 1000),
-  ).toISOString();
+  const windowStart = rateWindowStart(input.nowMs, RATE_LIMIT_WINDOW_MS);
   const recent = await deps.countRecentAttempts(windowStart);
   if (!recent.ok)
     return { kind: "internal", detail: "rate-limit count failed" };
@@ -157,6 +219,11 @@ export async function runJtbTurn(
   // Deduct exactly 1 — atomic in the DB, only after a successful response.
   const deduct = await deps.deductCredit();
   if (!deduct.ok) return { kind: "internal", detail: "deduct_credit failed" };
+  if ("rateLimited" in deduct) {
+    // The RPC's authoritative rate gate refused. No credit was taken and the
+    // attempt is not metered: the user was told to slow down, not answered.
+    return { kind: "rate_limited" };
+  }
   if (deduct.creditsRemaining === null) {
     // Lost the race to zero: another request used the last credit. Do not
     // deliver the reply — the caller has no balance left to pay for it. The

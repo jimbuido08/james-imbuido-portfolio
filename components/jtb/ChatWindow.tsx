@@ -2,6 +2,11 @@
 
 import { useState } from "react";
 
+import {
+  NETWORK_ERROR_MESSAGE,
+  UNEXPECTED_RESPONSE_MESSAGE,
+} from "@/lib/api/messages";
+import { postJsonApi, useApiSubmit } from "@/lib/client/submit";
 import type { JtbError, JtbSuccess } from "@/lib/jtb/types";
 import { cx } from "@/lib/utils";
 import { MessageList } from "./MessageList";
@@ -9,8 +14,6 @@ import type { JtbChatMessage } from "./MessageBubble";
 import { ChatInput } from "./ChatInput";
 import { CreditsBadge } from "./CreditsBadge";
 import { ExhaustedState } from "./ExhaustedState";
-
-const NETWORK_ERROR = "Something went wrong — your credit was not used.";
 
 let nextId = 1;
 
@@ -23,7 +26,8 @@ export function ChatWindow({
 }) {
   const [messages, setMessages] = useState<JtbChatMessage[]>([]);
   const [credits, setCredits] = useState(initialCredits);
-  const [pending, setPending] = useState(false);
+  const { state, submit } = useApiSubmit<JtbSuccess, JtbError>();
+  const pending = state.kind === "submitting";
   const exhausted = credits <= 0;
 
   const markError = (id: number, message: string) => {
@@ -36,7 +40,6 @@ export function ChatWindow({
     const trimmed = text.trim();
     if (!trimmed || pending) return;
 
-    setPending(true);
     const userMessage: JtbChatMessage = {
       id: nextId++,
       role: "user",
@@ -44,34 +47,31 @@ export function ChatWindow({
     };
     setMessages((prev) => [...prev, userMessage]);
 
-    try {
-      const response = await fetch("/api/jtb", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: trimmed }),
-      });
-      const body = (await response.json()) as JtbSuccess | JtbError;
+    const outcome = await submit(() =>
+      postJsonApi<JtbSuccess, JtbError>("/api/jtb", { message: trimmed }),
+    );
+    if (!outcome) return;
 
-      if (response.ok && "reply" in body) {
-        // No optimistic deduction — credits update only from the server.
-        setMessages((prev) => [
-          ...prev,
-          { id: nextId++, role: "assistant", content: body.reply },
-        ]);
-        setCredits(body.creditsRemaining);
-      } else if ("error" in body) {
-        if (body.error.code === "exhausted") {
-          setCredits(0);
-        } else {
-          markError(userMessage.id, body.error.message);
-        }
+    if (outcome.kind === "ok") {
+      // No optimistic deduction — credits update only from the server.
+      setMessages((prev) => [
+        ...prev,
+        { id: nextId++, role: "assistant", content: outcome.data.reply },
+      ]);
+      setCredits(outcome.data.creditsRemaining);
+    } else if (outcome.kind === "rejected") {
+      if (outcome.response.error.code === "exhausted") {
+        setCredits(0);
       } else {
-        markError(userMessage.id, NETWORK_ERROR);
+        markError(userMessage.id, outcome.response.error.message);
       }
-    } catch {
-      markError(userMessage.id, NETWORK_ERROR);
-    } finally {
-      setPending(false);
+    } else {
+      markError(
+        userMessage.id,
+        outcome.kind === "unexpected"
+          ? UNEXPECTED_RESPONSE_MESSAGE
+          : NETWORK_ERROR_MESSAGE,
+      );
     }
   };
 

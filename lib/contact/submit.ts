@@ -4,8 +4,12 @@
  * so every branch — over the limit, lost the insert race, DB failure — is
  * exercisable through this interface. Never import from client components.
  */
+import { INTERNAL_SERVER_MESSAGE } from "@/lib/api/messages";
+import { rateWindowStart } from "@/lib/ratelimit/window";
+import type { OutcomeView } from "@/lib/server/http";
+
 import { RATE_LIMIT_MAX_MESSAGES, RATE_LIMIT_WINDOW_MS } from "./constants";
-import type { ContactSubmitRequest } from "./types";
+import type { ContactErrorCode, ContactSubmitRequest } from "./types";
 
 export interface ContactSubmitDeps {
   /**
@@ -35,6 +39,31 @@ export type ContactSubmitOutcome =
   | { kind: "rate_limited" }
   | { kind: "internal"; detail: string };
 
+/**
+ * The outcome → HTTP table for the contact route: the wire half of the
+ * outcome vocabulary. "ok" (an empty success body) stays in the route.
+ */
+export function describeOutcome(
+  outcome: Exclude<ContactSubmitOutcome, { kind: "ok" }>,
+): OutcomeView<ContactErrorCode> {
+  switch (outcome.kind) {
+    case "rate_limited":
+      return {
+        status: 429,
+        code: "rate_limited",
+        message:
+          "Too many messages from this network — please try again later or email directly.",
+        retryAfterSeconds: RATE_LIMIT_WINDOW_MS / 1000,
+      };
+    case "internal":
+      return {
+        status: 500,
+        code: "internal",
+        message: INTERNAL_SERVER_MESSAGE,
+      };
+  }
+}
+
 export async function submitContactMessage(
   deps: ContactSubmitDeps,
   input: ContactSubmitRequest & { ipHash: string },
@@ -42,9 +71,7 @@ export async function submitContactMessage(
   nowMs: number,
 ): Promise<ContactSubmitOutcome> {
   // Rate-limit pre-check — cheap UX gate; not the authority.
-  const windowStart = new Date(
-    nowMs - (RATE_LIMIT_WINDOW_MS + 1000),
-  ).toISOString();
+  const windowStart = rateWindowStart(nowMs, RATE_LIMIT_WINDOW_MS);
   const recent = await deps.countRecentByIp(input.ipHash, windowStart);
   if (!recent.ok) {
     return { kind: "internal", detail: "rate-limit count failed" };

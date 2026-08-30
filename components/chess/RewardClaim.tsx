@@ -1,9 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 
 import { Button } from "@/components/ui/Button";
+import {
+  outcomeErrorMessage,
+  postJsonApi,
+  useApiSubmit,
+} from "@/lib/client/submit";
 import { CHESS_REWARD_CREDITS } from "@/lib/credits/constants";
 import type {
   ChessClaimError,
@@ -11,14 +15,6 @@ import type {
   Side,
   SubmittedMove,
 } from "@/types/chess";
-
-type ClaimState =
-  | { kind: "idle" }
-  | { kind: "submitting" }
-  | { kind: "claimed"; creditsRemaining: number }
-  | { kind: "already_claimed" }
-  | { kind: "unauthenticated" }
-  | { kind: "failed"; message: string };
 
 const linkClasses =
   "text-fg underline underline-offset-4 decoration-border hover:decoration-border-strong";
@@ -31,47 +27,35 @@ export function RewardClaim({
   moves: SubmittedMove[];
   playerColor: Side;
 }) {
-  const [state, setState] = useState<ClaimState>({ kind: "idle" });
+  const { state, submit } = useApiSubmit<ChessClaimSuccess, ChessClaimError>();
+  const outcome = state.kind === "done" ? state.outcome : null;
+  const submitting = state.kind === "submitting";
 
   async function handleClaim(): Promise<void> {
-    setState({ kind: "submitting" });
-    try {
-      const res = await fetch("/api/chess", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ moves, playerColor }),
-      });
-      const data = (await res.json()) as ChessClaimSuccess | ChessClaimError;
-      if (res.ok && "ok" in data && data.ok) {
-        setState({ kind: "claimed", creditsRemaining: data.creditsRemaining });
-        return;
-      }
-      if (!("error" in data)) {
-        setState({ kind: "failed", message: "Unexpected server response." });
-        return;
-      }
-      switch (data.error.code) {
-        case "unauthenticated":
-          setState({ kind: "unauthenticated" });
-          return;
-        case "already_claimed":
-          setState({ kind: "already_claimed" });
-          return;
-        default:
-          setState({ kind: "failed", message: data.error.message });
-      }
-    } catch {
-      setState({
-        kind: "failed",
-        message: "Couldn't reach the server — check your connection.",
-      });
-    }
+    await submit(() =>
+      postJsonApi<ChessClaimSuccess, ChessClaimError>("/api/chess", {
+        moves,
+        playerColor,
+      }),
+    );
   }
 
-  if (state.kind === "claimed") {
+  // Render vocabulary derived from the outcome, not stored separately — the
+  // claim UI can never drift from what the server actually answered.
+  const claimed = outcome?.kind === "ok" ? outcome.data.creditsRemaining : null;
+
+  const claimErrorCode: ChessClaimError["error"]["code"] | null =
+    outcome?.kind === "rejected" ? outcome.response.error.code : null;
+
+  const failureMessage =
+    claimErrorCode === "unauthenticated" || claimErrorCode === "already_claimed"
+      ? null
+      : outcomeErrorMessage(outcome);
+
+  if (claimed !== null) {
     return (
       <p aria-live="polite" className="mt-2 max-w-prose text-sm text-fg">
-        Reward claimed — you now have {state.creditsRemaining} JTB interactions.{" "}
+        Reward claimed — you now have {claimed} JTB interactions.{" "}
         <Link href="/jtb" className={linkClasses}>
           Chat with JTB
         </Link>
@@ -80,7 +64,7 @@ export function RewardClaim({
     );
   }
 
-  if (state.kind === "already_claimed") {
+  if (claimErrorCode === "already_claimed") {
     return (
       <p className="mt-2 max-w-prose text-sm text-fg-muted">
         The chess reward is already claimed on this account.
@@ -88,7 +72,7 @@ export function RewardClaim({
     );
   }
 
-  if (state.kind === "unauthenticated") {
+  if (claimErrorCode === "unauthenticated") {
     return (
       <p className="mt-2 max-w-prose text-sm text-fg-muted">
         You won by checkmate.{" "}
@@ -107,18 +91,18 @@ export function RewardClaim({
         You beat the Chess AI by checkmate — claim +{CHESS_REWARD_CREDITS} JTB
         interactions (once per account).
       </p>
-      {state.kind === "failed" && (
+      {failureMessage && (
         <p role="alert" className="mt-2 text-sm text-accent-exp">
-          {state.message}
+          {failureMessage}
         </p>
       )}
       <div className="mt-3">
         <Button
           size="sm"
           onClick={() => void handleClaim()}
-          disabled={state.kind === "submitting"}
+          disabled={submitting}
         >
-          {state.kind === "submitting"
+          {submitting
             ? "Verifying your win…"
             : `Claim +${CHESS_REWARD_CREDITS} JTB interactions`}
         </Button>

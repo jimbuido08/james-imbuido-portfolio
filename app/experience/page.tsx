@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
-import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Timeline, type TimelineEntry } from "@/components/experience/Timeline";
+import { PageShell } from "@/components/ui/PageShell";
 
 export const metadata: Metadata = {
   title: "Experience — James Imbuido",
@@ -280,12 +280,7 @@ const educationEntries: TimelineEntry[] = [
 
 export default function ExperiencePage() {
   return (
-    <Container className="py-16 sm:py-24">
-      <SectionHeading
-        as="h1"
-        title="Experience"
-        description="Professional experience and education — data scientist at Commonwealth Bank of Australia."
-      />
+    <PageShell href="/experience">
       <SectionHeading
         as="h2"
         kicker="Career"
@@ -301,6 +296,6 @@ export default function ExperiencePage() {
         className="mt-16"
       />
       <Timeline entries={educationEntries} />
-    </Container>
+    </PageShell>
   );
 }

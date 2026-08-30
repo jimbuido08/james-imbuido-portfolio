@@ -5,7 +5,20 @@
 import path from "node:path";
 
 import { contentDir, readMarkdownDir } from "@/lib/content/markdown";
+import { isPlaceholder } from "@/lib/content/trust";
 import type { Project, ProjectCategory } from "@/types/project";
+
+/**
+ * Placeholder link resolution at load time: a URL carrying the TODO marker
+ * becomes `undefined` here, so every render site downstream (cards, case
+ * studies) just checks the field — none of them re-derive "is this
+ * placeholder copy?" (§ content-trust: lib/content/trust.ts stays the owner
+ * of the rule; this loader is its only caller).
+ */
+function realUrl(value: unknown): string | undefined {
+  if (typeof value !== "string" || isPlaceholder(value)) return undefined;
+  return value;
+}
 
 const CATEGORIES: ProjectCategory[] = [
   "AI",
@@ -77,10 +90,10 @@ function validateProject(
     approach: data.approach as string,
     results: data.results as string,
     lessons: data.lessons as string,
-    githubUrl: data.githubUrl as string | undefined,
-    demoUrl: data.demoUrl as string | undefined,
-    kaggleUrl: data.kaggleUrl as string | undefined,
-    image: data.image as string | undefined,
+    githubUrl: realUrl(data.githubUrl),
+    demoUrl: realUrl(data.demoUrl),
+    kaggleUrl: realUrl(data.kaggleUrl),
+    image: realUrl(data.image),
   };
 }
 

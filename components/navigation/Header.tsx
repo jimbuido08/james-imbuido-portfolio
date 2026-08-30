@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { NAV_ITEMS } from "@/lib/navigation";
+import { HEADER_SCRIM_Z, HEADER_Z } from "@/lib/universe/zIndex";
 import { cx } from "@/lib/utils";
 
 /** First four routes sit in the desktop bar; the rest fold under "More ▾". */
@@ -57,10 +58,12 @@ export function Header() {
         <div
           aria-hidden="true"
           onClick={() => setOpen(false)}
-          className="fixed inset-0 z-40 bg-bg/70 md:hidden"
+          className={`fixed inset-0 ${HEADER_SCRIM_Z} bg-bg/70 md:hidden`}
         />
       )}
-      <header className="sticky top-0 z-50 border-b border-border bg-bg/80 backdrop-blur">
+      <header
+        className={`sticky top-0 ${HEADER_Z} border-b border-border bg-bg/80 backdrop-blur`}
+      >
         <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="font-semibold">
             James Imbuido | Data Scientist & AI Engineer
@@ -176,7 +179,7 @@ export function Header() {
           <nav
             id="mobile-nav"
             aria-label="Mobile"
-            className="absolute inset-x-0 top-full z-50 border-b border-border bg-bg shadow-lg md:hidden"
+            className={`absolute inset-x-0 top-full ${HEADER_Z} border-b border-border bg-bg shadow-lg md:hidden`}
           >
             <ul className="flex flex-col px-4 sm:px-6 lg:px-8">
               {[...allLinks, { href: "/account", label: "Account" }].map(

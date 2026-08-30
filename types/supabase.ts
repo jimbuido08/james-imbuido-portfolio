@@ -183,7 +183,10 @@ export type Database = {
         Args: { p_ip_hash: string; p_since: string };
         Returns: number;
       };
-      deduct_credit: { Args: { p_user_id: string }; Returns: number };
+      deduct_credit: {
+        Args: { p_user_id: string };
+        Returns: Json;
+      };
       match_jtb_chunks: {
         Args: { p_match_count?: number; p_query_embedding: string };
         Returns: {

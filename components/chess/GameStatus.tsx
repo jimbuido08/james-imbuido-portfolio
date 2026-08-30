@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/Button";
 import type { Difficulty, GameResult } from "@/types/chess";
+import { MonoKicker } from "@/components/ui/MonoKicker";
 
 /** Live status line above the board, plus the game-over panel once a result exists. */
 export function GameStatus({
@@ -22,16 +23,11 @@ export function GameStatus({
   return (
     <>
       <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <p
-          aria-live="polite"
-          className="font-mono text-xs uppercase tracking-widest text-fg-subtle"
-        >
-          {statusLine}
-        </p>
+        <MonoKicker aria-live="polite">{statusLine}</MonoKicker>
         {difficulty && (
-          <span className="shrink-0 font-mono text-xs uppercase tracking-widest text-fg-subtle">
+          <MonoKicker className="shrink-0">
             Difficulty: {difficulty.toUpperCase()}
-          </span>
+          </MonoKicker>
         )}
       </div>
       {result && (

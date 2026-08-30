@@ -6,9 +6,17 @@
  * race — is exercisable through this interface. Never import from client
  * components.
  */
+import { INTERNAL_SERVER_MESSAGE } from "@/lib/api/messages";
+import { rateWindowStart } from "@/lib/ratelimit/window";
+import type { OutcomeView } from "@/lib/server/http";
+
 import { RATE_LIMIT_MAX_ATTEMPTS, RATE_LIMIT_WINDOW_MS } from "./constants";
 import { replayMoves } from "./engine";
-import type { ChessClaimRequest, ClaimChessRewardResult } from "@/types/chess";
+import type {
+  ChessClaimErrorCode,
+  ChessClaimRequest,
+  ClaimChessRewardResult,
+} from "@/types/chess";
 import type { JsonObject } from "@/types/json";
 
 export interface ChessClaimDeps {
@@ -48,6 +56,54 @@ export type ChessClaimOutcome =
   | { kind: "not_a_win" }
   | { kind: "internal"; detail: string };
 
+/**
+ * The outcome → HTTP table for the chess route: the wire half of the outcome
+ * vocabulary, ruled out per outcome kind so a new branch must state its
+ * status and message. "ok" and its success body stay in the route adapter.
+ * Internal details never reach the wire — they stay on the outcome for the
+ * route to log.
+ */
+export function describeOutcome(
+  outcome: Exclude<ChessClaimOutcome, { kind: "ok" }>,
+): OutcomeView<ChessClaimErrorCode> {
+  switch (outcome.kind) {
+    case "already_claimed":
+      return {
+        status: 409,
+        code: "already_claimed",
+        message: "You've already claimed the chess reward.",
+        ...(outcome.creditsRemaining !== undefined
+          ? { creditsRemaining: outcome.creditsRemaining }
+          : {}),
+      };
+    case "rate_limited":
+      return {
+        status: 429,
+        code: "rate_limited",
+        message: "Too many claim attempts — please wait a moment.",
+        retryAfterSeconds: RATE_LIMIT_WINDOW_MS / 1000,
+      };
+    case "illegal_game":
+      return {
+        status: 422,
+        code: "illegal_game",
+        message: `Move ${outcome.atIndex + 1} is not legal — the game was rejected.`,
+      };
+    case "not_a_win":
+      return {
+        status: 422,
+        code: "not_a_win",
+        message: "Only a game you won by checkmate earns the reward.",
+      };
+    case "internal":
+      return {
+        status: 500,
+        code: "internal",
+        message: INTERNAL_SERVER_MESSAGE,
+      };
+  }
+}
+
 export async function claimChessReward(
   deps: ChessClaimDeps,
   claim: ChessClaimRequest,
@@ -67,9 +123,7 @@ export async function claimChessReward(
   // Rate limit — count of this caller's recorded attempts in the window. The
   // reward is once-per-user, so this bounds hammering the replay/DB, not the
   // reward itself.
-  const windowStart = new Date(
-    nowMs - (RATE_LIMIT_WINDOW_MS + 1000),
-  ).toISOString();
+  const windowStart = rateWindowStart(nowMs, RATE_LIMIT_WINDOW_MS);
   const attempts = await deps.countRecentAttempts(windowStart);
   if (!attempts.ok)
     return { kind: "internal", detail: "rate-limit count failed" };
@@ -112,6 +166,9 @@ export async function claimChessReward(
     };
   }
   if (!result.claimed) {
+    // The RPC's authoritative rate gate refused (the pre-check race was lost
+    // or the RPC was called around the route): treat as rate_limited.
+    if (result.rateLimited) return { kind: "rate_limited" };
     // Lost the pre-check race: a concurrent request claimed first.
     return { kind: "already_claimed" };
   }

@@ -3,7 +3,7 @@
 import { UNIVERSE_COLORS } from "@/lib/universe/config";
 
 /** Restrained lighting — no HDR/environment loader this phase. */
-export function Environment() {
+export function Lighting() {
   return (
     <>
       <ambientLight intensity={0.35} />

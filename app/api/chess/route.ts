@@ -1,8 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { apiError, parseJsonBody, requireUser } from "@/lib/server/http";
-import { claimChessReward } from "@/lib/chess/claim";
-import { RATE_LIMIT_WINDOW_MS } from "@/lib/chess/constants";
+import {
+  apiError,
+  invalidJsonError,
+  outcomeError,
+  parseJsonBody,
+  requireUser,
+} from "@/lib/server/http";
+import { claimChessReward, describeOutcome } from "@/lib/chess/claim";
 import { CHESS_REWARD_CREDITS } from "@/lib/credits/constants";
 import { parseChessClaim } from "@/lib/validation/chess";
 import type {
@@ -26,13 +31,7 @@ export async function POST(request: NextRequest) {
 
   // 2) Validation — shape-check the submission before any DB work (§33.11).
   const parsedBody = await parseJsonBody(request);
-  if (!parsedBody.ok) {
-    return apiError<ChessClaimErrorCode>(
-      "invalid",
-      "Request body must be valid JSON.",
-      400,
-    );
-  }
+  if (!parsedBody.ok) return invalidJsonError();
   const parsed = parseChessClaim(parsedBody.body);
   if (!parsed.ok) {
     return apiError<ChessClaimErrorCode>("invalid", parsed.error, 400);
@@ -100,52 +99,19 @@ export async function POST(request: NextRequest) {
     Date.now(),
   );
 
-  // 4) Outcome → HTTP. Every wire shape is unchanged from before.
-  switch (outcome.kind) {
-    case "ok": {
-      const body: ChessClaimSuccess = {
-        ok: true,
-        creditsAwarded: CHESS_REWARD_CREDITS,
-        creditsRemaining: outcome.creditsRemaining,
-      };
-      return NextResponse.json(body);
+  // 4) Outcome → HTTP. Success is built here; every error view comes from the
+  //    outcome table in lib/chess/claim.ts (describeOutcome).
+  if (outcome.kind !== "ok") {
+    if ("detail" in outcome) {
+      console.error(`[chess] ${outcome.kind}:`, outcome.detail);
     }
-    case "already_claimed":
-      return apiError<ChessClaimErrorCode>(
-        "already_claimed",
-        "You've already claimed the chess reward.",
-        409,
-        {
-          ...(outcome.creditsRemaining !== undefined
-            ? { creditsRemaining: outcome.creditsRemaining }
-            : {}),
-        },
-      );
-    case "illegal_game":
-      return apiError<ChessClaimErrorCode>(
-        "illegal_game",
-        `Move ${outcome.atIndex + 1} is not legal — the game was rejected.`,
-        422,
-      );
-    case "not_a_win":
-      return apiError<ChessClaimErrorCode>(
-        "not_a_win",
-        "Only a game you won by checkmate earns the reward.",
-        422,
-      );
-    case "rate_limited":
-      return apiError<ChessClaimErrorCode>(
-        "rate_limited",
-        "Too many claim attempts — please wait a moment.",
-        429,
-        { retryAfterSeconds: RATE_LIMIT_WINDOW_MS / 1000 },
-      );
-    case "internal":
-      console.error("[chess] internal:", outcome.detail);
-      return apiError<ChessClaimErrorCode>(
-        "internal",
-        "Something went wrong on our side — please try again.",
-        500,
-      );
+    return outcomeError(describeOutcome(outcome));
   }
+
+  const body: ChessClaimSuccess = {
+    ok: true,
+    creditsAwarded: CHESS_REWARD_CREDITS,
+    creditsRemaining: outcome.creditsRemaining,
+  };
+  return NextResponse.json(body);
 }

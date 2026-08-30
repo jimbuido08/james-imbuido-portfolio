@@ -8,9 +8,8 @@ import * as THREE from "three";
 
 import { NODE_RADIUS } from "@/lib/universe/config";
 import type { UniverseNodeDef } from "@/lib/universe/config";
-
-import { NodeLabel } from "./NodeLabel";
-import { nodePositions } from "./nodePositions";
+import { nodePositions } from "@/lib/universe/nodePositions";
+import { CANVAS_LABEL_Z_RANGE } from "@/lib/universe/zIndex";
 
 type UniverseNodeProps = {
   def: UniverseNodeDef;
@@ -95,21 +94,30 @@ export function UniverseNode({
           roughness={0.4}
         />
       </mesh>
-      {/* Always-visible name + subtitle, glued to the node. Hidden while any
-          node is selected so labels don't clutter the camera glide. Occluded
-          against the core so the label disappears when the node orbits behind
-          it — scoped to coreRef only so the particle field can't falsely hide it.
-          The low z-range keeps the inline z-index under the header (z-50); drei's
-          default (≈16.7M) escapes the canvas and paints over the mobile menu. */}
+      {/* Always-visible name, glued to the node (the label markup used to live
+          in NodeLabel.tsx — one span, not worth a file). Hidden while any node
+          is selected so labels don't clutter the camera glide. Occluded against
+          the core so the label disappears when the node orbits behind it —
+          scoped to coreRef only so the particle field can't falsely hide it. */}
       {selectedId === null && (
         <Html
           position={[def.position[0], def.position[1] - 0.5, def.position[2]]}
           center
           pointerEvents="none"
           occlude={[coreRef as RefObject<THREE.Object3D>]}
-          zIndexRange={[10, 0]}
+          zIndexRange={CANVAS_LABEL_Z_RANGE}
         >
-          <NodeLabel def={def} />
+          {/* text-shadow halo keeps labels legible over the hero copy when
+              projected nodes crowd together (e.g. narrow viewports). */}
+          <span
+            className="whitespace-nowrap font-mono text-xs uppercase tracking-wider"
+            style={{
+              color: def.accent,
+              textShadow: "0 1px 6px rgba(0, 0, 0, 0.9)",
+            }}
+          >
+            {def.label}
+          </span>
         </Html>
       )}
     </>

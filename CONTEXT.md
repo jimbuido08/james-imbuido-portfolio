@@ -12,7 +12,7 @@ Universe" (React Three Fiber): a central core orbited by five navigation nodes
 enhancement, never the only path — every node mirrors a conventional route and
 the site works without WebGL (§11.1).
 
-## Current state (2026-08-28)
+## Current state (2026-08-30)
 
 - **Phases 1–7 complete.** Design system, conventional pages, Universe, Supabase
   auth, JTB chatbot (Ollama, credits), chess reward verification (server replay +
@@ -39,13 +39,23 @@ the site works without WebGL (§11.1).
   `docs/notes/jtb-grounding-architecture.md` (also documents the edge-function
   546 CPU kill → sub-batching in `lib/jtb/embeddings.ts`).
 - **Architecture deepenings (Streams A–C) committed.** See the map below.
+- **Deepening pass 2 (2026-08-30) complete.** Env seam (`lib/config.ts`),
+  shared rate window (`lib/ratelimit/window.ts`) with SQL-side authoritative
+  gates chess+JTB, per-core outcome→HTTP tables, auth guard seam
+  (`lib/auth/next.ts`), shared client submit pipeline (`lib/client/submit.ts`
+  + `lib/api/messages` wire-error vocabulary), chess `gameState.ts` export,
+  universe relief (capabilities hook, `zIndex.ts`, fallback link list restored,
+  `Lighting.tsx` rename), `lib/sections.ts` SectionDef registry with PageShell,
+  and data-shaped `FilterDef` filters. See the map below.
 
 ## Architecture map
 
 ### Decision cores (policy, no I/O)
 - `lib/jtb/turn.ts` — the §5.1 JTB turn: auth → credits → rate limit → validate
   → KB gate → retrieve → LLM → deduct-on-success. Deps injected; every branch
-  exercisable without live infra.
+  exercisable without live infra. The SQL-side rate gate lives in `deduct_credit`
+  (count recent `chat_interactions` in the window) — a direct RPC with the
+  public key is still bounded.
 - `lib/jtb/retrieval.ts` — the never-throw retrieval policy: embed → top-12
   chunks RPC → max-pool to sections → threshold → top-k. Every failure returns
   `{ ok: false, reason }` → whole-KB fallback.
@@ -53,8 +63,43 @@ the site works without WebGL (§11.1).
   dodge the 546 CPU kill). Server-only; callers pass a Bearer token.
 - `lib/chess/claim.ts` — the §3.7 chess claim: profile → rate limit → replay →
   win check → atomic award. Deps injected; clock injected for the rate window.
+  The SQL-side rate gate lives in `claim_chess_reward` (counts
+  `chess_claim_attempts` in the trailing window) and surfaces as a
+  `rate_limited` claim outcome.
 - `lib/contact/submit.ts` — the §22 contact submission: rate-limit pre-check →
   rate-checked insert RPC. Deps injected; clock injected for the rate window.
+- `lib/chess/gameState.ts` — the chess UI state machine (GameUiState / GameAction
+  / reducer / initialState / computeStatusLine). ChessGame.tsx keeps only event
+  handlers + AI effect + drag; the machine is exercisable directly.
+- `lib/content/filters.ts` — data-shaped `FilterDef` entries + ONE pure matcher
+  `projectMatchesFilter`; a new filter chip is a one-line entry.
+
+### Seams (adapters swap behind these)
+- `lib/config.ts` — the ONE env seam (typed accessors; missing required env
+  throws at accessor time — e.g. unsalted contact hashes are impossible).
+- `lib/ratelimit/window.ts` — owns the rate-window arithmetic once
+  (`rateWindowStart` incl. the +1s grace, `isRateLimited`); domains keep their
+  own constants (10/JTB-cmd, 5/contact-h, 10/chess-claim).
+- `describeOutcome` — each decision core owns its outcome→HTTP table
+  (`{status, message?, retryAfterSeconds?, creditsRemaining?}`); the three API
+  routes are thin adapters over it (`lib/server/http.ts` owns JSON-parse + 400).
+- `lib/auth/next.ts` — page-side auth guards (`requireUser`, `redirectIfAuthed`);
+  /jtb, /account, /login, /signup no longer copy-paste getUser+redirect.
+- `lib/client/submit.ts` — the ONE client submit seam: `useApiSubmit` +
+  `ApiOutcome<TOk, TErr>` (ok | rejected | unexpected | network).
+  `lib/api/messages.ts` owns the shared wire-error sentences.
+- `lib/universe/capabilities.ts` — the ONE browser-environment hook
+  (`useEnvironmentCapabilities`: mounted via useSyncExternalStore, WebGL,
+  reduced motion, mobile, quality).
+- `lib/universe/zIndex.ts` — the whole DOM↔canvas stacking story in one module
+  (drei label zIndexRange, overlay z-10, header scrim z-40, header z-50).
+- `lib/universe/nodePositions.ts` — write-per-node, read-by-LiveLines live
+  position registry, keyed by node id (LiveLines iterates ids, never indexes).
+- `lib/sections.ts` — the SectionDef registry (route → label/h1/description).
+  `lib/navigation.ts` derives NAV_ITEMS from SECTIONS; FLOWS covers /login,
+  /signup, /account (same shell, never nav items). Pages render through
+  `components/ui/PageShell` (plus Prose / MonoKicker / fieldClasses as the
+  shared page text vocabulary).
 
 ### Single sources of truth
 - `lib/navigation.ts` — the route registry. Header and universe nodes derive
@@ -72,8 +117,11 @@ the site works without WebGL (§11.1).
   Validated at module load (unique node ids).
 
 ### Degradation paths (load-bearing)
-- Homepage: hero copy is server-rendered; the canvas is a lazy
-  `next/dynamic({ ssr: false })` chunk gated on `mounted && webgl` (hydration-safe).
+- Homepage: hero copy + the `UniverseFallback` section link list are
+  server-rendered (crawlable, no-JS, no-WebGL navigation); the canvas is a lazy
+  `next/dynamic({ ssr: false })` chunk gated on `mounted && webgl`
+  (hydration-safe — server and first client render both show the fallback,
+  which the canvas replaces once live).
 - `prefers-reduced-motion` freezes the scene and navigates instantly.
 - Mobile gets a reduced quality profile.
 - JTB retrieval: `embed_failed | rpc_failed | no_rows | below_threshold |
@@ -86,9 +134,10 @@ the site works without WebGL (§11.1).
   harnesses: `npx tsx .verify-*.mts` with in-memory deps, then deleted.
 - **Deep modules over fat routes.** Routes are thin adapters; policy lives in
   `lib/*` decision cores with injected Supabase/LLM deps.
-- **One constellation, one renderer.** `NodeGroup` renders every node and
-  `LiveLines` draws core→node lines from the shared `nodePositions` registry —
-  no parallel subsystem for sub-nodes.
+- **One constellation, one renderer.** `UniverseCanvas` maps
+  `UNIVERSE_NODES.map(def => <UniverseNode/>)` directly and `LiveLines` draws
+  core→node lines from the shared `nodePositions` registry — no parallel
+  subsystem for sub-nodes.
 
 ## In flight / pending
 
@@ -100,6 +149,6 @@ the site works without WebGL (§11.1).
 
 ## How to verify
 
-- `npm run lint` · `npm run build` (type-check + 10 static pages incl. `/ai-ml/[slug]` SSG) · `npm run format:check`
+- `npm run lint` · `npm run build` (type-check + 13 static pages incl. `/ai-ml/[slug]` SSG) · `npm run format:check`
 - For a policy core: write a `.verify-*.mts` harness, run `npx tsx`, delete it.
 - Browser check (no screenshots): playwright a11y snapshot + console messages.

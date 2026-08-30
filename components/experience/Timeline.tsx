@@ -23,7 +23,9 @@ export function Timeline({ entries }: { entries: TimelineEntry[] }) {
     <ol className="mt-10 space-y-8">
       {entries.map((entry, index) => (
         <li
-          key={entry.title}
+          // Title alone is not unique — five placements are "Nursing Student"
+          // at different organisations.
+          key={`${entry.title}-${entry.organisation}-${entry.period}`}
           className={cx(
             "grid gap-2 sm:grid-cols-[10rem_1fr] sm:gap-8",
             index > 0 && "border-t border-border pt-8",

@@ -1,9 +1,14 @@
 import type { ReactNode } from "react";
 
+import type { UniverseDomain } from "@/lib/universe/config";
 import { cx } from "@/lib/utils";
 
-export type TagDomain =
-  "ai" | "jtb" | "chess" | "about" | "experience" | "neutral";
+/**
+ * The domain vocabulary is defined once, next to the universe node registry
+ * (the only place that maps domains to hex accents); this alias carries it to
+ * the tag chrome without a second editable union.
+ */
+export type TagDomain = UniverseDomain;
 
 const domainClasses: Record<TagDomain, string> = {
   ai: "text-accent-ai border-accent-ai/40",

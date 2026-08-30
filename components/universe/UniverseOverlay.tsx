@@ -2,6 +2,7 @@
 
 import { Tag } from "@/components/ui/Tag";
 import type { UniverseNodeDef } from "@/lib/universe/config";
+import { UNIVERSE_OVERLAY_Z } from "@/lib/universe/zIndex";
 
 type UniverseOverlayProps = {
   hovered: UniverseNodeDef | null;
@@ -23,7 +24,9 @@ export function UniverseOverlay({
   showHint,
 }: UniverseOverlayProps) {
   return (
-    <div className="pointer-events-none absolute inset-0 z-10 flex items-end justify-start p-6 sm:p-8">
+    <div
+      className={`pointer-events-none absolute inset-0 ${UNIVERSE_OVERLAY_Z} flex items-end justify-start p-6 sm:p-8`}
+    >
       <div className="flex flex-col items-start gap-2">
         {hovered && !selected && (
           <div className="max-w-[min(20rem,calc(100vw-3rem))] rounded-md border border-border bg-surface/80 px-3 py-2 backdrop-blur">

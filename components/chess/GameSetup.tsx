@@ -7,6 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/Card";
 import type { Difficulty, Side } from "@/types/chess";
+import { MonoKicker } from "@/components/ui/MonoKicker";
 
 const DIFFICULTIES: Array<{ key: Difficulty; label: string }> = [
   { key: "easy", label: "EASY" },
@@ -47,9 +48,7 @@ export function GameSetup({
       </CardHeader>
       <div className="mt-6 space-y-4">
         <div>
-          <p className="font-mono text-xs uppercase tracking-widest text-fg-subtle">
-            Difficulty
-          </p>
+          <MonoKicker>Difficulty</MonoKicker>
           <div
             className="mt-2 flex flex-wrap gap-2"
             role="group"
@@ -69,9 +68,7 @@ export function GameSetup({
           </div>
         </div>
         <div>
-          <p className="font-mono text-xs uppercase tracking-widest text-fg-subtle">
-            Play as
-          </p>
+          <MonoKicker>Play as</MonoKicker>
           <div
             className="mt-2 flex flex-wrap gap-2"
             role="group"
