@@ -63,7 +63,14 @@ export function DataCore({
       </mesh>
       {labelVisible && (
         // On the Y rotation axis, so the core's spin never moves the label.
-        <Html position={[0, -1.4, 0]} center pointerEvents="none">
+        // Low z-range keeps the label under the header (z-50); drei's default
+        // inline z-index (≈16.7M) escapes the canvas and paints over the mobile menu.
+        <Html
+          position={[0, -1.4, 0]}
+          center
+          pointerEvents="none"
+          zIndexRange={[10, 0]}
+        >
           <span
             className="whitespace-nowrap font-mono text-xs uppercase tracking-wider"
             style={{
