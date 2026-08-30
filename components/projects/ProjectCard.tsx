@@ -8,9 +8,10 @@ import {
   CardTitle,
 } from "@/components/ui/Card";
 import { Tag } from "@/components/ui/Tag";
+import { isInternalUrl } from "@/lib/url";
 import type { Project } from "@/types/project";
 
-const externalLinkClasses =
+const linkClasses =
   "text-sm text-fg-muted underline underline-offset-4 decoration-border hover:decoration-border-strong";
 
 export function ProjectCard({
@@ -47,17 +48,23 @@ export function ProjectCard({
         {(githubUrl || demoUrl || kaggleUrl) && (
           <div className="mt-3 flex flex-wrap gap-4">
             {githubUrl && (
-              <a href={githubUrl} className={externalLinkClasses}>
+              <a href={githubUrl} className={linkClasses}>
                 ↗ GitHub
               </a>
             )}
-            {demoUrl && (
-              <a href={demoUrl} className={externalLinkClasses}>
-                ↗ Demo
-              </a>
-            )}
+            {demoUrl &&
+              (isInternalUrl(demoUrl) ? (
+                // Site-relative paths navigate client-side — no full reload.
+                <Link href={demoUrl} className={linkClasses}>
+                  Demo
+                </Link>
+              ) : (
+                <a href={demoUrl} className={linkClasses}>
+                  ↗ Demo
+                </a>
+              ))}
             {kaggleUrl && (
-              <a href={kaggleUrl} className={externalLinkClasses}>
+              <a href={kaggleUrl} className={linkClasses}>
                 ↗ Kaggle
               </a>
             )}

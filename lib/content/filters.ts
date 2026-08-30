@@ -9,8 +9,8 @@ import type { Project, ProjectCategory } from "@/types/project";
 export interface FilterDef {
   key: string;
   label: string;
-  /** Match the project's single category exactly. */
-  category?: ProjectCategory;
+  /** Match the project's single category exactly — or a family of categories. */
+  category?: ProjectCategory | ProjectCategory[];
   /** Match on the technologies frontmatter, case-insensitive. */
   technologies?: string[];
 }
@@ -18,6 +18,9 @@ export interface FilterDef {
 /** Chips: ALL + the category families, plus framework chips (PYTORCH, TENSORFLOW). */
 export const AI_ML_FILTERS: FilterDef[] = [
   { key: "all", label: "ALL" },
+  // §3.3 — "AI / ML" is ONE chip matching category AI or ML.
+  { key: "ai-ml", label: "AI / ML", category: ["AI", "ML"] },
+  { key: "llm", label: "LLM", category: "LLM" },
   { key: "classical-ml", label: "CLASSICAL ML", category: "CLASSICAL_ML" },
   { key: "pytorch", label: "PYTORCH", technologies: ["pytorch"] },
   {
@@ -39,7 +42,11 @@ export function projectMatchesFilter(
   project: Project,
   def: FilterDef,
 ): boolean {
-  if (def.category) return project.category === def.category;
+  if (def.category) {
+    return Array.isArray(def.category)
+      ? def.category.includes(project.category)
+      : project.category === def.category;
+  }
   if (def.technologies) {
     const wanted = def.technologies.map((name) => name.trim().toLowerCase());
     return project.technologies.some((tech) =>

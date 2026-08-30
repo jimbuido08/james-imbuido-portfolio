@@ -2,6 +2,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Tag } from "@/components/ui/Tag";
 import { Button } from "@/components/ui/Button";
 import { ProseParagraphs } from "@/components/ui/Prose";
+import { isInternalUrl } from "@/lib/url";
 import type { Project } from "@/types/project";
 
 export function CaseStudySections({ project }: { project: Project }) {
@@ -50,7 +51,7 @@ export function CaseStudySections({ project }: { project: Project }) {
             )}
             {demoUrl && (
               <Button href={demoUrl} variant="ghost">
-                ↗ Live demo
+                {isInternalUrl(demoUrl) ? "Live demo" : "↗ Live demo"}
               </Button>
             )}
             {kaggleUrl && (
