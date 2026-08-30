@@ -139,7 +139,7 @@ export function ContactForm() {
           required
           maxLength={MAX_MESSAGE_LENGTH}
           disabled={state.kind === "submitting"}
-          className={fieldClasses}
+          className={`${fieldClasses} h-32 resize-none overflow-y-auto`}
         ></textarea>
       </div>
       {state.kind === "failed" && (
