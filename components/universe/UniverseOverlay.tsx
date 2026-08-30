@@ -35,9 +35,7 @@ export function UniverseOverlay({
         {selected && (
           <div className="max-w-[min(20rem,calc(100vw-3rem))] rounded-md border border-border bg-surface/80 px-3 py-2 backdrop-blur">
             <Tag domain={selected.domain}>{selected.label}</Tag>
-            <p className="mt-1 text-sm text-fg-muted">
-              Entering {selected.label}…
-            </p>
+            <p className="mt-1 text-sm text-fg-muted">Entering…</p>
           </div>
         )}
         {showHint && !reducedMotion && (
