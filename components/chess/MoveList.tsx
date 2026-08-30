@@ -5,10 +5,11 @@ import type { MoveSnapshot } from "@/types/chess";
 
 /** SAN move history, paired by full move. Auto-scrolls to the latest row. */
 export function MoveList({ history }: { history: MoveSnapshot[] }) {
-  const lastRowRef = useRef<HTMLLIElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    lastRowRef.current?.scrollIntoView({ block: "nearest" });
+    // Scroll the container itself — never the window — to the latest row.
+    listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
   }, [history.length]);
 
   const pairs: Array<{ number: number; white: string; black: string | null }> =
@@ -29,14 +30,16 @@ export function MoveList({ history }: { history: MoveSnapshot[] }) {
       {pairs.length === 0 ? (
         <p className="mt-4 text-sm text-fg-subtle">No moves yet.</p>
       ) : (
-        <div className="mt-4 lg:max-h-[32rem] lg:overflow-y-auto">
+        <div
+          ref={listRef}
+          className="mt-4 max-h-64 overflow-y-auto lg:max-h-[32rem]"
+        >
           <ol>
             {pairs.map((pair, i) => {
               const latest = i === pairs.length - 1;
               return (
                 <li
                   key={pair.number}
-                  ref={latest ? lastRowRef : undefined}
                   className="grid grid-cols-[2.5rem_1fr_1fr] gap-2 border-b border-border py-1.5 font-mono text-sm"
                 >
                   <span className="text-fg-subtle">{pair.number}.</span>
