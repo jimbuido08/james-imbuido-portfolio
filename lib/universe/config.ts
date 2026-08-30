@@ -69,8 +69,7 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
   },
   {
     id: "ai-ml",
-    label: "AI / Machine Learning",
-    shortLabel: "AI/ML",
+    label: "AI Projects",
     route: navHref("ai-ml"),
     domain: "ai",
     accent: "#818cf8",

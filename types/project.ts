@@ -23,7 +23,7 @@ export interface Project {
   lessons: string;
   githubUrl?: string;
   demoUrl?: string;
-  /** Kaggle notebook / competition submission URL (AI/ML projects). */
+  /** Kaggle notebook / competition submission URL (AI projects). */
   kaggleUrl?: string;
   image?: string;
   interactive: boolean;

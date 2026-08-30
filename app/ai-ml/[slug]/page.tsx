@@ -35,7 +35,7 @@ export default async function ProjectPage({
   return (
     <Container className="py-16 sm:py-24">
       <Button href="/ai-ml" variant="ghost" size="sm">
-        ← All AI/ML projects
+        ← All AI projects
       </Button>
       <div className="mt-6 flex flex-wrap gap-2">
         <Tag domain="ai">{project.category.replaceAll("_", " ")}</Tag>
