@@ -9,7 +9,7 @@ export function Footer() {
 
   return (
     <footer className="border-t border-border">
-      <Container className="flex flex-col items-start justify-between gap-4 py-8 sm:flex-row sm:items-center">
+      <Container className="flex items-center justify-between py-8">
         <p className="text-sm text-fg-subtle">© {year} James Imbuido</p>
         <Link
           href="/contact"
