@@ -12,10 +12,27 @@ import type {
 /**
  * Filled glyphs = white pieces, outline glyphs = black pieces — the side
  * distinction is the glyph set, not a color pair (zero contrast failure modes).
+ * Each glyph carries U+FE0E (text presentation): ♟ is also an emoji, and iOS
+ * / Android would otherwise render the pawn as the system emoji.
  */
+const TEXT_PRESENTATION = "︎";
 export const GLYPHS: Record<Side, Record<PieceType, string>> = {
-  w: { k: "♚", q: "♛", r: "♜", b: "♝", n: "♞", p: "♟" },
-  b: { k: "♔", q: "♕", r: "♖", b: "♗", n: "♘", p: "♙" },
+  w: {
+    k: `♚${TEXT_PRESENTATION}`,
+    q: `♛${TEXT_PRESENTATION}`,
+    r: `♜${TEXT_PRESENTATION}`,
+    b: `♝${TEXT_PRESENTATION}`,
+    n: `♞${TEXT_PRESENTATION}`,
+    p: `♟${TEXT_PRESENTATION}`,
+  },
+  b: {
+    k: `♔${TEXT_PRESENTATION}`,
+    q: `♕${TEXT_PRESENTATION}`,
+    r: `♖${TEXT_PRESENTATION}`,
+    b: `♗${TEXT_PRESENTATION}`,
+    n: `♘${TEXT_PRESENTATION}`,
+    p: `♙${TEXT_PRESENTATION}`,
+  },
 };
 
 const PIECE_NAMES: Record<PieceType, string> = {
