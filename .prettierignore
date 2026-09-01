@@ -9,3 +9,7 @@ build
 
 # Hand-maintained docs are not machine-formatted (incl. the master plan)
 *.md
+
+# Python training pipeline (not Prettier-formattable)
+training/
+public/models/ort/

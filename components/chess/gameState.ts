@@ -27,7 +27,9 @@ export interface GameUiState {
   pendingPromotion: { from: SquareName; to: SquareName } | null;
   lastMove: { from: SquareName; to: SquareName } | null;
   history: MoveSnapshot[]; // mirrors engine.history()
-  thinking: boolean; // AI turn in flight
+  /** AI turn in flight: "thinking" = choosing, "loading" = model still
+   *  downloading (first turn or fallback retry), false = idle. */
+  thinking: false | "thinking" | "loading";
   resignArmed: boolean; // two-step resign
   result: GameResult | null;
 }
@@ -47,7 +49,7 @@ export type GameAction =
   | { type: "setNextPlayerColor"; side: Side }
   | { type: "startGame"; engine: ChessGameEngine }
   | { type: "toSetup" }
-  | { type: "setThinking"; thinking: boolean };
+  | { type: "setThinking"; thinking: false | "thinking" | "loading" };
 
 /** Deterministic — no randomness here; it runs on the server during SSR. */
 export function initialState(): GameUiState {
@@ -163,6 +165,7 @@ export function computeStatusLine(state: GameUiState): string {
         return "You resigned — the AI wins";
     }
   }
+  if (state.thinking === "loading") return "Loading the opponent…";
   if (engine.turn() !== playerColor) return "Opponent is thinking…";
   const status = engine.status();
   if (status.kind === "playing" && status.check) return "Check — your move";

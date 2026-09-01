@@ -370,3 +370,7 @@ Explicitly NOT satisfied here (later phases — say so in your report, do not fa
 - [ ] Winning awards +5 JTB credits; reward not claimable repeatedly → Phases 5–7
 
 And as always: `build`, `lint`, `format:check` green; exactly one new dep (`chess.js@^1`); zero new routes; zero fabricated claims anywhere.
+
+## Deviation addendum (2026-09-01)
+
+The phase-4 dependency freeze was broken deliberately: `onnxruntime-web@^1.29.0` was added when the trained policy networks shipped to `public/models/` (one dependency, lazy-loaded, wasm-only, self-hosted runtime). The "Opponent is thinking…" state grew into "Loading the opponent…" + "Opponent is thinking…" for the model path. The trained-model follow-up this phase deferred is now done — see `docs/notes/chess-model-training.md`.

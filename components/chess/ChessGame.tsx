@@ -16,7 +16,11 @@ import {
   reducer,
 } from "@/components/chess/gameState";
 import { createEngine } from "@/lib/chess/engine";
-import { createOpponent } from "@/lib/chess/opponents";
+import {
+  createOpponent,
+  getModelState,
+  warmupOpponent,
+} from "@/lib/chess/opponents";
 import type {
   PieceType,
   PromotionChoice,
@@ -89,7 +93,13 @@ export function ChessGame() {
     if (engine.turn() === state.playerColor) return;
     let cancelled = false;
     const run = ++aiRunRef.current;
-    dispatch({ type: "setThinking", thinking: true });
+    // "loading" until the model session exists, so the first turn (or a
+    // retrying fallback) shows a different line than ordinary thinking.
+    dispatch({
+      type: "setThinking",
+      thinking:
+        getModelState(state.difficulty) === "ready" ? "thinking" : "loading",
+    });
     const opponent = createOpponent(state.difficulty);
     const fen = engine.fen();
     const legal = engine.legalMoves();
@@ -316,9 +326,12 @@ export function ChessGame() {
         <GameSetup
           difficulty={state.difficulty}
           nextPlayerColor={state.nextPlayerColor}
-          onDifficulty={(difficulty) =>
-            dispatch({ type: "setDifficulty", difficulty })
-          }
+          onDifficulty={(difficulty) => {
+            dispatch({ type: "setDifficulty", difficulty });
+            // Prefetch while the user still has to pick a color and press
+            // Start game — the model is usually ready by the first AI turn.
+            void warmupOpponent(difficulty);
+          }}
           onNextPlayerColor={(side) =>
             dispatch({ type: "setNextPlayerColor", side })
           }

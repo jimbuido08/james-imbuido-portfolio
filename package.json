@@ -9,7 +9,9 @@
     "lint": "eslint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "kb:sync": "npx tsx --env-file=.env.local scripts/kb-sync.ts"
+    "kb:sync": "npx tsx --env-file=.env.local scripts/kb-sync.ts",
+    "models:wasm": "node scripts/copy-ort-wasm.mjs",
+    "verify:chess-model": "npx tsx scripts/verify-chess-model-parity.ts"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",
@@ -19,6 +21,7 @@
     "chess.js": "^1.4.0",
     "gray-matter": "^4.0.3",
     "next": "16.3.2",
+    "onnxruntime-web": "^1.29.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "react-markdown": "^10.1.0",

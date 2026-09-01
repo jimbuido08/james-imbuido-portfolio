@@ -1,6 +1,22 @@
-/** Isomorphic opponent module (no React/DOM imports). Honest stand-ins until the trained model ships — see TODO(MODEL) below. */
+/** Isomorphic opponent module (no React/DOM imports).
+ *
+ *  Three trained ONNX policy networks — one per difficulty band — pick among
+ *  the legal moves they are handed (§3.6 separation: the rules engine owns
+ *  legality, the model only ranks legal moves). Loading is lazy per
+ *  difficulty; any failure falls back to the heuristic opponents below, so a
+ *  missing/broken artifact degrades to the pre-model behaviour instead of
+ *  breaking the game.
+ */
 import { Chess } from "chess.js";
 
+import {
+  INPUT_FLOATS,
+  POLICY_LOGITS,
+  encodePosition,
+  isBlackToMove,
+  policyIndex,
+  squareIndex,
+} from "@/lib/chess/modelEncoding";
 import type { Difficulty, MoveSnapshot, PieceType } from "@/types/chess";
 
 export interface OpponentInput {
@@ -159,7 +175,169 @@ const hardOpponent: ChessOpponent = {
   },
 };
 
-export function createOpponent(difficulty: Difficulty): ChessOpponent {
+// ---- Model opponents -------------------------------------------------------
+// TODO(MODEL) satisfied: OnnxOpponent loads /models/chess-<band>.onnx lazily.
+
+type OrtModule = typeof import("onnxruntime-web/wasm");
+type InferenceSession = Awaited<
+  ReturnType<OrtModule["InferenceSession"]["create"]>
+>;
+
+export type ModelState = "unloaded" | "loading" | "ready" | "failed";
+
+interface SessionBundle {
+  session: InferenceSession;
+  ort: OrtModule;
+}
+
+const MODEL_FETCH_TIMEOUT_MS = 20_000;
+
+function modelUrl(difficulty: Difficulty): string {
+  return `/models/chess-${difficulty}.onnx`;
+}
+
+const modelStates: Record<Difficulty, ModelState> = {
+  easy: "unloaded",
+  medium: "unloaded",
+  hard: "unloaded",
+};
+
+/** One in-flight (or settled) session promise per difficulty. Needed because
+ *  createOpponent() is called fresh on every AI turn — the cache is what makes
+ *  the model load once per page, not once per move. */
+const sessionPromises = new Map<Difficulty, Promise<SessionBundle>>();
+
+export function getModelState(difficulty: Difficulty): ModelState {
+  return modelStates[difficulty];
+}
+
+function markState(difficulty: Difficulty, state: ModelState): void {
+  modelStates[difficulty] = state;
+}
+
+function loadSession(difficulty: Difficulty): Promise<SessionBundle> {
+  const existing = sessionPromises.get(difficulty);
+  if (existing) return existing;
+
+  const promise = (async () => {
+    markState(difficulty, "loading");
+    try {
+      // Lazy, so onnxruntime-web and its wasm never enter the main bundle.
+      const ort = await import("onnxruntime-web/wasm");
+      ort.env.wasm.wasmPaths = "/models/ort/";
+      // Single-threaded wasm: the COOP/COEP headers a worker/threads setup
+      // would require are not worth it for a ~350k-param CNN.
+      ort.env.wasm.numThreads = 1;
+      const response = await fetch(modelUrl(difficulty), {
+        signal: AbortSignal.timeout(MODEL_FETCH_TIMEOUT_MS),
+      });
+      if (!response.ok) {
+        throw new Error(`model fetch failed: ${response.status}`);
+      }
+      const buffer = await response.arrayBuffer();
+      const session = await ort.InferenceSession.create(
+        new Uint8Array(buffer),
+        { executionProviders: ["wasm"] },
+      );
+      markState(difficulty, "ready");
+      return { session, ort };
+    } catch (err) {
+      markState(difficulty, "failed");
+      sessionPromises.delete(difficulty);
+      throw err;
+    }
+  })();
+  sessionPromises.set(difficulty, promise);
+  return promise;
+}
+
+/** Prefetch a difficulty's model (called when the user picks a difficulty in
+ *  the setup screen). Never rejects — failures just mark the state. */
+export function warmupOpponent(difficulty: Difficulty): void {
+  void loadSession(difficulty).catch(() => {
+    // fall back to heuristics; nothing else to do here
+  });
+}
+
+/** Argmax over the model's policy restricted to legal moves. Deterministic:
+ *  ties keep the first (board-order) move, and the same position always gets
+ *  the same reply. */
+function pickBest(logits: Float32Array, input: OpponentInput): MoveSnapshot {
+  const mirror = isBlackToMove(input.fen);
+  // Promotion dedup: every (from, to) promotion variant shares one policy
+  // index — score the pair once, and keep the queen variant so the move we
+  // return promotes to a queen (the policy's documented assumption).
+  const byPair = new Map<string, MoveSnapshot>();
+  for (const move of input.legal) {
+    const pairKey = `${move.from}${move.to}`;
+    const existing = byPair.get(pairKey);
+    if (!existing || (move.promotion === "q" && existing.promotion !== "q")) {
+      byPair.set(pairKey, move);
+    }
+  }
+
+  let best: MoveSnapshot | null = null;
+  let bestIdx = -1;
+  for (const move of byPair.values()) {
+    const key = policyIndex(
+      squareIndex(move.from, mirror),
+      squareIndex(move.to, mirror),
+    );
+    if (!best || logits[key] > logits[bestIdx]) {
+      best = move;
+      bestIdx = key;
+    }
+  }
+  if (!best) {
+    // Unreachable: input.legal is non-empty, so at least one index exists.
+    throw new Error("pickBest found no scored move");
+  }
+  return best;
+}
+
+async function modelSelectMove(
+  bundle: SessionBundle,
+  input: OpponentInput,
+): Promise<MoveSnapshot> {
+  const data = encodePosition(input.fen, new Float32Array(INPUT_FLOATS));
+  const results = await bundle.session.run({
+    board: new bundle.ort.Tensor("float32", data, [1, 17, 8, 8]),
+  });
+  const policy = results.policy;
+  if (!policy || policy.data.length !== POLICY_LOGITS) {
+    throw new Error(
+      `unexpected policy output: ${policy?.data.length ?? "null"} logits`,
+    );
+  }
+  return pickBest(policy.data as Float32Array, input);
+}
+
+function createOnnxOpponent(difficulty: Difficulty): ChessOpponent {
+  return {
+    difficulty,
+    async selectMove(input) {
+      // The one throw this module ever produces: an empty legal list is a
+      // caller bug, not a fallback situation.
+      requireLegal(input);
+      await think();
+      try {
+        const bundle = await loadSession(difficulty);
+        return await modelSelectMove(bundle, input);
+      } catch (err) {
+        console.warn(
+          `Model opponent (${difficulty}) unavailable; falling back to heuristic.`,
+          err,
+        );
+        markState(difficulty, "failed");
+        sessionPromises.delete(difficulty);
+        return heuristicSelectMove(difficulty, input);
+      }
+    },
+  };
+}
+
+/** The heuristic opponents, exposed both as the fallback path and for tests. */
+export function createHeuristicOpponent(difficulty: Difficulty): ChessOpponent {
   switch (difficulty) {
     case "easy":
       return easyOpponent;
@@ -170,5 +348,13 @@ export function createOpponent(difficulty: Difficulty): ChessOpponent {
   }
 }
 
-// TODO(MODEL): implement OnnxOpponent against this interface once public/models/
-// holds real weights (lazy import("onnxruntime-web") + fetch("/models/…")).
+function heuristicSelectMove(
+  difficulty: Difficulty,
+  input: OpponentInput,
+): Promise<MoveSnapshot> {
+  return createHeuristicOpponent(difficulty).selectMove(input);
+}
+
+export function createOpponent(difficulty: Difficulty): ChessOpponent {
+  return createOnnxOpponent(difficulty);
+}
