@@ -1,6 +1,6 @@
 ---
 title: "Smartphone Addiction Baseline (Playground S6E8)"
-category: ML
+category: CLASSICAL_ML
 description: "A Kaggle Playground S6E8 baseline — a scikit-learn HistGradientBoosting pipeline with constraint-aware features, tuned with Optuna, reaching 0.959 CV ROC-AUC on the 691k-row smartphone-addiction dataset."
 featured: false
 technologies:

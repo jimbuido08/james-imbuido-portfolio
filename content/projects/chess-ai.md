@@ -1,6 +1,6 @@
 ---
 title: "Chess AI"
-category: AI
+category: CLASSICAL_ML
 description: "A fully playable chess game where the rules engine decides every legal move and the opponent runs entirely client-side — no server picks a move. Beat it on any difficulty while signed in for a one-time +5 JTB credit reward, verified by replaying your moves on the server."
 featured: true
 interactive: true
