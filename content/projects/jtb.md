@@ -1,6 +1,6 @@
 ---
 title: "JTB — James Talks Back"
-category: LLM
+category: AGENTS
 description: "An auth-gated RAG chatbot grounded exclusively in a curated knowledge base about James — per-section pgvector retrieval with a guaranteed whole-KB fallback, credit-metered access, and no credit charged when a reply fails. Sign in to chat."
 featured: true
 interactive: true
