@@ -14,13 +14,16 @@ export default function ChessPage() {
     <PageShell href="/chess">
       <p className="mt-8 max-w-prose text-fg-muted">
         Every move is checked by a real rules engine, and the opponent runs
-        entirely client-side — no server decides a single move.
+        entirely client-side — no server decides a single move. Each difficulty
+        is its own neural network, trained on games by human players in that
+        rating band and served as a ~0.7&nbsp;MB ONNX artifact that loads only
+        when you pick it.
       </p>
       <p className="mt-4 max-w-prose text-sm text-fg-subtle">
-        The trained model hasn&apos;t been exported for the browser yet, so a
-        heuristic stand-in runs through the same interface it will use.
-        Checkmate the AI on any difficulty while signed in to claim a one-time +
-        {CHESS_REWARD_CREDITS} JTB interaction reward.
+        If the model can&apos;t load, a heuristic opponent steps in through the
+        same interface — the game never breaks. Checkmate the AI on any
+        difficulty while signed in to claim a one-time +{CHESS_REWARD_CREDITS}{" "}
+        JTB interaction reward.
       </p>
       <ChessGame />
     </PageShell>

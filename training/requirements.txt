@@ -1,0 +1,7 @@
+torch>=2.4
+numpy
+chess>=1.10
+zstandard
+onnx
+onnxruntime
+tqdm

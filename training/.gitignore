@@ -1,0 +1,12 @@
+# Virtualenv
+.venv/
+
+# Datasets (streamed samples, git-ignored — regenerate from Lichess)
+data/
+
+# Training outputs
+checkpoints/
+export/
+__pycache__/
+*.pt
+*.onnx

@@ -1,0 +1,431 @@
+[
+  {
+    "name": "start",
+    "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+    "planes_sha256": "30868a62f4e7f8c340b1b309666cfcfb309416c9e20b04db30bbaf7de5bd9c5e",
+    "moves": [
+      {
+        "uci": "a2a3",
+        "from_idx": 8,
+        "to_idx": 16
+      },
+      {
+        "uci": "a2a4",
+        "from_idx": 8,
+        "to_idx": 24
+      },
+      {
+        "uci": "b1a3",
+        "from_idx": 1,
+        "to_idx": 16
+      },
+      {
+        "uci": "b1c3",
+        "from_idx": 1,
+        "to_idx": 18
+      },
+      {
+        "uci": "b2b3",
+        "from_idx": 9,
+        "to_idx": 17
+      },
+      {
+        "uci": "b2b4",
+        "from_idx": 9,
+        "to_idx": 25
+      }
+    ]
+  },
+  {
+    "name": "castling_all_w",
+    "fen": "r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1",
+    "planes_sha256": "21ed584c856d8ea60e08ca2d3de1a0ccfd6583ccf831033baabd85383f88cf87",
+    "moves": [
+      {
+        "uci": "a1a2",
+        "from_idx": 0,
+        "to_idx": 8
+      },
+      {
+        "uci": "a1a3",
+        "from_idx": 0,
+        "to_idx": 16
+      },
+      {
+        "uci": "a1a4",
+        "from_idx": 0,
+        "to_idx": 24
+      },
+      {
+        "uci": "a1a5",
+        "from_idx": 0,
+        "to_idx": 32
+      },
+      {
+        "uci": "a1a6",
+        "from_idx": 0,
+        "to_idx": 40
+      },
+      {
+        "uci": "a1a7",
+        "from_idx": 0,
+        "to_idx": 48
+      }
+    ]
+  },
+  {
+    "name": "castling_all_b",
+    "fen": "r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1",
+    "planes_sha256": "21ed584c856d8ea60e08ca2d3de1a0ccfd6583ccf831033baabd85383f88cf87",
+    "moves": [
+      {
+        "uci": "a8a1",
+        "from_idx": 0,
+        "to_idx": 56
+      },
+      {
+        "uci": "a8a2",
+        "from_idx": 0,
+        "to_idx": 48
+      },
+      {
+        "uci": "a8a3",
+        "from_idx": 0,
+        "to_idx": 40
+      },
+      {
+        "uci": "a8a4",
+        "from_idx": 0,
+        "to_idx": 32
+      },
+      {
+        "uci": "a8a5",
+        "from_idx": 0,
+        "to_idx": 24
+      },
+      {
+        "uci": "a8a6",
+        "from_idx": 0,
+        "to_idx": 16
+      }
+    ]
+  },
+  {
+    "name": "castling_partial_w",
+    "fen": "r3k2r/8/8/8/8/8/8/R3K2R w Kq - 0 1",
+    "planes_sha256": "7d63556d1bcbce5e7ac2c87e7e1a01e86c79a624fbda202e38f435a67dac52ac",
+    "moves": [
+      {
+        "uci": "a1a2",
+        "from_idx": 0,
+        "to_idx": 8
+      },
+      {
+        "uci": "a1a3",
+        "from_idx": 0,
+        "to_idx": 16
+      },
+      {
+        "uci": "a1a4",
+        "from_idx": 0,
+        "to_idx": 24
+      },
+      {
+        "uci": "a1a5",
+        "from_idx": 0,
+        "to_idx": 32
+      },
+      {
+        "uci": "a1a6",
+        "from_idx": 0,
+        "to_idx": 40
+      },
+      {
+        "uci": "a1a7",
+        "from_idx": 0,
+        "to_idx": 48
+      }
+    ]
+  },
+  {
+    "name": "castling_partial_b",
+    "fen": "r3k2r/8/8/8/8/8/8/R3K2R b Kq - 0 1",
+    "planes_sha256": "15b41657d2308b345233df127d593a25e5f35479946251c00737e3f7bb477195",
+    "moves": [
+      {
+        "uci": "a8a1",
+        "from_idx": 0,
+        "to_idx": 56
+      },
+      {
+        "uci": "a8a2",
+        "from_idx": 0,
+        "to_idx": 48
+      },
+      {
+        "uci": "a8a3",
+        "from_idx": 0,
+        "to_idx": 40
+      },
+      {
+        "uci": "a8a4",
+        "from_idx": 0,
+        "to_idx": 32
+      },
+      {
+        "uci": "a8a5",
+        "from_idx": 0,
+        "to_idx": 24
+      },
+      {
+        "uci": "a8a6",
+        "from_idx": 0,
+        "to_idx": 16
+      }
+    ]
+  },
+  {
+    "name": "middlegame_btm",
+    "fen": "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 5 4",
+    "planes_sha256": "8d954c4de3f3275cf7157dc9ba6c09766cda39d47bc09a591bbbf45c0361e964",
+    "moves": [
+      {
+        "uci": "a7a5",
+        "from_idx": 8,
+        "to_idx": 24
+      },
+      {
+        "uci": "a7a6",
+        "from_idx": 8,
+        "to_idx": 16
+      },
+      {
+        "uci": "a8b8",
+        "from_idx": 0,
+        "to_idx": 1
+      },
+      {
+        "uci": "b7b5",
+        "from_idx": 9,
+        "to_idx": 25
+      },
+      {
+        "uci": "b7b6",
+        "from_idx": 9,
+        "to_idx": 17
+      },
+      {
+        "uci": "c6a5",
+        "from_idx": 18,
+        "to_idx": 24
+      }
+    ]
+  },
+  {
+    "name": "ep_white",
+    "fen": "rnbqkbnr/ppp1pppp/8/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 3",
+    "planes_sha256": "2c082a6758072e2d3a5e469c44a15e765f304ba73ed8cc547a9c8e0d3ec01b45",
+    "moves": [
+      {
+        "uci": "a2a3",
+        "from_idx": 8,
+        "to_idx": 16
+      },
+      {
+        "uci": "a2a4",
+        "from_idx": 8,
+        "to_idx": 24
+      },
+      {
+        "uci": "b1a3",
+        "from_idx": 1,
+        "to_idx": 16
+      },
+      {
+        "uci": "b1c3",
+        "from_idx": 1,
+        "to_idx": 18
+      },
+      {
+        "uci": "b2b3",
+        "from_idx": 9,
+        "to_idx": 17
+      },
+      {
+        "uci": "b2b4",
+        "from_idx": 9,
+        "to_idx": 25
+      }
+    ]
+  },
+  {
+    "name": "ep_black",
+    "fen": "rnbqkbnr/pppp1ppp/8/8/3Pp3/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 3",
+    "planes_sha256": "2c082a6758072e2d3a5e469c44a15e765f304ba73ed8cc547a9c8e0d3ec01b45",
+    "moves": [
+      {
+        "uci": "a7a5",
+        "from_idx": 8,
+        "to_idx": 24
+      },
+      {
+        "uci": "a7a6",
+        "from_idx": 8,
+        "to_idx": 16
+      },
+      {
+        "uci": "b7b5",
+        "from_idx": 9,
+        "to_idx": 25
+      },
+      {
+        "uci": "b7b6",
+        "from_idx": 9,
+        "to_idx": 17
+      },
+      {
+        "uci": "b8a6",
+        "from_idx": 1,
+        "to_idx": 16
+      },
+      {
+        "uci": "b8c6",
+        "from_idx": 1,
+        "to_idx": 18
+      }
+    ]
+  },
+  {
+    "name": "check_w",
+    "fen": "k3r3/8/8/8/8/8/8/4K3 w - - 0 1",
+    "planes_sha256": "98c275b96358e8c56230818c8e2463dc51debea82dd44a655e3fb1c5cad22591",
+    "moves": [
+      {
+        "uci": "e1d1",
+        "from_idx": 4,
+        "to_idx": 3
+      },
+      {
+        "uci": "e1d2",
+        "from_idx": 4,
+        "to_idx": 11
+      },
+      {
+        "uci": "e1f1",
+        "from_idx": 4,
+        "to_idx": 5
+      },
+      {
+        "uci": "e1f2",
+        "from_idx": 4,
+        "to_idx": 13
+      }
+    ]
+  },
+  {
+    "name": "pawn_7th",
+    "fen": "rnbqkbnr/ppppPppp/8/8/8/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1",
+    "planes_sha256": "26036b02db15a7173af0687ef51142236c00137ac16e808e47ea00605895b4b2",
+    "moves": [
+      {
+        "uci": "a2a3",
+        "from_idx": 8,
+        "to_idx": 16
+      },
+      {
+        "uci": "a2a4",
+        "from_idx": 8,
+        "to_idx": 24
+      },
+      {
+        "uci": "b1a3",
+        "from_idx": 1,
+        "to_idx": 16
+      },
+      {
+        "uci": "b1c3",
+        "from_idx": 1,
+        "to_idx": 18
+      },
+      {
+        "uci": "b2b3",
+        "from_idx": 9,
+        "to_idx": 17
+      },
+      {
+        "uci": "b2b4",
+        "from_idx": 9,
+        "to_idx": 25
+      }
+    ]
+  },
+  {
+    "name": "sparse_endgame_w",
+    "fen": "4k3/8/8/8/8/8/8/4K2R w K - 0 1",
+    "planes_sha256": "4ae8b92d21daf1357b3df69e05875402453a7c1da184354bab6fb0096236ab18",
+    "moves": [
+      {
+        "uci": "e1d1",
+        "from_idx": 4,
+        "to_idx": 3
+      },
+      {
+        "uci": "e1d2",
+        "from_idx": 4,
+        "to_idx": 11
+      },
+      {
+        "uci": "e1e2",
+        "from_idx": 4,
+        "to_idx": 12
+      },
+      {
+        "uci": "e1f1",
+        "from_idx": 4,
+        "to_idx": 5
+      },
+      {
+        "uci": "e1f2",
+        "from_idx": 4,
+        "to_idx": 13
+      },
+      {
+        "uci": "e1g1",
+        "from_idx": 4,
+        "to_idx": 6
+      }
+    ]
+  },
+  {
+    "name": "sparse_endgame_b",
+    "fen": "4k3/8/8/8/8/8/8/4K2R b - - 0 1",
+    "planes_sha256": "124ec45578ad0682a04c33d4739fe13a459186c37a44173838aec62b77d72026",
+    "moves": [
+      {
+        "uci": "e8d7",
+        "from_idx": 4,
+        "to_idx": 11
+      },
+      {
+        "uci": "e8d8",
+        "from_idx": 4,
+        "to_idx": 3
+      },
+      {
+        "uci": "e8e7",
+        "from_idx": 4,
+        "to_idx": 12
+      },
+      {
+        "uci": "e8f7",
+        "from_idx": 4,
+        "to_idx": 13
+      },
+      {
+        "uci": "e8f8",
+        "from_idx": 4,
+        "to_idx": 5
+      }
+    ]
+  }
+]

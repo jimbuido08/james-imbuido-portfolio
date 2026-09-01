@@ -14,6 +14,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored/self-hosted runtime + Python training pipeline:
+    "public/models/ort/**",
+    "training/**",
   ]),
 ]);
 
