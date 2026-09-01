@@ -18,8 +18,8 @@ export interface FilterDef {
 /** Chips: ALL + the category families, plus framework chips (PYTORCH, TENSORFLOW). */
 export const AI_ML_FILTERS: FilterDef[] = [
   { key: "all", label: "ALL" },
-  { key: "llm", label: "LLM", category: "LLM" },
   { key: "classical-ml", label: "CLASSICAL ML", category: "CLASSICAL_ML" },
+  { key: "llm", label: "LLM", category: "LLM" },
   { key: "pytorch", label: "PYTORCH", technologies: ["pytorch"] },
   {
     key: "tensorflow",
