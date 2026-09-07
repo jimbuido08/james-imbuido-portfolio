@@ -31,7 +31,7 @@ import {
   synthReducer,
   synthStageCopy,
 } from "./synthState";
-import { requestEmbed, requestSynthesize } from "./voiceClient";
+import { requestEmbed, requestPreload, requestSynthesize } from "./voiceClient";
 import { VoiceRewardClaim } from "./VoiceRewardClaim";
 import { useVoiceRecorder } from "./useVoiceRecorder";
 
@@ -103,6 +103,16 @@ export function VoiceStudio() {
       const value = await handle.promise;
       setEmbed(value);
       setEmbedState({ phase: "done" });
+      // The embedding is the last thing Step 1 needs — warm the ~111 MB of
+      // synthesis graphs in the background while the user types their text.
+      // Skipped for Data Saver users; a failed preload stays silent because
+      // Synthesize retries the load itself.
+      if (
+        !(navigator as Navigator & { connection?: { saveData?: boolean } }).connection
+          ?.saveData
+      ) {
+        requestPreload();
+      }
     } catch (err) {
       setEmbedState({
         phase: "error",

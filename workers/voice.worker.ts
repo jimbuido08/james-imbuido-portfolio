@@ -7,6 +7,7 @@
  *
  * Message protocol (all buffers transferred, never copied):
  *   in:  { type: "embed", pcm: Float32Array }
+ *        { type: "preload" }
  *        { type: "synthesize", text: string, embed: Float32Array, seed: number }
  *   out: { type: "stage", stage, current?, total? }
  *        { type: "embedding", embed: Float32Array }
@@ -19,13 +20,16 @@ export interface EmbedRequest {
   type: "embed";
   pcm: Float32Array;
 }
+export interface PreloadRequest {
+  type: "preload";
+}
 export interface SynthesizeRequest {
   type: "synthesize";
   text: string;
   embed: Float32Array;
   seed: number;
 }
-export type VoiceRequest = EmbedRequest | SynthesizeRequest;
+export type VoiceRequest = EmbedRequest | PreloadRequest | SynthesizeRequest;
 
 export interface StageMessage {
   type: "stage";
@@ -42,11 +46,19 @@ export interface AudioMessage {
   samples: Float32Array;
   sampleRate: number;
 }
+export interface PreloadedMessage {
+  type: "preloaded";
+}
 export interface ErrorMessage {
   type: "error";
   message: string;
 }
-export type VoiceResponse = StageMessage | EmbeddingMessage | AudioMessage | ErrorMessage;
+export type VoiceResponse =
+  | StageMessage
+  | EmbeddingMessage
+  | AudioMessage
+  | PreloadedMessage
+  | ErrorMessage;
 
 const workerScope = self as unknown as {
   postMessage(message: unknown, transfer?: Transferable[]): void;
@@ -73,6 +85,13 @@ self.onmessage = async (event: MessageEvent<VoiceRequest>) => {
       case "embed": {
         const embed = await engine.embed(request.pcm, onProgress);
         post({ type: "embedding", embed }, [embed.buffer]);
+        break;
+      }
+      case "preload": {
+        // Failures are deliberately silent here — synthesize() re-attempts the
+        // load and reports the real error if the graphs never arrive.
+        await engine.preload(onProgress);
+        post({ type: "preloaded" });
         break;
       }
       case "synthesize": {

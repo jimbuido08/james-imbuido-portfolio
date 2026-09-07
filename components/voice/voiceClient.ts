@@ -104,6 +104,22 @@ export function requestEmbed(
   return { promise, cancelStage };
 }
 
+/** Fire-and-forget warm-up of the synthesis graphs (engine.preload). Runs
+ * through the serialized queue, so a Synthesize click made mid-preload simply
+ * waits — and then finds the sessions already built. Errors are swallowed:
+ * synthesis is the path that reports download problems. */
+export function requestPreload(): void {
+  const promise = dispatch((w) => {
+    const request: VoiceRequest = { type: "preload" };
+    w.postMessage(request);
+  }).then((response) => {
+    if (response.type !== "preloaded") {
+      throw new Error("unexpected worker response for preload");
+    }
+  });
+  promise.catch(() => undefined); // preload outcome is not user-facing
+}
+
 export interface SynthesisResult {
   samples: Float32Array;
   sampleRate: number;

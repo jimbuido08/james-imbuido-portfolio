@@ -359,3 +359,18 @@ size (§4/§5).
    deterministic), but James should know `training/voice/` now has a working
    Windows path (venv + checkpoints + exports are all machine-local and
    gitignored).
+6. **First-user-test feedback (2026-09-07): "Synthesis failed: failed to
+   fetch"** — the raw browser `TypeError` from the graph fetch. Verified the
+   server side was innocent (CDN serving the real bytes, not pointers), so
+   the failure is the download itself: embed() fetches only the 5.7 MB
+   encoder, then the Synthesize click suddenly pulls the remaining ~111 MB,
+   dominated by the 74.6 MB synth-step — on flaky/mobile connections that
+   dies mid-flight, and the old code had no retry, no prefetch, and surfaced
+   the browser's error verbatim. Mitigation shipped the same day: `fetchGraph`
+   retries network errors and CDN 5xx twice (1 s/3 s backoff; 4xx fail fast),
+   `engine.preload()` warms all four synthesis graphs in the worker the
+   moment the embedding is ready (silent on failure — synthesize() re-attempts
+   and reports), skipped for Data Saver users, and the final failure message
+   names the problem in plain language instead of "Failed to fetch". The
+   underlying size lever (§4.3/§4.4) remains open if testers still stall on
+   slow connections.

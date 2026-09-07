@@ -69,16 +69,50 @@ function zerosTensor(dims: number[]): ort.Tensor {
   return new ort.Tensor("float32", new Float32Array(dims.reduce((a, b) => a * b, 1)), dims);
 }
 
+/** Retries for a model download: the synthesis graphs total ~111 MB, and a
+ * dropped connection mid-flight was the commonest real-world failure (raw
+ * "Failed to fetch" surfacing as a synthesis error). 4xx statuses won't heal,
+ * so only network errors and CDN 5xx get another attempt. */
+const GRAPH_FETCH_RETRIES = 2;
+const GRAPH_RETRY_DELAYS_MS = [1000, 3000];
+
+async function fetchGraph(name: string): Promise<Uint8Array> {
+  let lastError: Error | null = null;
+  for (let attempt = 0; attempt <= GRAPH_FETCH_RETRIES; attempt++) {
+    if (attempt > 0) {
+      await new Promise((resolve) => setTimeout(resolve, GRAPH_RETRY_DELAYS_MS[attempt - 1]));
+    }
+    try {
+      const response = await fetch(`${VOICE_MODEL_BASE}${name}`);
+      if (response.ok) return new Uint8Array(await response.arrayBuffer());
+      lastError = new Error(`HTTP ${response.status}`);
+      if (response.status < 500 && response.status !== 429) {
+        throw lastError; // 404 etc. — retrying cannot help
+      }
+    } catch (err) {
+      // Our own HTTP-status error (non-TypeError) was already judged final.
+      if (!(err instanceof TypeError)) throw err;
+      lastError = err;
+    }
+  }
+  throw new Error(
+    `the model download kept failing (${lastError?.message ?? "network error"}) — check your connection and try again`,
+  );
+}
+
 async function loadModel(name: string): Promise<ort.InferenceSession> {
-  const response = await fetch(`${VOICE_MODEL_BASE}${name}`);
-  if (!response.ok) throw new Error(`fetch ${name}: ${response.status}`);
-  const bytes = new Uint8Array(await response.arrayBuffer());
+  const bytes = await fetchGraph(name);
   return ort.InferenceSession.create(bytes, { executionProviders: ["wasm"] });
 }
 
 export interface VoiceEngine {
   /** Partial-utterance speaker embedding from 16 kHz mono PCM. */
   embed(pcm: Float32Array, onProgress: ProgressFn): Promise<Float32Array>;
+  /** Download + compile every synthesis graph ahead of the Synthesize click —
+   * embed() only loads the 5.7 MB encoder, so without this the Synthesize
+   * click starts a ~111 MB download on the spot. Errors are swallowed here;
+   * synthesize() retries and surfaces them with the user-facing message. */
+  preload(onProgress: ProgressFn): Promise<void>;
   /** Mel → audio: returns 16 kHz mono samples. */
   synthesize(
     text: string,
@@ -138,6 +172,16 @@ export function createVoiceEngine(): VoiceEngine {
       const embed = new Float32Array(SPEAKER_EMBEDDING_SIZE);
       for (let i = 0; i < SPEAKER_EMBEDDING_SIZE; i++) embed[i] = raw[i] / norm;
       return embed;
+    },
+
+    async preload(onProgress) {
+      for (const key of ["synthEncode", "synthStep", "vocUpsample", "vocChunk"] as const) {
+        try {
+          await require(key, onProgress);
+        } catch {
+          return; // synthesize() retries and reports; preload stays silent
+        }
+      }
     },
 
     async synthesize(text, spkEmbed, seed, onProgress) {
