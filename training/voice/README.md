@@ -13,6 +13,13 @@ and gate numbers live in `docs/notes/voice-cloning-architecture.md`.
   gate; the shipping artifacts are the **fp32 exports** (see "Compression" —
   both the int8 and fp16 ladders fail on these RNN-heavy graphs). The gated
   artifacts are committed at `public/models/voice/`.
+- **Voc-chunk re-exported** (2026-09-07, post-gate bugfix): the shipped chunk
+  graph froze the GRU state and its gumbel-max used one scalar `u` per sample
+  (a constant across all 512 logits can never change an argmax — see the
+  postmortem in `docs/notes/voice-cloning-architecture.md` §2). The re-export
+  loops h1/h2 in-graph and takes per-class `u [200, 512]`; TS side and fixtures
+  were updated in lockstep and the 52/52 wasm gate re-passed with non-degenerate
+  vocoder values.
 
 ## Milestone B pipeline (after every re-export)
 
@@ -44,7 +51,7 @@ Both compression ladders **fail** on the SV2TTS graphs (measured 2026-09-07):
   (Gemm/MatMul kept fp32) saves almost nothing: the CBHG convs and the vocoder
   conv stack dominate those files. fp16 also buys no wasm speed.
 - **Decision: ship fp32** — encoder 5.5 MB, synth-encode 12.6 MB, synth-step
-  74.6 MB, voc-upsample 1.6 MB, voc-chunk 17.2 MB ≈ 111 MB total, lazy-loaded
+  74.6 MB, voc-upsample 1.6 MB, voc-chunk 17.4 MB ≈ 111 MB total, lazy-loaded
   per stage. `voice-voc-step.onnx` is diagnostic-only and not shipped.
 
 ## Mac setup
@@ -105,6 +112,8 @@ cp export/voice-encoder.onnx export/voice-synth-encode.onnx \
 | `clean_text.py` | `english_cleaners` + `text_to_sequence` reference + TEXT_CASES |
 | `make_fixtures.py` | generates the deterministic fixture wavs + the golden text/mel/embed/graph JSON |
 | `quantize.py` / `gate.py` | int8/fp16 candidates + candidate-vs-fp32 gate |
+| `ground_truth.py` | reference-pipeline vs ONNX stage comparison (reference Tacotron mel vs ONNX mel, reference `model.generate` on the ONNX mel) — the check that caught the shipped voc-chunk producing a DC ramp |
+| `synthesize_sample.py` | listening-test sample generator: real reference-repo speakers → shipped graphs (mirroring `lib/voice/engine.ts` step for step) → A/B WAVs (WaveRNN random-u / argmax / Griffin-Lim) with speech-sanity diagnostics; outputs to `samples/` (gitignored) |
 | `fixtures/` | committed fixture wavs + `voice_fixtures.json` (checked by `npm run verify:voice-model`) |
 | `_rtvc-src/` | reference repo clone (gitignored, read-only for study) |
 | `pretrained/` | downloaded checkpoints (gitignored) |

@@ -28,6 +28,7 @@ import {
   VOICE_GRAPHS,
   VOICE_MODEL_BASE,
   VOC_CHUNK_SAMPLES,
+  VOC_CHUNK_U_DRAWS,
   VOC_CLASSES,
   VOC_DEEMPHASIS,
 } from "./modelContract";
@@ -254,8 +255,10 @@ export function createVoiceEngine(): VoiceEngine {
       let xPrev: Float32Array<ArrayBufferLike> = new Float32Array(1);
       const codes = new Float32Array(melFrames * VOC_CHUNK_SAMPLES);
       for (let frame = 0; frame < melFrames; frame++) {
-        const u = new Float32Array(VOC_CHUNK_SAMPLES);
-        for (let i = 0; i < VOC_CHUNK_SAMPLES; i++) u[i] = random();
+        // One uniform per (sample, class) — the in-graph gumbel-max needs
+        // independent noise across the 512 classes per sample.
+        const u = new Float32Array(VOC_CHUNK_U_DRAWS);
+        for (let i = 0; i < VOC_CHUNK_U_DRAWS; i++) u[i] = random();
         const out = await vocChunk.run({
           x_prev: new ort.Tensor("float32", xPrev, [1, 1]),
           mels: new ort.Tensor(
@@ -270,7 +273,7 @@ export function createVoiceEngine(): VoiceEngine {
           ),
           h1: new ort.Tensor("float32", h1, [1, 512]),
           h2: new ort.Tensor("float32", h2, [1, 512]),
-          u: new ort.Tensor("float32", u, [VOC_CHUNK_SAMPLES]),
+          u: new ort.Tensor("float32", u, [VOC_CHUNK_SAMPLES, VOC_CLASSES]),
         });
         codes.set(out.samples.data as Float32Array, frame * VOC_CHUNK_SAMPLES);
         h1 = out.next_h1.data as Float32Array;

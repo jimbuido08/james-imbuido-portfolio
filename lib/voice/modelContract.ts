@@ -87,10 +87,15 @@ export const VOC_DEEMPHASIS = 0.97;
 /**
  * Chunked shipping form: one mel frame per `voice-voc-chunk` run — 200
  * unrolled WaveRNN steps with per-sample conditioning rows and in-graph
- * gumbel-max sampling. JS seeds `u ~ Uniform[0, 1)` per sample; u = 0.5 gives
+ * gumbel-max sampling. JS seeds `u ~ Uniform[0, 1)` per (sample, class) —
+ * the noise must be independent across the 512 classes, otherwise the
+ * per-sample constant shifts every logit equally and the argmax never
+ * changes (pure argmax masquerading as sampling). u = 0.5 everywhere gives
  * the deterministic argmax path used by fixtures.
  */
 export const VOC_CHUNK_SAMPLES = VOC_TOTAL_SCALE;
+/** Uniform draws per chunk run: one per (sample, class). */
+export const VOC_CHUNK_U_DRAWS = VOC_CHUNK_SAMPLES * VOC_CLASSES;
 
 /**
  * Deterministic speaker embedding used ONLY by the parity fixtures — both the

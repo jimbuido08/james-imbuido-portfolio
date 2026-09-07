@@ -202,16 +202,13 @@ async function main(): Promise<void> {
     const session = await load("voice-voc-chunk.onnx");
     const input: Record<string, ort.Tensor> = {
       x_prev: zeros([1, 1]),
-      m_t: zeros([1, 80]),
-      a1: zeros([1, 32]),
-      a2: zeros([1, 32]),
-      a3: zeros([1, 32]),
-      a4: zeros([1, 32]),
+      mels: zeros([200, 80]),
+      aux: zeros([200, 128]),
       h1: zeros([1, 512]),
       h2: zeros([1, 512]),
       u: tensor(
-        Float32Array.from({ length: 200 }, () => 0.5),
-        [200],
+        Float32Array.from({ length: 200 * 512 }, () => 0.5),
+        [200, 512],
       ),
     };
     const perFrame = await timeRuns(session, input, 8);

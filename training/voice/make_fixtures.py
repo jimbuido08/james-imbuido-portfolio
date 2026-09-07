@@ -256,7 +256,9 @@ def graph_cases(export_dir: Path, wav_paths: dict[str, Path],
     h1 = np.zeros((1, 512), np.float32)
     h2 = np.zeros((1, 512), np.float32)
     x_prev = np.zeros((1, 1), np.float32)
-    u = np.full((200,), 0.5, np.float32)
+    # u = 0.5 per (sample, class): constant per-class gumbel vector -> the
+    # deterministic argmax path. The chunk's u input is [200, 512].
+    u = np.full((200, 512), 0.5, np.float32)
     frame_cases = []
     for i in range(4):
         lo, hi = i * 200, (i + 1) * 200

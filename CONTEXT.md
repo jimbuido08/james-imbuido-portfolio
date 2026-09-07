@@ -56,7 +56,13 @@ the site works without WebGL (§11.1).
   device — the +2 reward claim (`POST /api/voice/claim`) is the only network
   call and carries an empty body. Conversion pipeline + fixtures +
   `npm run verify:voice-model` (52/52) live in `training/voice/`; see
-  `docs/notes/voice-cloning-architecture.md`. The universe now balances six
+  `docs/notes/voice-cloning-architecture.md`. The shipped `voice-voc-chunk.onnx`
+  was re-exported (2026-09-07) after a bug chain froze its GRU state and made
+  its gumbel sampling a no-op (scalar `u` across all 512 logits can't change
+  an argmax — the contract is per-class `u [200, 512]`, and the fixture gate
+  had been vacuous because both sides shared the bug); the wasm gate re-passed
+  with non-degenerate vocoder values and the browser drive now produces
+  speech-shaped output. The universe now balances six
   nodes at 60°. Migration `20260907120000_claim_voice_reward.sql` (+
   `types/supabase.ts` hand-updated) still needs applying to the hosted
   project.
@@ -163,8 +169,11 @@ the site works without WebGL (§11.1).
 - Apply `supabase/migrations/20260907120000_claim_voice_reward.sql` to the
   hosted project (voice reward: `voice_claim_attempts`, `profiles.
   voice_reward_claimed`, `claim_voice_reward` with the baked-in rate gate).
-- `/voice` WaveRNN audio quality needs James's listening test; Safari timings
-  unmeasured (fallback ladder §4.4 in docs/notes/voice-cloning-architecture.md).
+- `/voice` WaveRNN audio quality: machine-side diagnostics pass (speech-shaped
+  envelope, envelope-vs-mel r 0.62–0.70 vs the Griffin-Lim floor 0.47 — A/B
+  WAVs in `training/voice/samples/`), but the human listening test and the
+  Safari timing column are still James's rows
+  (docs/notes/voice-cloning-architecture.md §5).
 - After editing any `content/jtb/` file, run `npm run kb:sync` (or
   `npm run kb:sync -- --check` to see drift) — otherwise retrieval serves the
   pre-edit snapshot while the fallback serves the new text.

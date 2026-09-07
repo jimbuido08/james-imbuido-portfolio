@@ -54,6 +54,8 @@ next-env.d.ts
 /training/voice/pretrained/
 /training/voice/export/
 /training/voice/.venv/
+# Generated listening-test audio (derived from reference-repo samples + browser drives)
+/training/voice/samples/
 # The gated fp32 artifacts in public/models/voice/ are committed (~111 MB total,
 # each under GitHub's 100 MB per-file cap — synth-step is 74 MB). Git LFS is an
 # option if the repo grows; flagged for James, not required to deploy.

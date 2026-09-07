@@ -22,7 +22,11 @@ import { resolve } from "node:path";
 import * as ort from "onnxruntime-web/wasm";
 
 import { encoderMel, synthMel } from "../lib/voice/mel";
-import { fixtureSpeakerEmbedding, GRAPH_INPUTS } from "../lib/voice/modelContract";
+import {
+  fixtureSpeakerEmbedding,
+  GRAPH_INPUTS,
+  VOC_CLASSES,
+} from "../lib/voice/modelContract";
 import { computePartialSlices } from "../lib/voice/partialSlices";
 import { textToSequence } from "../lib/voice/textFrontend";
 
@@ -348,14 +352,14 @@ async function main(): Promise<void> {
         mels.set(melsCond.subarray((lo + i) * 80, (lo + i + 1) * 80), i * 80);
         auxSlice.set(aux.subarray((lo + i) * 128, (lo + i + 1) * 128), i * 128);
       }
-      const u = new Float32Array(200).fill(0.5);
+      const u = new Float32Array(200 * VOC_CLASSES).fill(0.5);
       const chunkOut = await vocChunk.run({
         x_prev: new ort.Tensor("float32", xPrev, [1, 1]),
         mels: new ort.Tensor("float32", mels, [200, 80]),
         aux: new ort.Tensor("float32", auxSlice, [200, 128]),
         h1: new ort.Tensor("float32", h1, [1, 512]),
         h2: new ort.Tensor("float32", h2, [1, 512]),
-        u: new ort.Tensor("float32", u, [200]),
+        u: new ort.Tensor("float32", u, [200, VOC_CLASSES]),
       });
       const samples = chunkOut.samples.data as Float32Array;
       const expected = graphCases.voc_frames[frame].samples;

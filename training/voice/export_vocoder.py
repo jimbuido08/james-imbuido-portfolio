@@ -62,7 +62,10 @@ class VocStep(nn.Module):
 
     Replicates the per-sample body of WaveRNN.generate (RAW mode), with the two
     nn.GRUs used as GRUCells (same weights, get_gru_cell-style) and sampling
-    left to JS."""
+    left to JS. The updated hidden states are returned alongside the logits —
+    WaveRNN.generate carries h1/h2 across every sample, so a step cell that
+    dropped them would freeze the recurrent state (the bug that produced
+    constant class-0 output in the first export)."""
 
     def __init__(self, wavernn: nn.Module) -> None:
         super().__init__()
@@ -91,17 +94,17 @@ class VocStep(nn.Module):
         a4: torch.Tensor,  # [1, 32]
         h1: torch.Tensor,  # [1, 512]
         h2: torch.Tensor,  # [1, 512]
-    ) -> torch.Tensor:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         x = self.I(torch.cat([x_prev, m_t, a1], dim=1))
         res = x
-        x = self.rnn1(x, h1)  # GRUCell returns the hidden state only
-        x = x + res
+        h1 = self.rnn1(x, h1)  # GRUCell returns the hidden state only
+        x = h1 + res
         res = x
-        x = self.rnn2(torch.cat([x, a2], dim=1), h2)
-        x = x + res
+        h2 = self.rnn2(torch.cat([x, a2], dim=1), h2)
+        x = h2 + res
         x = F.relu(self.fc1(torch.cat([x, a3], dim=1)))
         x = F.relu(self.fc2(torch.cat([x, a4], dim=1)))
-        return self.fc3(x)
+        return self.fc3(x), h1, h2
 
 
 class VocChunk(nn.Module):
@@ -117,15 +120,20 @@ class VocChunk(nn.Module):
     row i to step i (a1..a4 are aux row slices [i*32:(i+1)*32]).
 
     Sampling happens in-graph (the JS loop can no longer interleave): JS seeds
-    `u` ~ Uniform[0, 1) per sample; the gumbel-max trick
-    argmax(logits + -log(-log(u))) samples exactly from the categorical. For
-    deterministic fixtures pass u = 0.5 (constant shift, argmax preserved).
+    `u` ~ Uniform[0, 1) per (sample, class); the gumbel-max trick
+    argmax(logits + -log(-log(u))) samples exactly from the categorical. The
+    noise MUST be independent per class — a single scalar per sample adds a
+    constant to all 512 logits and argmax(logits + const) == argmax(logits),
+    i.e. pure argmax masquerading as sampling (the bug that shipped first).
+    For deterministic fixtures pass u = 0.5 everywhere (constant vector,
+    argmax preserved).
     """
 
     def __init__(self, step: VocStep, samples: int) -> None:
         super().__init__()
         self.step = step
         self.samples = samples
+        self.n_classes = step.fc3.out_features
 
     def forward(
         self,
@@ -134,17 +142,24 @@ class VocChunk(nn.Module):
         aux: torch.Tensor,  # [samples, 128]
         h1: torch.Tensor,  # [1, 512]
         h2: torch.Tensor,  # [1, 512]
-        u: torch.Tensor,  # [samples] uniforms in (0, 1)
+        u: torch.Tensor,  # [samples, n_classes] uniforms in (0, 1)
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         ys = []
         a1, a2, a3, a4 = (
             aux[:, i * 32 : (i + 1) * 32] for i in range(4)
         )
         for i in range(self.samples):
-            logits = self.step(x_prev, mels[i : i + 1], a1[i : i + 1],
-                               a2[i : i + 1], a3[i : i + 1], a4[i : i + 1],
-                               h1, h2)
-            gumbel = -torch.log(-torch.log(u[i]).clamp_min(1e-10)).clamp_min(1e-10)
+            logits, h1, h2 = self.step(
+                x_prev, mels[i : i + 1], a1[i : i + 1],
+                a2[i : i + 1], a3[i : i + 1], a4[i : i + 1],
+                h1, h2,
+            )
+            # Per-class gumbel noise: g_c = -log(-log(u_c)), u_c ~ U(0,1)
+            # independent per class. Clamp the INNER -log(u) (positive,
+            # guards u == 1); never clamp the outer value — the gumbel is
+            # legitimately negative for u > 1/e.
+            inner = (-torch.log(u[i])).clamp_min(1e-10)
+            gumbel = -torch.log(inner)
             y = torch.argmax(logits + gumbel, dim=1, keepdim=True)
             ys.append(y)
             x_prev = y.to(torch.float32) / 511.0 * 2.0 - 1.0
@@ -285,7 +300,7 @@ def main() -> int:
         tuple(dummy.values()),
         str(args.outdir / "voice-voc-step.onnx"),
         input_names=list(dummy.keys()),
-        output_names=["logits"],
+        output_names=["logits", "next_h1", "next_h2"],
         opset_version=17,
         dynamo=False,
     )
@@ -312,7 +327,9 @@ def main() -> int:
         "aux": torch.randn(total_scale, hp.voc_res_out_dims),
         "h1": torch.randn(1, hp.voc_rnn_dims) * 0.1,
         "h2": torch.randn(1, hp.voc_rnn_dims) * 0.1,
-        "u": torch.full((total_scale,), 0.5),
+        # u = 0.5 everywhere -> constant per-class gumbel vector -> argmax
+        # path (deterministic, fixture-friendly). JS feeds real uniforms.
+        "u": torch.full((total_scale, n_classes), 0.5),
     }
     torch.onnx.export(
         chunk,
@@ -337,10 +354,30 @@ def main() -> int:
         ref_samples, ref_h1, ref_h2, ref_x = chunk(*chunk_dummy.values())
     delta = float(_np.abs(samples - ref_samples.numpy()).max())
     assert delta < 2e-3, f"PyTorch vs ONNX chunk max |delta| {delta}"
+    # Degeneracy guards — the first export shipped a graph whose gumbel term
+    # was NaN (clamp before unary minus), so argmax always returned class 0
+    # and every downstream "sample" was the same DC value. Parity passed
+    # because both sides computed the same NaN. Never let a constant-output
+    # chunk through again.
+    assert _np.unique(samples).size > total_scale // 2, (
+        f"chunk degenerate: only {_np.unique(samples).size} distinct classes "
+        f"across {total_scale} samples — gumbel/argmax is broken"
+    )
+    assert not _np.isnan(ref_samples.numpy()).any(), "wrapper chunk produced NaN"
+    # u-sensitivity: a different draw must change the samples. The first
+    # export's gumbel was a per-sample SCALAR (constant across the 512 class
+    # logits — a no-op for argmax), so random-u output equalled argmax-u.
+    rand_u = torch.rand(total_scale, n_classes) * 0.998 + 0.001
+    with torch.no_grad():
+        ref_rand, _, _, _ = chunk(*(
+            rand_u if k == "u" else v for k, v in chunk_dummy.items()
+        ))
+    assert not torch.equal(ref_samples, ref_rand), (
+        "chunk is u-insensitive — gumbel noise is not per-class"
+    )
     print(f"[export] voice-voc-chunk.onnx parity max |delta| = {delta:.2e}, "
-          f"argmax path (u=0.5) all-same check: {samples[0][0]:.0f}")
-    print(f"[export] voice-voc-chunk.onnx verified — {total_scale} samples/run, "
-          f"argmax path (u=0.5) all-same check: {samples[0][0]:.0f}")
+          f"distinct classes {_np.unique(samples).size}/{total_scale}, "
+          "u-sensitive: yes")
 
     print(f"[export] done — {n_classes}-class RAW logits per step; "
           "sampling, mu-law decode and de-emphasis live in TS")
