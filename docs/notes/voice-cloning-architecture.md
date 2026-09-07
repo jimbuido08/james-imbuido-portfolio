@@ -330,7 +330,13 @@ size (§4/§5).
    per-file cap). They live at `public/models/voice/`, tracked by LFS
    (2026-09-07, James-approved full history rewrite via
    `git lfs migrate import --everything` — old SHAs before that point are
-   rewritten; re-clone if you hold one). If 111 MB of LFS proves painful,
+   rewritten; re-clone if you hold one). **Vercel deploy caveat: Git LFS must
+   stay toggled ON in Project Settings → Git** — without it Vercel serves the
+   132-byte LFS pointer text files and every model load fails with ORT
+   "protobuf parsing failed" (hit once, fixed by enabling the toggle +
+   redeploying; GitHub-side objects were fine). After the first LFS-enabled
+   build Vercel caches the objects, so later deploys don't re-burn LFS
+   bandwidth. If 111 MB of LFS proves painful,
    the levers are static int8 with calibration (§4.3) or the shorter-
    utterance cap (§4.4).
 2. **WaveRNN viability — machine-verified, human judgment pending**: speed
