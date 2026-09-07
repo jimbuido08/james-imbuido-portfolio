@@ -323,12 +323,14 @@ size (§4/§5).
 
 ## 5. Open concerns flagged to James (2026-09-06; updated 2026-09-07 after the gate)
 
-1. **Artifact size — resolved to fp32, LFS decision simplified**: the int8
+1. **Artifact size — resolved to fp32, stored in Git LFS**: the int8
    ladder failed the numeric gate (§4.3), so the five fp32 graphs ship (~111
    MB, largest single file synth-step at 74.6 MB — under GitHub's 100 MB
-   per-file cap). They are committed directly at `public/models/voice/`; Git
-   LFS is optional repo hygiene, not a deploy requirement. If 111 MB proves
-   painful, the levers are static int8 with calibration (§4.3) or the shorter-
+   per-file cap). They live at `public/models/voice/`, tracked by LFS
+   (2026-09-07, James-approved full history rewrite via
+   `git lfs migrate import --everything` — old SHAs before that point are
+   rewritten; re-clone if you hold one). If 111 MB of LFS proves painful,
+   the levers are static int8 with calibration (§4.3) or the shorter-
    utterance cap (§4.4).
 2. **WaveRNN viability — machine-verified, human judgment pending**: speed
    passes (§3), and `training/voice/synthesize_sample.py` now generates A/B
