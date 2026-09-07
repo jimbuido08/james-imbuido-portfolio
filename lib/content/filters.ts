@@ -15,18 +15,14 @@ export interface FilterDef {
   technologies?: string[];
 }
 
-/** Chips: ALL + the category families, plus framework chips (PYTORCH, TENSORFLOW). */
+/** Chips: ALL + the category families, plus the PYTORCH framework chip.
+ * The TENSORFLOW/Keras chip is intentionally absent for now — projects tagged
+ * tensorflow/keras still render under ALL and the category chips. */
 export const AI_ML_FILTERS: FilterDef[] = [
   { key: "all", label: "ALL" },
   { key: "classical-ml", label: "CLASSICAL ML", category: "CLASSICAL_ML" },
   { key: "llm", label: "LLM", category: "LLM" },
   { key: "pytorch", label: "PYTORCH", technologies: ["pytorch"] },
-  {
-    key: "tensorflow",
-    // Keras is TensorFlow's high-level API — tag with either spelling.
-    label: "TENSORFLOW",
-    technologies: ["tensorflow", "keras"],
-  },
   { key: "nlp", label: "NLP", category: "NLP" },
   { key: "agents", label: "AGENTS", category: "AGENTS" },
   { key: "experiments", label: "EXPERIMENTS", category: "EXPERIMENT" },
