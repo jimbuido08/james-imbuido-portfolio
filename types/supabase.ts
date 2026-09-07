@@ -56,6 +56,24 @@ export type Database = {
         };
         Relationships: [];
       };
+      voice_claim_attempts: {
+        Row: {
+          created_at: string;
+          id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       contact_messages: {
         Row: {
           created_at: string;
@@ -124,6 +142,7 @@ export type Database = {
           employment_status: string | null;
           id: string;
           updated_at: string;
+          voice_reward_claimed: boolean;
         };
         Insert: {
           chess_reward_claimed?: boolean;
@@ -132,6 +151,7 @@ export type Database = {
           employment_status?: string | null;
           id: string;
           updated_at?: string;
+          voice_reward_claimed?: boolean;
         };
         Update: {
           chess_reward_claimed?: boolean;
@@ -140,6 +160,7 @@ export type Database = {
           employment_status?: string | null;
           id?: string;
           updated_at?: string;
+          voice_reward_claimed?: boolean;
         };
         Relationships: [];
       };
@@ -176,6 +197,10 @@ export type Database = {
     };
     Functions: {
       claim_chess_reward: {
+        Args: { p_metadata?: Json; p_user_id: string };
+        Returns: Json;
+      };
+      claim_voice_reward: {
         Args: { p_metadata?: Json; p_user_id: string };
         Returns: Json;
       };

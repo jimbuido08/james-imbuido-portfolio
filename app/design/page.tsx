@@ -34,7 +34,7 @@ const colorSwatches = [
   { name: "focus", className: "bg-focus" },
 ];
 
-const tagDomains: TagDomain[] = ["ai", "jtb", "chess", "neutral"];
+const tagDomains: TagDomain[] = ["ai", "jtb", "chess", "voice", "neutral"];
 
 export default function DesignPage() {
   return (

@@ -14,6 +14,7 @@ const domainClasses: Record<TagDomain, string> = {
   ai: "text-accent-ai border-accent-ai/40",
   jtb: "text-accent-jtb border-accent-jtb/40",
   chess: "text-accent-chess border-accent-chess/40",
+  voice: "text-accent-voice border-accent-voice/40",
   about: "text-accent-about border-accent-about/40",
   experience: "text-accent-exp border-accent-exp/40",
   neutral: "text-accent-neut border-accent-neut/40",

@@ -54,6 +54,13 @@ export const SECTIONS: readonly SectionDef[] = [
       "Play against a chess model that runs entirely in your browser.",
   },
   {
+    href: "/voice",
+    label: "Voice Cloning",
+    h1: "Real-Time Voice Cloning",
+    description:
+      "Clone a voice from a short recording and hear it speak — models run entirely in your browser, and audio never leaves your device.",
+  },
+  {
     href: "/contact",
     label: "Contact",
     h1: "Contact",

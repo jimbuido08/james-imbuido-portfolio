@@ -1,14 +1,21 @@
 # Real-Time Voice Cloning — architecture notes
 
-Status: **Milestones A + B complete** (2026-09-07). A = feasibility gate PASSED
-(tsx + real Chrome; Safari pending James); B = conversion pipeline hardened —
-golden fixtures + wasm parity verifier pass (52/52 checks), quantization gate
-run, fp32 artifacts promoted to `public/models/voice/`. This document holds
-the verified facts about the SV2TTS reference stack, the ONNX export contract that
-follows from them, the gate procedure, and (to be filled) the measured numbers the
-gate decision hinges on. Reference repo: CorentinJ/Real-Time-Voice-Cloning (PyTorch),
-cloned read-only at `training/voice/_rtvc-src/` for study; all facts below were read
-from its source at master (2026-09), not from memory.
+Status: **complete — all five milestones shipped** (2026-09-07). A = feasibility
+gate PASSED (tsx + real Chrome; Safari pending James); B = conversion pipeline
+hardened — golden fixtures + wasm parity verifier pass (52/52 checks),
+quantization gate run, fp32 artifacts promoted to `public/models/voice/`;
+C = `/voice` UI (AudioWorklet capture → worker → engine → player/download),
+driven end-to-end in headless Chrome (record → embed → synthesize → 4.2 s
+result WAV, zero console errors); D = sixth universe node at 60° + featured
+`/ai-ml` case study; E = one-time +2 reward (`POST /api/voice/claim`, empty
+body, `claim_voice_reward` SQL RPC with a baked-in 10/60s rate gate —
+migration `20260907120000_claim_voice_reward.sql`, apply to the hosted
+project). This document holds the verified facts about the SV2TTS reference
+stack, the ONNX export contract that follows from them, the gate procedure,
+and the measured numbers the gate decision hinges on. Reference repo:
+CorentinJ/Real-Time-Voice-Cloning (PyTorch), cloned read-only at
+`training/voice/_rtvc-src/` for study; all facts below were read from its
+source at master (2026-09), not from memory.
 
 ## 1. Verified reference-stack facts
 
@@ -184,9 +191,9 @@ sequence), `lib/voice/mel.ts` (both mel paths), `lib/voice/partialSlices.ts`
 2. `npm run smoke:voice` (`scripts/smoke-voice-ort.ts`, tsx, ORT-web wasm
    backend, `numThreads = 1` — the same backend the browser uses): loads all six
    graphs, runs synthetic-input stages, prints per-stage ms and extrapolations.
-3. `app/voice/smoke` (temporary, noindex): the same flow inside a **Web Worker**
-   in real Chrome (driven headless via playwright-core + system Chrome from a
-   throwaway script outside the repo).
+3. `app/voice/smoke` (temporary, noindex, **removed once /voice shipped**): the
+   same flow inside a **Web Worker** in real Chrome (driven headless via
+   playwright-core + system Chrome from a throwaway script outside the repo).
 4. **Milestone B numeric gate**: `python make_fixtures.py` (venv) generates
    the committed fixture wavs + `fixtures/voice_fixtures.json` (text ids; full
    mel values for tone-2s rounded to 5 significant digits; PyTorch embeddings;

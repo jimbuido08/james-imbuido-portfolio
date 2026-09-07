@@ -85,9 +85,8 @@ names, as with chess).
 npm run smoke:voice        # tsx + ORT-web wasm, same backend as the browser
 ```
 
-For the temporary browser smoke (`app/voice/smoke`), the five shipped fp32
-exports are already committed at `public/models/voice/` — after a re-export,
-copy the five runtime graphs (not `voice-voc-step`) over them:
+The five shipped fp32 exports are committed at `public/models/voice/` — after
+a re-export, copy the five runtime graphs (not `voice-voc-step`) over them:
 
 ```bash
 cp export/voice-encoder.onnx export/voice-synth-encode.onnx \

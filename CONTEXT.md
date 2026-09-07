@@ -7,8 +7,8 @@ disagree, this file is stale — update it.
 ## What this is
 
 A personal data-science portfolio. The homepage is a full-viewport 3D "Data
-Universe" (React Three Fiber): a central core orbited by five navigation nodes
-(About, Experience, AI/ML, JTB, Chess AI). The 3D layer is an
+Universe" (React Three Fiber): a central core orbited by six navigation nodes
+(About, Experience, AI/ML, JTB, Chess AI, Voice Cloning). The 3D layer is an
 enhancement, never the only path — every node mirrors a conventional route and
 the site works without WebGL (§11.1).
 
@@ -47,6 +47,19 @@ the site works without WebGL (§11.1).
   universe relief (capabilities hook, `zIndex.ts`, fallback link list restored,
   `Lighting.tsx` rename), `lib/sections.ts` SectionDef registry with PageShell,
   and data-shaped `FilterDef` filters. See the map below.
+- **Voice Cloning (2026-09-07) complete.** `/voice` runs the SV2TTS pipeline
+  (CorentinJ's Real-Time Voice Cloning) entirely in the browser: five fp32 ONNX
+  graphs in `public/models/voice/` (~111 MB, lazy-loaded per stage) drive a
+  Web Worker (`workers/voice.worker.ts`, engine in `lib/voice/engine.ts`),
+  mic capture via AudioWorklet (`public/worklets/pcm-recorder-worklet.js`,
+  resampled to 16 kHz in an OfflineAudioContext), and audio never leaves the
+  device — the +2 reward claim (`POST /api/voice/claim`) is the only network
+  call and carries an empty body. Conversion pipeline + fixtures +
+  `npm run verify:voice-model` (52/52) live in `training/voice/`; see
+  `docs/notes/voice-cloning-architecture.md`. The universe now balances six
+  nodes at 60°. Migration `20260907120000_claim_voice_reward.sql` (+
+  `types/supabase.ts` hand-updated) still needs applying to the hosted
+  project.
 
 ## Architecture map
 
@@ -68,6 +81,10 @@ the site works without WebGL (§11.1).
   `rate_limited` claim outcome.
 - `lib/contact/submit.ts` — the §22 contact submission: rate-limit pre-check →
   rate-checked insert RPC. Deps injected; clock injected for the rate window.
+- `lib/voice/claim.ts` — the voice +2 claim: profile → rate limit → atomic
+  award. No replay/verify stage by design — the request body is empty because
+  synthesis is device-only; auth + once-per-user + the SQL-side rate gate in
+  `claim_voice_reward` are the whole policy. Deps injected; clock injected.
 - `lib/chess/gameState.ts` — the chess UI state machine (GameUiState / GameAction
   / reducer / initialState / computeStatusLine). ChessGame.tsx keeps only event
   handlers + AI effect + drag; the machine is exercisable directly.
@@ -104,7 +121,8 @@ the site works without WebGL (§11.1).
 ### Single sources of truth
 - `lib/navigation.ts` — the route registry. Header and universe nodes derive
   from it.
-- `lib/credits/constants.ts` — the credits vocabulary (10 new-user, +5 chess).
+- `lib/credits/constants.ts` — the credits vocabulary (10 new-user, +5 chess,
+  +2 voice).
 - `lib/content/trust.ts` — placeholder rules.
 - `lib/jtb/knowledge-base.ts` — per-section KB loader + `formatKnowledgeBaseSections`
   (the ONE framing owner: retrieved context and the whole-KB string are framed
@@ -142,6 +160,11 @@ the site works without WebGL (§11.1).
 ## In flight / pending
 
 - `content/jtb/`: `projects` and `faq` sections still placeholders.
+- Apply `supabase/migrations/20260907120000_claim_voice_reward.sql` to the
+  hosted project (voice reward: `voice_claim_attempts`, `profiles.
+  voice_reward_claimed`, `claim_voice_reward` with the baked-in rate gate).
+- `/voice` WaveRNN audio quality needs James's listening test; Safari timings
+  unmeasured (fallback ladder §4.4 in docs/notes/voice-cloning-architecture.md).
 - After editing any `content/jtb/` file, run `npm run kb:sync` (or
   `npm run kb:sync -- --check` to see drift) — otherwise retrieval serves the
   pre-edit snapshot while the fallback serves the new text.
@@ -149,6 +172,6 @@ the site works without WebGL (§11.1).
 
 ## How to verify
 
-- `npm run lint` · `npm run build` (type-check + 13 static pages incl. `/ai-ml/[slug]` SSG) · `npm run format:check`
+- `npm run lint` · `npm run build` (type-check + static pages incl. `/ai-ml/[slug]` SSG) · `npm run format:check`
 - For a policy core: write a `.verify-*.mts` harness, run `npx tsx`, delete it.
 - Browser check (no screenshots): playwright a11y snapshot + console messages.

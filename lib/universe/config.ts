@@ -17,7 +17,7 @@ const navHref = (id: string): string => {
 };
 
 export type UniverseDomain =
-  "ai" | "jtb" | "chess" | "about" | "experience" | "neutral";
+  "ai" | "jtb" | "chess" | "voice" | "about" | "experience" | "neutral";
 
 export interface UniverseNodeDef {
   id: string; // "about"
@@ -35,13 +35,14 @@ export const UNIVERSE_COLORS = {
   fgMuted: "#a1a1aa", // --color-fg-muted (fill light)
   surface2: "#1a1a1f", // --color-surface-2 (core body)
   accentAi: "#818cf8", // --color-accent-ai (core emissive)
+  accentVoice: "#5aa3b8", // --color-accent-voice
   border: "#26262c", // --color-border (wireframe, connection lines)
   borderStrong: "#3a3a42", // --color-border-strong
   fgSubtle: "#71717a", // --color-fg-subtle (particles)
 } as const;
 
-// Positions are precomputed, not derived at runtime. Nodes sit ~72° apart on
-// the XZ plane (θ = i·72° for i = 0..4) but each has its own orbital radius
+// Positions are precomputed, not derived at runtime. Nodes sit ~60° apart on
+// the XZ plane (θ = i·60° for i = 0..5) but each has its own orbital radius
 // (2.7–3.9) and elevation (−0.7 to 0.95), so the constellation feels organic
 // rather than a rigid ring: x = r·cosθ, z = r·sinθ.
 export const UNIVERSE_NODES: UniverseNodeDef[] = [
@@ -61,7 +62,7 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
     domain: "experience",
     accent: "#d98c96",
     blurb: "Professional data science experience.",
-    position: [0.834, -0.7, 2.568], // r = 2.7
+    position: [1.35, -0.7, 2.338], // r = 2.7
   },
   {
     id: "ai-ml",
@@ -70,7 +71,7 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
     domain: "ai",
     accent: "#818cf8",
     blurb: "Machine learning and AI projects.",
-    position: [-3.155, 0.45, 2.292], // r = 3.9
+    position: [-1.95, 0.45, 3.377], // r = 3.9
   },
   {
     id: "jtb",
@@ -79,7 +80,7 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
     domain: "jtb",
     accent: "#d9a03f",
     blurb: "JTB — ask questions about James's work.",
-    position: [-2.993, 0.95, -2.175], // r = 3.7
+    position: [-3.7, 0.95, 0], // r = 3.7
   },
   {
     id: "chess",
@@ -88,7 +89,16 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
     domain: "chess",
     accent: "#4da37e",
     blurb: "Play against James's chess model.",
-    position: [0.958, -0.35, -2.948], // r = 3.1
+    position: [-1.55, -0.35, -2.685], // r = 3.1
+  },
+  {
+    id: "voice",
+    label: "Voice Cloning",
+    route: navHref("voice"),
+    domain: "voice",
+    accent: "#5aa3b8",
+    blurb: "Clone a voice in your browser — audio never leaves the device.",
+    position: [1.65, -0.5, -2.858], // r = 3.3
   },
 ];
 

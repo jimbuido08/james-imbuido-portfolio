@@ -1867,6 +1867,19 @@ The project is complete when:
 - [ ] Chess reward works
 - [ ] Contact CTA works
 
+### Voice Cloning
+
+- [ ] Recording works (mic consent required)
+- [ ] Audio never leaves the device
+- [ ] Speaker embedding computed client-side
+- [ ] Text synthesis works end-to-end in browser
+- [ ] Models lazy-load (nothing model-related on initial page load)
+- [ ] Synthesis progress and error states render
+- [ ] Result plays and downloads as WAV
+- [ ] Reward claims with an empty body, once per account
+- [ ] Reward cannot be claimed repeatedly
+- [ ] Claim rate limiting exists
+
 ### Security
 
 - [ ] Supabase RLS configured

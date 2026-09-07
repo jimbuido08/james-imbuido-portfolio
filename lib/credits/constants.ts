@@ -8,3 +8,6 @@ export const INITIAL_CREDITS = 10;
 
 /** Credits awarded once for beating the Chess AI (§3.7). */
 export const CHESS_REWARD_CREDITS = 5;
+
+/** Credits awarded once for trying the /voice cloning studio. */
+export const VOICE_REWARD_CREDITS = 2;
