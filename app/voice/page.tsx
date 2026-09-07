@@ -20,7 +20,7 @@ export default function VoicePage() {
         WaveRNN vocoder), converted to ONNX and executed client-side over
         WebAssembly.
       </p>
-      <p className="mt-4 max-w-prose text-sm text-fg-subtle">
+      <p className="mb-8 mt-4 max-w-prose text-sm text-fg-subtle">
         Privacy by architecture: your recording and the generated audio never
         leave your device — there is no upload endpoint to send them to. The
         models (~111&nbsp;MB, cached by your browser) download only when you

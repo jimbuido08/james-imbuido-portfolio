@@ -152,9 +152,23 @@ export function VoiceStudio() {
           <MonoKicker>Step 1 — Voice sample</MonoKicker>
           <CardTitle>Record a short voice sample</CardTitle>
           <CardDescription>
-            Read a few sentences in your normal voice. {recordHint(recorder.state)}
+            Read the sample text below in your normal voice.{" "}
+            {recordHint(recorder.state)}
           </CardDescription>
         </CardHeader>
+        <div className="mt-4 rounded-md border border-border bg-surface-2 p-4">
+          <MonoKicker className="mb-2">Sample text — read this aloud</MonoKicker>
+          <p className="text-sm leading-relaxed text-fg">
+            &ldquo;The quick brown fox jumps over the lazy dog while a gentle
+            rain falls on the quiet harbour. Numbers sound different from
+            words, so count them out: three, seven, twelve, forty-five. This
+            voice was recorded in a browser, and it never left this device.&rdquo;
+          </p>
+          <p className="mt-2 text-xs text-fg-subtle">
+            Aim for 10–20 seconds at a natural pace — varied sentences give the
+            encoder a better picture of your voice than repeating one line.
+          </p>
+        </div>
         <div className="mt-4 flex flex-wrap items-center gap-3">
           {recording ? (
             <Button
