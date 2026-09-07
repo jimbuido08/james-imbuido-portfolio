@@ -9,8 +9,9 @@ driven end-to-end in headless Chrome (record → embed → synthesize → 4.2 s
 result WAV, zero console errors); D = sixth universe node at 60° + featured
 `/ai-ml` case study; E = one-time +2 reward (`POST /api/voice/claim`, empty
 body, `claim_voice_reward` SQL RPC with a baked-in 10/60s rate gate —
-migration `20260907120000_claim_voice_reward.sql`, apply to the hosted
-project). This document holds the verified facts about the SV2TTS reference
+migration `20260907120000_claim_voice_reward.sql`, applied to the hosted
+project 2026-09-07 and verified: column + table + RPC all present, direct
+RPC without a user session rejected 42501). This document holds the verified facts about the SV2TTS reference
 stack, the ONNX export contract that follows from them, the gate procedure,
 and the measured numbers the gate decision hinges on. Reference repo:
 CorentinJ/Real-Time-Voice-Cloning (PyTorch), cloned read-only at

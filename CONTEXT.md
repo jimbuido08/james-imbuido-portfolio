@@ -166,9 +166,6 @@ the site works without WebGL (§11.1).
 ## In flight / pending
 
 - `content/jtb/`: `projects` and `faq` sections still placeholders.
-- Apply `supabase/migrations/20260907120000_claim_voice_reward.sql` to the
-  hosted project (voice reward: `voice_claim_attempts`, `profiles.
-  voice_reward_claimed`, `claim_voice_reward` with the baked-in rate gate).
 - `/voice` WaveRNN audio quality: machine-side diagnostics pass (speech-shaped
   envelope, envelope-vs-mel r 0.62–0.70 vs the Griffin-Lim floor 0.47 — A/B
   WAVs in `training/voice/samples/`), but the human listening test and the
