@@ -23,6 +23,7 @@ GRAPH_NAMES = [
     "voice-synth-step",
     "voice-voc-upsample",
     "voice-voc-step",
+    "voice-voc-chunk",
 ]
 
 
@@ -37,13 +38,25 @@ def convert_fp16(src: Path, dst: Path) -> None:
 
 
 def quantize_int8(src: Path, dst: Path) -> None:
+    import onnx
     from onnxruntime.quantization import QuantType, quantize_dynamic
 
-    quantize_dynamic(
-        model_input=str(src),
-        model_output=str(dst),
-        weight_type=QuantType.QInt8,
-    )
+    try:
+        quantize_dynamic(
+            model_input=str(src),
+            model_output=str(dst),
+            weight_type=QuantType.QInt8,
+        )
+    except Exception:
+        # The chunk graph's in-graph gumbel ops (Log/Sqrt chain feeding argmax)
+        # defeat shape inference for some MatMul inputs — give the quantizer a
+        # default tensor type so those stay fp32 while weights still quantise.
+        quantize_dynamic(
+            model_input=str(src),
+            model_output=str(dst),
+            weight_type=QuantType.QInt8,
+            extra_options={"DefaultTensorType": onnx.TensorProto.FLOAT},
+        )
 
 
 def smoke(path: Path) -> None:

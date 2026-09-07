@@ -7,10 +7,45 @@ and gate numbers live in `docs/notes/voice-cloning-architecture.md`.
 
 ## State
 
-- Milestone A (feasibility gate): the `export_*.py` scripts here are the
-  throwaway exports; `scripts/smoke-voice-ort.ts` (repo root) is the wasm
-  smoke; `app/voice/smoke` is the temporary browser smoke. Nothing ships until
-  the gate numbers pass.
+- **Milestone A gate PASSED** (2026-09-07, tsx + real Chrome) — see §3 of
+  `docs/notes/voice-cloning-architecture.md`.
+- **Milestone B complete** (2026-09-07): fixtures + wasm verifier + quantization
+  gate; the shipping artifacts are the **fp32 exports** (see "Compression" —
+  both the int8 and fp16 ladders fail on these RNN-heavy graphs). The gated
+  artifacts are committed at `public/models/voice/`.
+
+## Milestone B pipeline (after every re-export)
+
+```bash
+# 1. Fixtures (venv): golden text/mel/embed/graph values for the TS verifier.
+python make_fixtures.py                       # writes fixtures/voice_fixtures.json
+
+# 2. TS parity verifier (repo root) — every constant and chained step in
+#    lib/voice/ must reproduce the Python-side values through ORT-web wasm.
+npm run verify:voice-model
+
+# 3. Quantization candidates + gate (int8 dynamic; fp16 fails — see below).
+python quantize.py --export-dir export --formats int8
+python gate.py --export-dir export            # compares candidates vs fp32
+```
+
+## Compression
+
+Both compression ladders **fail** on the SV2TTS graphs (measured 2026-09-07):
+
+- **int8 dynamic** — converts and loads, but accuracy collapses:
+  `DynamicQuantizeLSTM` scrambles the encoder embedding (cosine 0.38 vs fp32
+  on a real mel slice), and even the non-LSTM `synth-encode` lands at cosine
+  0.997 with a 0.04 mean delta in attention space. All candidates REJECT in
+  `gate.py`. Kept as tooling (`quantize.py`/`gate.py`) for a future static-
+  quantization-with-calibration attempt.
+- **fp16** — `onnxconverter-common` cannot convert the LSTM/GRU graphs at all
+  (mixed-type MatMul/Gemm on load), and a targeted RNN-only fp16 conversion
+  (Gemm/MatMul kept fp32) saves almost nothing: the CBHG convs and the vocoder
+  conv stack dominate those files. fp16 also buys no wasm speed.
+- **Decision: ship fp32** — encoder 5.5 MB, synth-encode 12.6 MB, synth-step
+  74.6 MB, voc-upsample 1.6 MB, voc-chunk 17.2 MB ≈ 111 MB total, lazy-loaded
+  per stage. `voice-voc-step.onnx` is diagnostic-only and not shipped.
 
 ## Mac setup
 
@@ -50,13 +85,14 @@ names, as with chess).
 npm run smoke:voice        # tsx + ORT-web wasm, same backend as the browser
 ```
 
-For the temporary browser smoke (`app/voice/smoke`), copy the fp32 exports to
-`public/models/` under their shipped names:
+For the temporary browser smoke (`app/voice/smoke`), the five shipped fp32
+exports are already committed at `public/models/voice/` — after a re-export,
+copy the five runtime graphs (not `voice-voc-step`) over them:
 
 ```bash
-cp export/voice-encoder.onnx ../../public/models/
-cp export/voice-synth-encode.onnx export/voice-synth-step.onnx \
-   export/voice-voc-upsample.onnx export/voice-voc-step.onnx ../../public/models/
+cp export/voice-encoder.onnx export/voice-synth-encode.onnx \
+   export/voice-synth-step.onnx export/voice-voc-upsample.onnx \
+   export/voice-voc-chunk.onnx ../../public/models/voice/
 ```
 
 ## Files (Milestone A scope)
@@ -65,11 +101,12 @@ cp export/voice-synth-encode.onnx export/voice-synth-step.onnx \
 |---|---|
 | `export_encoder.py` | partial-embedding graph: `[1, 40, 160]` → `[1, 256]` |
 | `export_synthesizer.py` | Tacotron → `synth-encode` (per-utterance) + `synth-step` (per-step decoder cell; `r` baked from checkpoint) |
-| `export_vocoder.py` | WaveRNN → `voc-upsample` (parallel conditioning) + `voc-step` (single sample cell) |
+| `export_vocoder.py` | WaveRNN → `voc-upsample` (parallel conditioning, dynamic T) + `voc-step` (single-sample cell, diagnostic) + `voc-chunk` (200 unrolled samples with per-sample conditioning and in-graph gumbel-max) |
+| `mel_ref.py` | librosa reference for both mel paths (encoder power mel, synth magnitude + dB + ±4) |
+| `clean_text.py` | `english_cleaners` + `text_to_sequence` reference + TEXT_CASES |
+| `make_fixtures.py` | generates the deterministic fixture wavs + the golden text/mel/embed/graph JSON |
+| `quantize.py` / `gate.py` | int8/fp16 candidates + candidate-vs-fp32 gate |
+| `fixtures/` | committed fixture wavs + `voice_fixtures.json` (checked by `npm run verify:voice-model`) |
 | `_rtvc-src/` | reference repo clone (gitignored, read-only for study) |
 | `pretrained/` | downloaded checkpoints (gitignored) |
 | `export/` | raw fp32 ONNX outputs (gitignored) |
-
-Milestone B adds: `quantize.py`, `make_fixtures.py`, `gate.py`, `mel_ref.py`,
-`clean_text.py`, `fixtures/` (committed 2–5 s wavs), and the fp16/int8 promotion
-pipeline — only after the Milestone A gate passes.

@@ -205,31 +205,6 @@ async function main(): Promise<void> {
     failures.push("voc-upsample");
   }
 
-  // Vocoder per-sample baseline: diagnostic, not gated (run overhead dominates).
-  if (
-    !(await run(
-      "voc-step",
-      "voc step (baseline)",
-      "diagnostic",
-      "voice-voc-step.onnx",
-      () => true,
-      () => ({
-        x_prev: zeros([1, 1]),
-        m_t: zeros([1, 80]),
-        a1: zeros([1, 32]),
-        a2: zeros([1, 32]),
-        a3: zeros([1, 32]),
-        a4: zeros([1, 32]),
-        h1: zeros([1, 512]),
-        h2: zeros([1, 512]),
-      }),
-      undefined,
-      64,
-    ))
-  ) {
-    failures.push("voc-step");
-  }
-
   // Vocoder chunk — the shipping form: one mel frame per run.
   if (
     !(await run(
@@ -240,11 +215,9 @@ async function main(): Promise<void> {
       (ms) => ms * 80 * 4 < 20000,
       () => ({
         x_prev: zeros([1, 1]),
-        m_t: zeros([1, 80]),
-        a1: zeros([1, 32]),
-        a2: zeros([1, 32]),
-        a3: zeros([1, 32]),
-        a4: zeros([1, 32]),
+        // Per-sample conditioning rows — the frame's slice of the upsampled pair.
+        mels: zeros([VOC_TOTAL_SCALE, 80]),
+        aux: zeros([VOC_TOTAL_SCALE, 128]),
         h1: zeros([1, 512]),
         h2: zeros([1, 512]),
         u: new ort.Tensor(

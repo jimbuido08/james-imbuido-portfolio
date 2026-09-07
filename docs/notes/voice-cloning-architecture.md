@@ -1,7 +1,9 @@
 # Real-Time Voice Cloning — architecture notes
 
-Status: **Milestone A feasibility gate PASSED** (2026-09-07, tsx + real Chrome; Safari pending
-James). This document holds
+Status: **Milestones A + B complete** (2026-09-07). A = feasibility gate PASSED
+(tsx + real Chrome; Safari pending James); B = conversion pipeline hardened —
+golden fixtures + wasm parity verifier pass (52/52 checks), quantization gate
+run, fp32 artifacts promoted to `public/models/voice/`. This document holds
 the verified facts about the SV2TTS reference stack, the ONNX export contract that
 follows from them, the gate procedure, and (to be filled) the measured numbers the
 gate decision hinges on. Reference repo: CorentinJ/Real-Time-Voice-Cloning (PyTorch),
@@ -122,31 +124,55 @@ contract below is what `lib/voice/modelContract.ts` must mirror exactly.
    dot-free original isn't even in the input list). JS owns the loop, the > 0.5
    stop check (t > 10), the −3.4 trailing-frame trim, and the ≤ 200-symbol cap.
    Dynamic axis T on enc_seq/enc_seq_proj/chars/cumulative/attention.
-4. **`voice-voc-upsample.onnx`** — `mel [1, 80, T]` fp32 (dynamic T; normalised
-   mels / 4) → `(mels_cond [1, 200T, 80], aux [1, 200T, 128])`. Pads both sides by
-   `voc_pad = 2` inside the graph. TS slices `a1..a4 = aux[:, :, 32i : 32(i+1)]`.
-5. **`voice-voc-step.onnx`** — one WaveRNN sample (diagnostic/fixture graph, not
-   the shipping form):
+4. **`voice-voc-upsample.onnx`** — `mel [1, 80, T]` fp32 (**dynamic T** — the
+   first export baked T = 32 and the fixture gate caught it; re-exported with
+   `dynamic_axes` on mel/mels_cond/aux; normalised mels / 4) →
+   `(mels_cond [1, 200T, 80], aux [1, 200T, 128])`. Pads both sides by
+   `voc_pad = 2` inside the graph. TS slices per-sample rows:
+   `mels[i : i+200]` and `aux[i : i+200]` per mel frame i, and `a1..a4 =
+   aux[i*32 : (i+1)*32]` per sample inside the chunk graph.
+5. **`voice-voc-step.onnx`** — one WaveRNN sample (diagnostic/fixture graph,
+   **not shipped**):
    `x_prev [1, 1], m_t [1, 80], a1..a4 [1, 32], h1 [1, 512], h2 [1, 512]` →
    `logits [1, 512]`. JS owns sampling (seeded), the index→float→mu-law→
    de-emphasis conversion, the fade-out, and the `wave_len` trim.
 6. **`voice-voc-chunk.onnx`** — the **shippable vocoder form** (added during the
-   gate): one full mel frame per run, 200 unrolled WaveRNN steps in-graph with
-   in-graph gumbel-max sampling
-   (`x_prev, m_t, a1..a4, h1, h2, u [200]` → `samples [1, 200] float32, next_h1,
-   next_h2, next_x_prev`). JS seeds `u ~ Uniform[0, 1)` per sample (u = 0.5 ⇒
-   argmax, used by fixtures); gumbel-max `argmax(logits − log(−log u))` samples
-   exactly from the categorical. Mu-law decode + de-emphasis stay in TS
-   (vectorised after all frames). Rationale: the per-sample JS loop measured
-   0.4–0.5 ms/sample ≈ 22–33 s per 4 s of audio — mostly JS↔wasm run overhead
-   (64 000 runs/s); unrolling one mel frame (the conditioning-constant length)
-   amortises that 200× → 320 runs per 4 s, ~10–16 s.
+   gate, conditioning redesigned after re-reading `generate()`): one full mel
+   frame per run, 200 unrolled WaveRNN steps in-graph with per-sample
+   conditioning rows and in-graph gumbel-max sampling
+   (`x_prev [1,1], mels [200, 80], aux [200, 128], h1 [1,512], h2 [1,512],
+   u [200]` → `samples [1, 200] float32, next_h1, next_h2, next_x_prev`).
+   Step i consumes `mels[i : i+1]` and `aux[i, i*32:(i+1)*32]` — exactly
+   `generate()`'s per-sample rows. JS seeds `u ~ Uniform[0, 1)` per sample
+   (u = 0.5 ⇒ argmax, used by fixtures); gumbel-max
+   `argmax(logits − log(−log u))` samples exactly from the categorical.
+   Mu-law decode + de-emphasis stay in TS (vectorised after all frames).
+   Rationale: the per-sample JS loop measured 0.4–0.5 ms/sample ≈ 22–33 s per
+   4 s of audio — mostly JS↔wasm run overhead (64 000 runs/s); unrolling one
+   mel frame amortises that 200× → 320 runs per 4 s, ~10–16 s.
 
-TS-side mirror seams with golden fixtures (Milestone B, chess
-`verify:chess-model` pattern): encoder mel (power-mel 40-bin path), synthesizer
-mel (80-band, preemph, ±4 normalised path — needed only if/when fixtures must
-derive mels in TS), text → symbol ids (66-symbol table), end-to-end embedding
-parity.
+TS-side mirror seams with golden fixtures (Milestone B — **complete**, chess
+`verify:chess-model` pattern): `lib/voice/modelContract.ts` (constants + graph
+I/O names), `lib/voice/textFrontend.ts` (english_cleaners + 66-symbol
+sequence), `lib/voice/mel.ts` (both mel paths), `lib/voice/partialSlices.ts`
+(compute_partial_slices port), and `scripts/verify-voice-model.ts` +
+`npm run verify:voice-model` (52 checks, all passing via ORT-web wasm).
+
+**Two bugs the fixtures caught (both fixed 2026-09-07):**
+
+1. **Zero-padded FFT = wrong bins.** The first TS mel used a radix-2 FFT over
+   the next power of two (512/1024) on the theory that the first n_fft/2+1
+   bins are identical to the exact-size DFT. They are not: zero-padding
+   interpolates the spectrum at k·sr/512, not the required k·sr/400 — every
+   bin above DC was wrong. mel.ts now uses an exact precomputed-table DFT at
+   the n_fft grid (39 ms / 119 ms per 4 s of audio for encoder/synth mel —
+   negligible next to the vocoder).
+2. **Slaney mel-scale log step.** The mel scale's slope above 1 kHz is
+   ln(6.4)/27 per ln-unit (librosa's `logstep = np.log(6.4) / 27`), not
+   ln(6.4); and the triangle weight is `min(upslope, downslope) · enorm`, not
+   a 2·overlap/(fdl·fdu) product (which goes negative on the downslope). With
+   these fixed the TS filterbank matches librosa's to the digit and embedding
+   parity hits cosine 1.000000.
 
 ## 3. Gate procedure (Milestone A)
 
@@ -161,6 +187,15 @@ parity.
 3. `app/voice/smoke` (temporary, noindex): the same flow inside a **Web Worker**
    in real Chrome (driven headless via playwright-core + system Chrome from a
    throwaway script outside the repo).
+4. **Milestone B numeric gate**: `python make_fixtures.py` (venv) generates
+   the committed fixture wavs + `fixtures/voice_fixtures.json` (text ids; full
+   mel values for tone-2s rounded to 5 significant digits; PyTorch embeddings;
+   graph golden cases computed with CPU ORT on the fp32 exports — synth-encode,
+   12 chained synth-steps from zero state, 4 chained voc-chunk frames with
+   u = 0.5), then `npm run verify:voice-model` replays every stage through the
+   wasm backend with the TS seams. Result: **52/52 checks pass** (text exact;
+   mel worst rel diff 3.7e-4; embedding cosine 1.000000; voc argmax codes
+   exact). Quantization candidates are then gated by `python gate.py`.
 
 Thresholds (unchanged from the plan): all graphs load; encoder < 1 s on 4 s audio;
 Tacotron < 8 s on ~10 words; vocoder < 20 s (make-or-break); end-to-end < ~45 s on
@@ -201,13 +236,21 @@ size (§4/§5).
    (`github.com/raccoonML/hifigan-demo`, release MLRTVC-v1) — trained on
    RTVC-style mels, explicitly "not production quality" (150k steps). Only
    relevant now if the chunked WaveRNN listening test disappoints.
-3. **int8 dynamic quantization — works, fp16 does not.** All six graphs
-   int8-quantized and CPU-ORT smoke-tested (encoder 5.5→1.4 MB, synth-encode
-   12.6→4.1 MB, synth-step 74.6→18.7 MB, voc-upsample 1.6→0.5 MB, voc-step
-   15.6→3.9 MB — chunk TBD). fp16 conversion via onnxconverter-common FAILS on
-   these RNN-heavy graphs (GRU/LSTM are in its default op block list → mixed-type
-   MatMul/Gemm on load); fp16 buys no wasm speed anyway, so int8 is the shipping
-   compression.
+3. **Compression: both ladders fail — fp32 ships (Milestone B finding).**
+   int8 dynamic quantization converts and loads but destroys accuracy:
+   `DynamicQuantizeLSTM` scrambles the encoder embedding (cosine 0.38 vs fp32
+   on a real mel slice, max|Δ| 0.28), and even the non-LSTM-op `synth-encode`
+   reaches only cosine 0.997 with a 0.04 mean delta in attention-projection
+   space — every candidate REJECTS in `gate.py`. fp16 conversion via
+   onnxconverter-common fails outright on these graphs (mixed-type
+   MatMul/Gemm on load); a targeted RNN-only fp16 (Gemm/MatMul/Conv kept fp32)
+   saves almost nothing because the CBHG convs + vocoder conv stack dominate
+   those files, and breaks on the Cast-heavy synth-step/chunk graphs. fp16
+   buys no wasm speed either way. **Decision: ship the fp32 exports**
+   (encoder 5.5, synth-encode 12.6, synth-step 74.6, voc-upsample 1.6,
+   voc-chunk 17.2 MB ≈ 111 MB total, lazy-loaded per stage; voc-step not
+   shipped). Future work if size hurts: static int8 with a real calibration
+   set, or WebGPU fp16 execution.
 4. **Shorter max utterance** — the honest lever if the listening test or Safari
    numbers disappoint: cap synthesis at ~1.5–2 s per run, sentence-chunked.
    (Chrome numbers already pass; this is Safari insurance.)
@@ -221,10 +264,13 @@ size (§4/§5).
 
 ## 5. Open concerns flagged to James (2026-09-06; updated 2026-09-07 after the gate)
 
-1. **Artifact size**: fp32 total ≈ 110 MB; int8 ≈ 29 MB (before the chunk graph
-   is quantized). Milestone B gates int8 numerics (cosine/max-Δ against fp32,
-   `training/voice/gate.py`) and promotes the winners to `public/models/`;
-   LFS decision still pending before those commits.
+1. **Artifact size — resolved to fp32, LFS decision simplified**: the int8
+   ladder failed the numeric gate (§4.3), so the five fp32 graphs ship (~111
+   MB, largest single file synth-step at 74.6 MB — under GitHub's 100 MB
+   per-file cap). They are committed directly at `public/models/voice/`; Git
+   LFS is optional repo hygiene, not a deploy requirement. If 111 MB proves
+   painful, the levers are static int8 with calibration (§4.3) or the shorter-
+   utterance cap (§4.4).
 2. **WaveRNN viability — resolved by measurement, one caveat**: speed passes
    (§3); *audio quality* of the chunked in-graph gumbel sampling + stripped
    PreNet dropout is unverified until a real listening test (Milestone C). The

@@ -22,7 +22,6 @@ const STAGE_LABELS: Record<string, string> = {
   "synth-encode": "synth encode T=50",
   "synth-step": "synth step ×64 (loop-carried)",
   "voc-upsample": "voc upsample [1,80,32]",
-  "voc-step": "voc step (baseline, not gated)",
   "voc-chunk": "voc chunk (1 frame = 200 samples)",
 };
 
@@ -60,7 +59,7 @@ export default function VoiceSmokePage() {
     <main style={{ fontFamily: "monospace", padding: 24, maxWidth: 720 }}>
       <h1>Voice smoke (Milestone A gate)</h1>
       <p>
-        Temporary noindex page. Six ONNX graphs, wasm numThreads=1, synthetic
+        Temporary noindex page. Five ONNX graphs, wasm numThreads=1, synthetic
         inputs. Numbers go in docs/notes/voice-cloning-architecture.md §3.
       </p>
       {error && <p style={{ color: "red" }}>{error}</p>}

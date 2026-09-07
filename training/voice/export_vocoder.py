@@ -109,8 +109,12 @@ class VocChunk(nn.Module):
 
     The per-sample JS loop measures 0.4 ms/sample in wasm — mostly JS<->wasm
     run overhead, 64k runs per second of audio. Unrolling one mel frame (200
-    samples, the vocoder's constant conditioning length) into one run amortises
-    that overhead 200x: 320 runs per 4 s of audio.
+    samples, the conditioning slice length) into one run amortises that
+    overhead 200x: 320 runs per 4 s of audio.
+
+    Conditioning is per-sample exactly as in WaveRNN.generate: the frame's
+    slice of the upsampled pair — mels [200, 80] and aux [200, 128] — feeds
+    row i to step i (a1..a4 are aux row slices [i*32:(i+1)*32]).
 
     Sampling happens in-graph (the JS loop can no longer interleave): JS seeds
     `u` ~ Uniform[0, 1) per sample; the gumbel-max trick
@@ -126,18 +130,20 @@ class VocChunk(nn.Module):
     def forward(
         self,
         x_prev: torch.Tensor,  # [1, 1]
-        m_t: torch.Tensor,  # [1, 80] constant across the frame
-        a1: torch.Tensor,  # [1, 32]
-        a2: torch.Tensor,  # [1, 32]
-        a3: torch.Tensor,  # [1, 32]
-        a4: torch.Tensor,  # [1, 32]
+        mels: torch.Tensor,  # [samples, 80] per-sample conditioning
+        aux: torch.Tensor,  # [samples, 128]
         h1: torch.Tensor,  # [1, 512]
         h2: torch.Tensor,  # [1, 512]
         u: torch.Tensor,  # [samples] uniforms in (0, 1)
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         ys = []
+        a1, a2, a3, a4 = (
+            aux[:, i * 32 : (i + 1) * 32] for i in range(4)
+        )
         for i in range(self.samples):
-            logits = self.step(x_prev, m_t, a1, a2, a3, a4, h1, h2)
+            logits = self.step(x_prev, mels[i : i + 1], a1[i : i + 1],
+                               a2[i : i + 1], a3[i : i + 1], a4[i : i + 1],
+                               h1, h2)
             gumbel = -torch.log(-torch.log(u[i]).clamp_min(1e-10)).clamp_min(1e-10)
             y = torch.argmax(logits + gumbel, dim=1, keepdim=True)
             ys.append(y)
@@ -170,7 +176,14 @@ def load_wavernn(checkpoint_path: Path) -> nn.Module:
     return model
 
 
-def verify(out: Path, feed: dict[str, "object"]) -> None:
+def verify(
+    out: Path,
+    feed: dict[str, "object"],
+    wrapper: "torch.nn.Module | None" = None,
+    torch_args: "tuple | None" = None,
+) -> None:
+    """Run the export through ORT; when a PyTorch wrapper is given, also check
+    numeric parity on the same inputs (mandatory after graph surgery)."""
     import numpy as np
     import onnxruntime as ort
 
@@ -178,6 +191,21 @@ def verify(out: Path, feed: dict[str, "object"]) -> None:
     results = session.run(None, feed)
     for result in results:
         assert np.isfinite(result).all()
+    if wrapper is not None and torch_args is not None:
+        with torch.no_grad():
+            reference = wrapper(*torch_args)
+        if not isinstance(reference, tuple):
+            reference = (reference,)
+        worst = max(
+            float(np.abs(r - ref.detach().numpy()).max())
+            for r, ref in zip(results, reference)
+        )
+        assert worst < 2e-3, f"PyTorch vs ONNX max |delta| {worst}"
+        print(
+            f"[export] {out.name} ({out.stat().st_size / 1024 / 1024:.2f} MB) "
+            f"verified, PyTorch parity max |delta| = {worst:.2e}"
+        )
+        return
     print(f"[export] {out.name} ({out.stat().st_size / 1024 / 1024:.2f} MB) verified")
 
 
@@ -199,19 +227,30 @@ def main() -> int:
 
     t = args.mel_frames
     upsample = VocUpsample(model.upsample, model.pad).eval()
-    dummy_mel = torch.zeros(1, NUM_MELS, t)
+    torch.manual_seed(20260906)
+    # Seeded random mel: zeros would make the PyTorch-vs-ONNX parity check
+    # degenerate (and the argmax path trivial).
+    dummy_mel = torch.randn(1, NUM_MELS, t)
     torch.onnx.export(
         upsample,
         (dummy_mel,),
         str(args.outdir / "voice-voc-upsample.onnx"),
         input_names=["mel"],
         output_names=["mels_cond", "aux"],
+        # T (mel frames) is dynamic: JS vocodes arbitrary utterance lengths.
+        dynamic_axes={
+            "mel": {2: "T"},
+            "mels_cond": {1: "S"},
+            "aux": {1: "S"},
+        },
         opset_version=17,
         dynamo=False,
     )
     verify(
         args.outdir / "voice-voc-upsample.onnx",
         {"mel": dummy_mel.numpy()},
+        wrapper=upsample,
+        torch_args=(dummy_mel,),
     )
     # The upsampled length must be exactly hop_length * T — JS slices rows per
     # sample index from this pair.
@@ -225,17 +264,21 @@ def main() -> int:
     total_scale = int(torch.cumprod(torch.tensor(hp.voc_upsample_factors), 0)[-1])
     assert mels_cond.shape == (1, t * total_scale, NUM_MELS), mels_cond.shape
     assert aux.shape == (1, t * total_scale, hp.voc_res_out_dims), aux.shape
+    # The T axis must be dynamic — a different length runs identically.
+    alt = session.run(None, {"mel": dummy_mel[:, :, : t // 2].numpy()})
+    assert alt[0].shape == (1, (t // 2) * total_scale, NUM_MELS), alt[0].shape
+    print(f"[export] voc-upsample dynamic-T check ok (T={t // 2})")
 
     step = VocStep(model).eval()
     dummy = {
         "x_prev": torch.zeros(1, 1),
-        "m_t": torch.zeros(1, NUM_MELS),
-        "a1": torch.zeros(1, 32),
-        "a2": torch.zeros(1, 32),
-        "a3": torch.zeros(1, 32),
-        "a4": torch.zeros(1, 32),
-        "h1": torch.zeros(1, hp.voc_rnn_dims),
-        "h2": torch.zeros(1, hp.voc_rnn_dims),
+        "m_t": torch.randn(1, NUM_MELS),
+        "a1": torch.randn(1, 32),
+        "a2": torch.randn(1, 32),
+        "a3": torch.randn(1, 32),
+        "a4": torch.randn(1, 32),
+        "h1": torch.randn(1, hp.voc_rnn_dims) * 0.1,
+        "h2": torch.randn(1, hp.voc_rnn_dims) * 0.1,
     }
     torch.onnx.export(
         step,
@@ -246,7 +289,12 @@ def main() -> int:
         opset_version=17,
         dynamo=False,
     )
-    verify(args.outdir / "voice-voc-step.onnx", {k: v.numpy() for k, v in dummy.items()})
+    verify(
+        args.outdir / "voice-voc-step.onnx",
+        {k: v.numpy() for k, v in dummy.items()},
+        wrapper=step,
+        torch_args=tuple(dummy.values()),
+    )
     step_session = ort.InferenceSession(
         str(args.outdir / "voice-voc-step.onnx"),
         providers=["CPUExecutionProvider"],
@@ -258,8 +306,14 @@ def main() -> int:
     # The shippable vocoder form: one full mel frame per run. total_scale
     # samples per frame (upsample factors product), noise fed by JS.
     chunk = VocChunk(step, total_scale).eval()
-    chunk_dummy = dict(dummy)
-    chunk_dummy["u"] = torch.full((total_scale,), 0.5)
+    chunk_dummy = {
+        "x_prev": torch.zeros(1, 1),
+        "mels": torch.randn(total_scale, NUM_MELS),
+        "aux": torch.randn(total_scale, hp.voc_res_out_dims),
+        "h1": torch.randn(1, hp.voc_rnn_dims) * 0.1,
+        "h2": torch.randn(1, hp.voc_rnn_dims) * 0.1,
+        "u": torch.full((total_scale,), 0.5),
+    }
     torch.onnx.export(
         chunk,
         tuple(chunk_dummy.values()),
@@ -279,6 +333,12 @@ def main() -> int:
 
     assert samples.shape == (1, total_scale), samples.shape
     assert _np.isfinite(samples).all()
+    with torch.no_grad():
+        ref_samples, ref_h1, ref_h2, ref_x = chunk(*chunk_dummy.values())
+    delta = float(_np.abs(samples - ref_samples.numpy()).max())
+    assert delta < 2e-3, f"PyTorch vs ONNX chunk max |delta| {delta}"
+    print(f"[export] voice-voc-chunk.onnx parity max |delta| = {delta:.2e}, "
+          f"argmax path (u=0.5) all-same check: {samples[0][0]:.0f}")
     print(f"[export] voice-voc-chunk.onnx verified — {total_scale} samples/run, "
           f"argmax path (u=0.5) all-same check: {samples[0][0]:.0f}")
 

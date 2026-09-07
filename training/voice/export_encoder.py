@@ -77,20 +77,27 @@ def main() -> int:
     size_mb = args.out.stat().st_size / 1024 / 1024
     print(f"[export] encoder -> {args.out} ({size_mb:.2f} MB)")
 
-    # Smoke-test the export round-trips through onnxruntime.
+    # Verify the export: ORT must agree with PyTorch on a seeded random input.
     import numpy as np
     import onnxruntime as ort
 
     session = ort.InferenceSession(
         str(args.out), providers=["CPUExecutionProvider"]
     )
+    torch.manual_seed(20260906)
+    random_mel = torch.randn(1, MEL_BINS, PARTIAL_FRAMES).abs()
+    with torch.no_grad():
+        reference = wrapper(random_mel).numpy()
     out = session.run(
-        None, {"mel_partial": np.zeros((1, MEL_BINS, PARTIAL_FRAMES), np.float32)}
+        None, {"mel_partial": random_mel.numpy()}
     )[0]
     assert out.shape == (1, EMBEDDING_SIZE), out.shape
     norm = np.linalg.norm(out[0])
+    max_delta = float(np.abs(out - reference).max())
     assert np.isfinite(out).all() and abs(norm - 1.0) < 0.05, f"norm {norm}"
-    print(f"[export] verified: embed shape {out.shape}, L2 norm ~ {norm:.3f}")
+    assert max_delta < 1e-4, f"PyTorch vs ONNX max |delta| {max_delta}"
+    print(f"[export] verified: embed shape {out.shape}, L2 norm ~ {norm:.3f}, "
+          f"PyTorch parity max |delta| = {max_delta:.2e}")
     return 0
 
 

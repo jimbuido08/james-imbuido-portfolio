@@ -249,11 +249,24 @@ def export_one(
         k: v.detach().numpy() if torch.is_tensor(v) else v for k, v in feed.items()
     }
     results = session.run(None, feed)
-    for name, result, expected in zip(output_names, results, expected_shapes.values()):
+    # Numeric parity vs PyTorch on the same inputs — the duplicate-input merge
+    # and PreNet surgery make this mandatory, not optional.
+    with torch.no_grad():
+        reference = wrapper(*dummy_args)
+    if not isinstance(reference, tuple):
+        reference = (reference,)
+    worst = 0.0
+    for name, result, expected, ref in zip(
+        output_names, results, expected_shapes.values(), reference
+    ):
         assert list(result.shape) == list(expected), f"{name}: {result.shape}"
         assert np.isfinite(result).all(), f"{name}: non-finite"
+        delta = float(np.abs(result - ref.detach().numpy()).max())
+        worst = max(worst, delta)
+    assert worst < 2e-3, f"PyTorch vs ONNX max |delta| {worst}"
     size_mb = out.stat().st_size / 1024 / 1024
-    print(f"[export] {out.name} ({size_mb:.2f} MB) verified")
+    print(f"[export] {out.name} ({size_mb:.2f} MB) verified, "
+          f"PyTorch parity max |delta| = {worst:.2e}")
 
 
 def main() -> int:
@@ -277,8 +290,12 @@ def main() -> int:
     taco.decoder.prenet = DeterministicPreNet(taco.decoder.prenet)
 
     t = args.text_len
-    spk_embed = torch.zeros(1, 256)
-    text = torch.zeros(1, t, dtype=torch.int64)
+    # Seeded random dummies: zeros would make the PyTorch-vs-ONNX parity check
+    # below degenerate.
+    torch.manual_seed(20260906)
+    spk_embed = torch.randn(1, 256)
+    spk_embed /= spk_embed.norm()
+    text = torch.randint(0, 66, (1, t))
 
     encode = SynthEncode(taco).eval()
     export_one(
@@ -305,17 +322,17 @@ def main() -> int:
 
     step = SynthStep(taco, r).eval()
     dummy = {
-        "enc_seq": torch.zeros(1, t, 512),
-        "enc_seq_proj": torch.zeros(1, t, 128),
+        "enc_seq": torch.randn(1, t, 512),
+        "enc_seq_proj": torch.randn(1, t, 128),
         "chars": text,
-        "prenet_in": torch.zeros(1, NUM_MELS),
-        "attn_h": torch.zeros(1, 128),
-        "rnn1_h": torch.zeros(1, 1024),
-        "rnn2_h": torch.zeros(1, 1024),
-        "rnn1_c": torch.zeros(1, 1024),
-        "rnn2_c": torch.zeros(1, 1024),
-        "context": torch.zeros(1, 512),
-        "cumulative": torch.zeros(1, t),
+        "prenet_in": torch.randn(1, NUM_MELS),
+        "attn_h": torch.randn(1, 128) * 0.1,
+        "rnn1_h": torch.randn(1, 1024) * 0.1,
+        "rnn2_h": torch.randn(1, 1024) * 0.1,
+        "rnn1_c": torch.randn(1, 1024) * 0.1,
+        "rnn2_c": torch.randn(1, 1024) * 0.1,
+        "context": torch.randn(1, 512) * 0.1,
+        "cumulative": torch.rand(1, t),
     }
     export_one(
         step,

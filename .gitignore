@@ -54,6 +54,6 @@ next-env.d.ts
 /training/voice/pretrained/
 /training/voice/export/
 /training/voice/.venv/
-# Milestone A browser-smoke copies of the fp32 exports (too big to commit);
-# Milestone B promotes the gated artifacts here instead.
-/public/models/voice/
+# The gated fp32 artifacts in public/models/voice/ are committed (~111 MB total,
+# each under GitHub's 100 MB per-file cap — synth-step is 74 MB). Git LFS is an
+# option if the repo grows; flagged for James, not required to deploy.
