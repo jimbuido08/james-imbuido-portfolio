@@ -48,3 +48,12 @@ next-env.d.ts
 
 # Playwright MCP browser-test artifacts (logs, snapshots, screenshots)
 /.playwright-mcp/
+
+# Voice cloning training (Mac-only; gated artifacts are promoted to public/models)
+/training/voice/_rtvc-src/
+/training/voice/pretrained/
+/training/voice/export/
+/training/voice/.venv/
+# Milestone A browser-smoke copies of the fp32 exports (too big to commit);
+# Milestone B promotes the gated artifacts here instead.
+/public/models/voice/

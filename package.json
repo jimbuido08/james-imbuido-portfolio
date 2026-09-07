@@ -11,7 +11,8 @@
     "format:check": "prettier --check .",
     "kb:sync": "npx tsx --env-file=.env.local scripts/kb-sync.ts",
     "models:wasm": "node scripts/copy-ort-wasm.mjs",
-    "verify:chess-model": "npx tsx scripts/verify-chess-model-parity.ts"
+    "verify:chess-model": "npx tsx scripts/verify-chess-model-parity.ts",
+    "smoke:voice": "npx tsx scripts/smoke-voice-ort.ts"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",
