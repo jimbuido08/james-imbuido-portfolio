@@ -1,6 +1,9 @@
 # Lockfiles and generated files
 package-lock.json
 next-env.d.ts
+# Generated corpus bundles (training/llm/make_corpora.py owns them)
+lib/llm/bundledCorpus.ts
+lib/llm/portfolioCorpus.ts
 
 # Build output
 .next

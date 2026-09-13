@@ -1880,6 +1880,20 @@ The project is complete when:
 - [ ] Reward cannot be claimed repeatedly
 - [ ] Claim rate limiting exists
 
+### LLM Lab
+
+- [ ] Visitor can train a tiny byte-level transformer in a web worker
+- [ ] Training runs with zero network activity on the bundled corpus
+- [ ] Live loss / step / ETA / sample progress renders
+- [ ] Cancel stops training promptly; a partial model still generates
+- [ ] Generation streams tokens with prompt, temperature, and length controls
+- [ ] Trained models download as a small binary and re-upload loss-free
+- [ ] James's sample model loads with retry and human failure copy
+- [ ] Paste-your-own and URL corpora work; URL CORS failures explain the fallback
+- [ ] Mobile gets the nano profile; reduced-motion renders static loss text
+- [ ] No-JS visitors get server-rendered explanatory copy
+- [ ] `npm run verify:llm-model` passes and is documented
+
 ### Security
 
 - [ ] Supabase RLS configured

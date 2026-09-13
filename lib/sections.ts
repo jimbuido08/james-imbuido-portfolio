@@ -61,6 +61,13 @@ export const SECTIONS: readonly SectionDef[] = [
       "Clone a voice from a short recording and hear it speak — models run entirely in your browser, and audio never leaves your device.",
   },
   {
+    href: "/llm-lab",
+    label: "LLM Lab",
+    h1: "LLM Lab — Train a Tiny LLM in Your Browser",
+    description:
+      "Pick a corpus, watch a byte-level transformer train live, then sample from it — or load the sample James trained on this site's copy. Everything happens on your device.",
+  },
+  {
     href: "/contact",
     label: "Contact",
     h1: "Contact",

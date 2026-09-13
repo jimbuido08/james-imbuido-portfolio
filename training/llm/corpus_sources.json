@@ -1,0 +1,9 @@
+{
+  "tiny_shakespeare": {
+    "url": "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt",
+    "dest": "data/tinyshakespeare.txt",
+    "sha256": "86c4e6aa9db7c042ec79f339dcb96d42b0075e16b8fc2e86bf0ca57e2dc565ed",
+    "license": "Public domain (Shakespeare); file via karpathy/char-rnn mirror",
+    "note": "Canonical char-level LM demo corpus, 1,115,394 bytes. Source of the bundled visitor excerpt (make_bundled_corpus.py)."
+  }
+}
