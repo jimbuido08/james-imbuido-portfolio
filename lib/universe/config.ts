@@ -41,10 +41,10 @@ export const UNIVERSE_COLORS = {
   fgSubtle: "#71717a", // --color-fg-subtle (particles)
 } as const;
 
-// Positions are precomputed, not derived at runtime. Nodes sit ~60° apart on
-// the XZ plane (θ = i·60° for i = 0..5) but each has its own orbital radius
-// (2.7–3.9) and elevation (−0.7 to 0.95), so the constellation feels organic
-// rather than a rigid ring: x = r·cosθ, z = r·sinθ.
+// Positions are precomputed, not derived at runtime. Nodes sit ~51.4° apart on
+// the XZ plane (θ = i·(360°/7) for i = 0..6) but each has its own orbital
+// radius (2.7–3.9) and elevation (−0.7 to 0.95), so the constellation feels
+// organic rather than a rigid ring: x = r·cosθ, z = r·sinθ.
 export const UNIVERSE_NODES: UniverseNodeDef[] = [
   {
     id: "about",
@@ -53,7 +53,7 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
     domain: "about",
     accent: "#60a5fa",
     blurb: "Who James is — background and approach.",
-    position: [3.5, 0.9, 0], // r = 3.5
+    position: [3.5, 0.9, 0], // r = 3.5, θ = 0°
   },
   {
     id: "experience",
@@ -62,7 +62,7 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
     domain: "experience",
     accent: "#d98c96",
     blurb: "Professional data science experience.",
-    position: [1.35, -0.7, 2.338], // r = 2.7
+    position: [1.683, -0.7, 2.111], // r = 2.7, θ = 51.4°
   },
   {
     id: "ai-ml",
@@ -71,7 +71,7 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
     domain: "ai",
     accent: "#818cf8",
     blurb: "Machine learning and AI projects.",
-    position: [-1.95, 0.45, 3.377], // r = 3.9
+    position: [-0.868, 0.45, 3.802], // r = 3.9, θ = 102.9°
   },
   {
     id: "jtb",
@@ -80,7 +80,7 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
     domain: "jtb",
     accent: "#d9a03f",
     blurb: "JTB — ask questions about James's work.",
-    position: [-3.7, 0.95, 0], // r = 3.7
+    position: [-3.334, 0.95, 1.605], // r = 3.7, θ = 154.3°
   },
   {
     id: "chess",
@@ -89,7 +89,7 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
     domain: "chess",
     accent: "#4da37e",
     blurb: "Play against James's chess model.",
-    position: [-1.55, -0.35, -2.685], // r = 3.1
+    position: [-2.793, -0.35, -1.345], // r = 3.1, θ = 205.7°
   },
   {
     id: "voice",
@@ -98,7 +98,16 @@ export const UNIVERSE_NODES: UniverseNodeDef[] = [
     domain: "voice",
     accent: "#5aa3b8",
     blurb: "Clone a voice in your browser — audio never leaves the device.",
-    position: [1.65, -0.5, -2.858], // r = 3.3
+    position: [-0.734, -0.5, -3.217], // r = 3.3, θ = 257.1°
+  },
+  {
+    id: "llm-lab",
+    label: "LLM Lab",
+    route: navHref("llm-lab"),
+    domain: "ai",
+    accent: "#a78bfa",
+    blurb: "Train a tiny LLM in your browser — nothing leaves the device.",
+    position: [2.12, 0.2, -2.658], // r = 3.4, θ = 308.6°
   },
 ];
 
