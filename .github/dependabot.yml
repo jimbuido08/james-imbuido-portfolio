@@ -1,9 +1,22 @@
 version: 2
 updates:
-  # Runtime + tooling dependencies. Grouped so a week's worth of bumps arrives
-  # as at most two PRs: routine minor/patch together, majors separately because
-  # Next/React/onnxruntime-web majors need deliberate review against the
-  # decided stack (CLAUDE.md §14) rather than a rubber stamp.
+  # Runtime + tooling dependencies, grouped so a week's worth of bumps arrives as
+  # a few reviewable PRs rather than a dozen. Two groups exist because those
+  # dependencies are *coupled* to something else and cannot be bumped alone:
+  #
+  #   onnxruntime   coupled to the wasm runtime committed in public/models/ort/;
+  #                 a minor release can change inference numerics, which the
+  #                 model parity gates exist to detect.
+  #   react-three   @react-three/fiber constrains react through a peer range, so
+  #                 bumping react alone breaks `npm ci` outright: fiber 9.7.0
+  #                 requires `react >=19 <19.3`, so react 19.3.0 needs fiber
+  #                 >=9.8.0 (peer `>=19 <19.4`) in the same change.
+  #
+  # Both groups also list their members in the broad groups' exclude-patterns,
+  # rather than relying on group ordering: the docs state no precedence rule for
+  # a dependency matching several groups, and empirically ordering did not hold —
+  # the first Dependabot PRs still bundled them. Excluding a dependency from every
+  # other group leaves it exactly one possible home.
   - package-ecosystem: npm
     directory: "/"
     schedule:
@@ -12,28 +25,52 @@ updates:
       time: "06:00"
     open-pull-requests-limit: 5
     groups:
-      # onnxruntime-web is not a routine bump: it is coupled to the wasm runtime
-      # committed in public/models/ort/, and a minor release can change wasm
-      # inference numerics. On its own PR a parity failure is unambiguous — and
-      # the ORT sync check in ci.yml will demand `npm run models:wasm` here —
-      # instead of being buried among a dozen unrelated bumps.
-      #
-      # The broad groups below exclude it explicitly rather than relying on
-      # group ordering: the docs do not state a precedence rule for a dependency
-      # matching several groups, and in practice listing this group first did not
-      # take it out of the catch-all (the first two Dependabot PRs still bundled
-      # it). Excluding it everywhere else makes this group its only possible
-      # home, so the outcome does not depend on undocumented ordering.
       onnxruntime:
         patterns: ["onnxruntime-web"]
+      react-three:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@react-three/fiber"
+          - "@react-three/drei"
+          - "three"
+          - "@types/react"
+          - "@types/react-dom"
+          - "@types/three"
       npm-minor-and-patch:
         applies-to: version-updates
-        exclude-patterns: ["onnxruntime-web"]
         update-types: ["minor", "patch"]
+        exclude-patterns:
+          - "onnxruntime-web"
+          - "react"
+          - "react-dom"
+          - "@react-three/fiber"
+          - "@react-three/drei"
+          - "three"
+          - "@types/react"
+          - "@types/react-dom"
+          - "@types/three"
       npm-major:
         applies-to: version-updates
-        exclude-patterns: ["onnxruntime-web"]
         update-types: ["major"]
+        exclude-patterns:
+          - "onnxruntime-web"
+          - "react"
+          - "react-dom"
+          - "@react-three/fiber"
+          - "@react-three/drei"
+          - "three"
+          - "@types/react"
+          - "@types/react-dom"
+          - "@types/three"
+    ignore:
+      # eslint-config-next pulls in typescript-eslint, which does the actual
+      # type-aware linting, and its current release declares
+      # `typescript >=4.8.4 <6.1.0`. A TypeScript major past that cannot lint at
+      # all, so proposing one only produces a permanently red PR. Remove this
+      # once typescript-eslint widens the range.
+      - dependency-name: "typescript"
+        versions: [">=6.1.0"]
     commit-message:
       prefix: "chore(deps)"
 
