@@ -80,9 +80,12 @@ jobs:
           node-version: "24"
           cache: npm
       - run: npm ci
-      # Shipped code: blocking.
+      # Shipped code: blocking. scripts/audit-check.mjs wraps `npm audit
+      # --omit=dev` so an advisory that is known and not exploitable here can be
+      # documented once with its reasoning, instead of blocking every unrelated
+      # PR forever or switching the check off.
       - name: Production dependencies
-        run: npm audit --audit-level=high --omit=dev
+        run: npm run audit:gate
       # Dev-only advisories are usually not actionable. Informational, so the
       # job does not go red on something that cannot be fixed from here.
       - name: Full tree (informational)
