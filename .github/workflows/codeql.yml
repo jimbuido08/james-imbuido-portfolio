@@ -1,0 +1,40 @@
+name: CodeQL
+
+# Code scanning is free on this public repository. It is worth having here
+# specifically because the security invariants live in hand-written server
+# routes (app/api/jtb, app/api/chess, app/api/contact, app/api/voice/claim) where
+# taint-tracking queries are a real check rather than box-ticking.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly, off the hour, so a new query pack can surface a pre-existing issue
+    # without waiting for the next code change.
+    - cron: "27 5 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: Analyze (javascript-typescript)
+    runs-on: ubuntu-latest
+    permissions:
+      # The documented permission set for code scanning analysis.
+      security-events: write
+      packages: read
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: javascript-typescript
+          # No build required for JS/TS, so this avoids configuring a Next build
+          # just to satisfy the analyzer.
+          build-mode: none
+      - uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:javascript-typescript"

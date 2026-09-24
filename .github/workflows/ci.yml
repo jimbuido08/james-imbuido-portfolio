@@ -1,0 +1,90 @@
+name: CI
+
+# PR checks only. Vercel owns deployment via its Git integration (preview ->
+# production); nothing here deploys, so there are no deploy secrets and no
+# duplicate deploy logic. See docs/notes/ for the model-artifact pipelines this
+# gates.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# A superseded push should not keep burning minutes.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Lint, format, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Format check
+        run: npm run format:check
+      # next build also type-checks everything in tsconfig's include, which
+      # covers scripts/*.ts and training/**/*.ts — no separate tsc step needed.
+      #
+      # Deliberately no env block: every lib/config.ts accessor throws at call
+      # time, and no page reads one while prerendering (all auth and API routes
+      # are force-dynamic), so the build needs no secrets. If this step ever
+      # starts failing, a page has begun reading config at build time.
+      - name: Build
+        run: npm run build
+      # The ORT wasm runtime is committed to public/models/ort/ while
+      # onnxruntime-web is caret-pinned, so a dependency bump can silently
+      # desync the two and break inference in the browser with no build error.
+      - name: ORT wasm runtime matches the pinned onnxruntime-web
+        run: |
+          npm run models:wasm
+          git diff --exit-code -- public/models/ort
+
+  verify-models:
+    name: Model parity (${{ matrix.gate }})
+    runs-on: ubuntu-latest
+    strategy:
+      # One broken gate must not hide the others' status.
+      fail-fast: false
+      matrix:
+        gate: [chess-model, llm-model, storyteller-model]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      # Deterministic golden-fixture parity over the committed artifacts: no
+      # LFS, no Python, no GPU, no network, no secrets. The voice gate lives in
+      # voice-parity.yml because it is the only one needing LFS.
+      - run: npm run verify:${{ matrix.gate }}
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      # Shipped code: blocking.
+      - name: Production dependencies
+        run: npm audit --audit-level=high --omit=dev
+      # Dev-only advisories are usually not actionable. Informational, so the
+      # job does not go red on something that cannot be fixed from here.
+      - name: Full tree (informational)
+        run: npm audit --audit-level=high
+        continue-on-error: true

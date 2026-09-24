@@ -1,0 +1,38 @@
+version: 2
+updates:
+  # Runtime + tooling dependencies. Grouped so a week's worth of bumps arrives
+  # as at most two PRs: routine minor/patch together, majors separately because
+  # Next/React/onnxruntime-web majors need deliberate review against the
+  # decided stack (CLAUDE.md §14) rather than a rubber stamp.
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+    open-pull-requests-limit: 5
+    groups:
+      npm-minor-and-patch:
+        applies-to: version-updates
+        update-types: ["minor", "patch"]
+      npm-major:
+        applies-to: version-updates
+        update-types: ["major"]
+    commit-message:
+      prefix: "chore(deps)"
+
+  # The workflows pin action majors (actions/checkout@v7 and friends), so
+  # keeping them current has to be automated too.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+    open-pull-requests-limit: 5
+    groups:
+      actions:
+        applies-to: version-updates
+        update-types: ["minor", "patch", "major"]
+    commit-message:
+      prefix: "chore(ci)"

@@ -1,0 +1,65 @@
+name: Voice parity
+
+# The voice gate is the only job that needs Git LFS: public/models/voice/*.onnx
+# are five LFS objects totalling ~111 MB, and actions/checkout yields 132-byte
+# pointers without `lfs: true`. Pulling those on every unrelated PR would exhaust
+# GitHub's 1 GB/month free LFS bandwidth in roughly nine runs, so this workflow
+# is path-filtered rather than run-always. It still runs automatically whenever
+# anything that could invalidate voice parity changes — it is not a manual job.
+#
+# To widen or narrow it, edit both `paths` lists below (they are duplicated
+# rather than anchored so the file stays plain, Prettier-safe YAML).
+on:
+  pull_request:
+    paths:
+      - "public/models/voice/**"
+      - "lib/voice/**"
+      - "workers/voice.worker.ts"
+      - "components/voice/**"
+      - "app/voice/**"
+      - "app/api/voice/**"
+      - "training/voice/**"
+      - "scripts/verify-voice-model.ts"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/voice-parity.yml"
+  push:
+    branches: [main]
+    paths:
+      - "public/models/voice/**"
+      - "lib/voice/**"
+      - "workers/voice.worker.ts"
+      - "components/voice/**"
+      - "app/voice/**"
+      - "app/api/voice/**"
+      - "training/voice/**"
+      - "scripts/verify-voice-model.ts"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/voice-parity.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: voice-parity-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify-voice:
+    name: Voice model parity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          lfs: true
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      # Gates the five graphs in public/models/voice — the artifacts that
+      # actually ship. 52 checks against fixtures generated from the Python
+      # export pipeline (see docs/notes/voice-cloning-architecture.md).
+      - run: npm run verify:voice-model
