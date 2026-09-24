@@ -1894,6 +1894,19 @@ The project is complete when:
 - [ ] No-JS visitors get server-rendered explanatory copy
 - [ ] `npm run verify:llm-model` passes and is documented
 
+### Storyteller
+
+- [ ] Visitor can generate a story from James's from-scratch GPT entirely in a web worker
+- [ ] Model + tokenizer lazy-load with retry and human failure copy; no inference ever runs server-side
+- [ ] Preload starts on first interaction and respects Data Saver
+- [ ] Generation streams text with prompt, temperature, and length controls
+- [ ] Cancel stops generation promptly; partial text stays on the page
+- [ ] The static training story (loss curve + 16 recorded samples) renders without JavaScript
+- [ ] Reduced-motion visitors get the same page with no animation
+- [ ] No-JS visitors get server-rendered explanatory copy
+- [ ] The case study carries only measured metrics and links the llm-from-scratch repository
+- [ ] `npm run verify:storyteller-model` passes and is documented
+
 ### Security
 
 - [ ] Supabase RLS configured

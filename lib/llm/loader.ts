@@ -15,7 +15,11 @@ const RETRY_DELAYS_MS = [1000, 3000];
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-async function fetchWithRetry(
+/**
+ * The site's single fetch-with-retry policy (2 retries at 1s/3s, 4xx fail-fast).
+ * Exported for lib/storyteller/loader.ts — one retry owner, two consumers.
+ */
+export async function fetchWithRetry(
   url: string,
   notFoundSentence: string,
   failSentence: string,

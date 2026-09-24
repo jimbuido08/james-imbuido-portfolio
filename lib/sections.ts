@@ -68,6 +68,13 @@ export const SECTIONS: readonly SectionDef[] = [
       "Pick a corpus, watch a byte-level transformer train live, then sample from it — or load the sample James trained on this site's copy. Everything happens on your device.",
   },
   {
+    href: "/storyteller",
+    label: "Storyteller",
+    h1: "Storyteller — a GPT Trained From Scratch, Writing in Your Browser",
+    description:
+      "Type a prompt and James's own from-scratch GPT — 6.9M parameters trained on a home PC — writes a short story entirely in your browser. Nothing leaves your device.",
+  },
+  {
     href: "/contact",
     label: "Contact",
     h1: "Contact",

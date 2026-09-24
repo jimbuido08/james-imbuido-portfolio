@@ -1,0 +1,234 @@
+{
+  "evals": [
+    {
+      "step": 0,
+      "valLoss": 8.9729
+    },
+    {
+      "step": 100,
+      "valLoss": 4.0287
+    },
+    {
+      "step": 200,
+      "valLoss": 3.3248
+    },
+    {
+      "step": 300,
+      "valLoss": 3.0909
+    },
+    {
+      "step": 400,
+      "valLoss": 2.92
+    },
+    {
+      "step": 500,
+      "valLoss": 2.8243
+    },
+    {
+      "step": 600,
+      "valLoss": 2.7118
+    },
+    {
+      "step": 700,
+      "valLoss": 2.6184
+    },
+    {
+      "step": 800,
+      "valLoss": 2.5921
+    },
+    {
+      "step": 900,
+      "valLoss": 2.5506
+    },
+    {
+      "step": 1000,
+      "valLoss": 2.4695
+    },
+    {
+      "step": 1100,
+      "valLoss": 2.4564
+    },
+    {
+      "step": 1200,
+      "valLoss": 2.4242
+    },
+    {
+      "step": 1300,
+      "valLoss": 2.4137
+    },
+    {
+      "step": 1400,
+      "valLoss": 2.3565
+    },
+    {
+      "step": 1500,
+      "valLoss": 2.3308
+    },
+    {
+      "step": 1600,
+      "valLoss": 2.2849
+    },
+    {
+      "step": 1700,
+      "valLoss": 2.2763
+    },
+    {
+      "step": 1800,
+      "valLoss": 2.2371
+    },
+    {
+      "step": 1900,
+      "valLoss": 2.2377
+    },
+    {
+      "step": 2000,
+      "valLoss": 2.231
+    },
+    {
+      "step": 2100,
+      "valLoss": 2.2019
+    },
+    {
+      "step": 2200,
+      "valLoss": 2.1936
+    },
+    {
+      "step": 2300,
+      "valLoss": 2.1903
+    },
+    {
+      "step": 2400,
+      "valLoss": 2.1436
+    },
+    {
+      "step": 2500,
+      "valLoss": 2.1497
+    },
+    {
+      "step": 2600,
+      "valLoss": 2.1332
+    },
+    {
+      "step": 2700,
+      "valLoss": 2.1307
+    },
+    {
+      "step": 2800,
+      "valLoss": 2.1082
+    },
+    {
+      "step": 2900,
+      "valLoss": 2.0863
+    },
+    {
+      "step": 3000,
+      "valLoss": 2.1089
+    },
+    {
+      "step": 3100,
+      "valLoss": 2.0703
+    },
+    {
+      "step": 3200,
+      "valLoss": 2.0614
+    },
+    {
+      "step": 3300,
+      "valLoss": 2.0881
+    },
+    {
+      "step": 3400,
+      "valLoss": 2.0529
+    },
+    {
+      "step": 3500,
+      "valLoss": 2.0821
+    },
+    {
+      "step": 3600,
+      "valLoss": 2.0168
+    },
+    {
+      "step": 3700,
+      "valLoss": 2.0426
+    },
+    {
+      "step": 3800,
+      "valLoss": 2.0422
+    },
+    {
+      "step": 3900,
+      "valLoss": 2.0237
+    },
+    {
+      "step": 3999,
+      "valLoss": 2.006
+    }
+  ],
+  "samples": [
+    {
+      "step": 0,
+      "text": "Once upon a timeoopordsugar closely welcome strugg motor gracefullyoop feeding picked picked yawn yawn chocol circle closely sankaying crow places batter batter crow crow sc sc cond cond todd sidewalk chocol sidewalk sidewalk officers recorder recorder prov opening lect soldiers listen past past moral lighter mechanic blood shout past gracefully dod routine strugg strugg dinosaurs todd listenool5aspoonxy four blood"
+    },
+    {
+      "step": 250,
+      "text": "Once upon a time, there was a little girl named Daisy. Sue had lots of fun playing with her toys with her. One day, Jack decided to go to the park to see what was going. He noticed a big, shiny person and wanted to get it, but it was too small.\n\nHe picked up his tail and"
+    },
+    {
+      "step": 500,
+      "text": "Once upon a time, there was a little girl named Lily. She loved to explore it every week with her mom and dad. One day, Lily's mom told her that they have to buy something special to drink. Lily was so happy to have the best of cookies that she asked her grandma.\n\n\"Oh, Lily, it"
+    },
+    {
+      "step": 750,
+      "text": "Once upon a time, there was a little girl named Lily. One day, Lily went to the park with her mommy. They saw a big dog standing on a bench and they ran to the slide. Suddenly, the dog ran fast and started to run away from them. \n\nLily and Ben were scared and started to cry. They"
+    },
+    {
+      "step": 1000,
+      "text": "Once upon a time, there was a little girl named Lily. She loved to play with her toys!\n\nOne day, she saw a picture on the floor. She thought it was very pretty. The picture was big and shiny. It was pink and had many colors on it. Lily thought it was not a good idea.\n"
+    },
+    {
+      "step": 1250,
+      "text": "Once upon a time, there was a little bird named Tweety. Mittens loved to play in the park with his friends. One day, Ducky was flying very close to the bird and wanted to play. The bird went up to the bird and said, \"Please, can you help me?\" The bird nodded its head and asked, \"Please"
+    },
+    {
+      "step": 1500,
+      "text": "Once upon a time, there was a little boy named Timmy. Timmy loved to play outside in the forest. One day, he went to the forest to play. He saw a big and warm swamp. He decided to go outside and eat some water. \n\nTimmy's friend, Timmy, said, \"Wow, you're my friend"
+    },
+    {
+      "step": 1750,
+      "text": "Once upon a time, there was a little girl. She had a very special box. It was her favourite toy.\n\nOne night, she decided she would play with it. She put on her shoes and socks and started to make her room go to the house. She found a little car and she started to play.\n\n"
+    },
+    {
+      "step": 2000,
+      "text": "Once upon a time, there was a little girl named Lily. She had a toy car named Teddy. One day, Lily was playing with her toys when she accidentally dropped the car. \n\nLily's mom came to see what was wrong. She saw that she was upset and said, \"Lily, we're being very mean to Teddy"
+    },
+    {
+      "step": 2250,
+      "text": "Once upon a time there was a little boy called his mom and dad. He loved to go outside and play in the garden. One day it was sunny outside, and he saw a butterfly and wanted to catch it. But the butterfly wouldn't be there, so the little boy decided to give the butterfly a look. He went and tried"
+    },
+    {
+      "step": 2500,
+      "text": "Once upon a time, there was a little girl named Lily. She loved to play outside in the sunshine. One day, she saw a big, soft bug chirping in the sky. \n\n\"Timmy, come down from my back,\" said Lily. \n\n\"No, I'm too tired.\" replied her mom. \n\nSuddenly"
+    },
+    {
+      "step": 2750,
+      "text": "Once upon a time, there was a little girl named Lucy. She liked to play outside with her friends. One day, Lucy went to the park with her friends. She saw a boy named Tim playing with a ball. Lucy wanted to play with the ball, but it was too big for her. She tried to pull the ball,"
+    },
+    {
+      "step": 3000,
+      "text": "Once upon a time, there was a little girl named Lily. She loved to eat soup with toast on it. One day, she tried to make soup, but it wouldn't. She was very upset.\n\nHer mom came to see what was wrong. She asked the boy to help her get some vegetables. She said, \""
+    },
+    {
+      "step": 3250,
+      "text": "Once upon a time, there was a little girl named Lily. She had a pet cat named Fluffy. Fluffy was a nice cat with a red tail. Lily and Fluffy played together in the park. They were very happy.\n\nOne day, Lily and Fluffy were playing with a ball. They made a new friend. Lily and Fluffy"
+    },
+    {
+      "step": 3500,
+      "text": "Once upon a time, there was a big and impressive tree. It was high up and the tree was very powerful. All the animals were happy and strong. They all liked the tree because it was so tall and shiny.\n\nOne hot day, a little bird came to the tree. The bird said, \"Hello, little bird"
+    },
+    {
+      "step": 3750,
+      "text": "Once upon a time, there was a little girl named Lily. She loved to play with her toys and her teddy bear named Rose. One day, Lily accidentally broke Anna's favorite toy and felt very sad.\n\nLily decided to clean her room so she could build it again. When she got home, she put her toys in a"
+    }
+  ]
+}

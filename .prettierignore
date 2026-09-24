@@ -4,6 +4,8 @@ next-env.d.ts
 # Generated corpus bundles (training/llm/make_corpora.py owns them)
 lib/llm/bundledCorpus.ts
 lib/llm/portfolioCorpus.ts
+# Generated from the training log (training/storyteller/export.py owns it)
+lib/storyteller/trainingData.ts
 
 # Build output
 .next
