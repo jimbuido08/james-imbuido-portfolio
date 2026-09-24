@@ -1,1 +1,8 @@
+# Deterministic line endings: the working tree is LF on every platform. Prettier
+# defaults to endOfLine "lf", so without this a Windows checkout (core.autocrlf=true)
+# yields CRLF and `npm run format:check` reports drift that does not exist, while
+# CI on Linux — which checks out LF — stays green. Every committed blob is already
+# LF, so this renormalizes nothing.
+* text=auto eol=lf
+
 public/models/voice/*.onnx filter=lfs diff=lfs merge=lfs -text

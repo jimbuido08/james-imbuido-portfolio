@@ -52,7 +52,11 @@ interface EmbedCase {
   embed: number[];
 }
 interface GraphCases {
-  synth_encode: { text: number[]; enc_seq: number[][]; enc_seq_proj: number[][] };
+  synth_encode: {
+    text: number[];
+    enc_seq: number[][];
+    enc_seq_proj: number[][];
+  };
   synth_steps: Array<{ mel: number[][]; stop: number[][] }>;
   voc_frames: Array<{ samples: number[] }>;
 }
@@ -111,21 +115,22 @@ function compareMatrix(
     }
   }
   check(bad === 0, `${label}: ${bad} element(s) outside tolerance`);
-  if (bad === 0) console.log(`  ${label} ok (worst rel diff ${worst.toExponential(2)})`);
+  if (bad === 0)
+    console.log(`  ${label} ok (worst rel diff ${worst.toExponential(2)})`);
 }
 
 /** 16-bit mono PCM → float in [-1, 1) — the fixture wav layout. */
 function readWav(path: string): Float32Array {
   const raw = readFileSync(path);
   const data = raw.subarray(44); // 44-byte canonical header, validated below
-  const view = new DataView(
-    raw.buffer,
-    raw.byteOffset,
-    raw.byteLength,
-  );
+  const view = new DataView(raw.buffer, raw.byteOffset, raw.byteLength);
   const ascii = (offset: number, length: number) =>
     String.fromCharCode(...raw.subarray(offset, offset + length));
-  if (ascii(0, 4) !== "RIFF" || ascii(8, 4) !== "WAVE" || ascii(36, 4) !== "data") {
+  if (
+    ascii(0, 4) !== "RIFF" ||
+    ascii(8, 4) !== "WAVE" ||
+    ascii(36, 4) !== "data"
+  ) {
     throw new Error(`unexpected wav layout: ${path}`);
   }
   const dataLen = view.getUint32(40, true);
@@ -181,7 +186,12 @@ async function main(): Promise<void> {
         encMel[0].length === tone2s.encoder_mel.bins,
       `encoder mel shape ${encMel.length}×${encMel[0].length}`,
     );
-    compareMatrix("encoder_mel", encMel, tone2s.encoder_mel.values, MEL_ABS_FLOOR);
+    compareMatrix(
+      "encoder_mel",
+      encMel,
+      tone2s.encoder_mel.values,
+      MEL_ABS_FLOOR,
+    );
     const synMel = synthMel(wav);
     check(
       synMel.length === tone2s.synth_mel.frames &&
@@ -195,8 +205,14 @@ async function main(): Promise<void> {
   for (const mc of fixtures.mel_cases) {
     if (mc.wav === "tone-2s.wav") continue;
     const wav = readWav(resolve(FIXTURES, mc.wav));
-    check(encoderMel(wav).length === mc.encoder_mel.frames, `${mc.wav} encoder frames`);
-    check(synthMel(wav).length === mc.synth_mel.frames, `${mc.wav} synth frames`);
+    check(
+      encoderMel(wav).length === mc.encoder_mel.frames,
+      `${mc.wav} encoder frames`,
+    );
+    check(
+      synthMel(wav).length === mc.synth_mel.frames,
+      `${mc.wav} synth frames`,
+    );
   }
 
   // ---- 3. Embedding parity --------------------------------------------------
@@ -242,7 +258,10 @@ async function main(): Promise<void> {
         maxDelta = Math.max(maxDelta, Math.abs(v - e));
       }
       check(dot >= 0.9999, `${name}: embedding cosine ${dot.toFixed(6)}`);
-      check(maxDelta <= 0.01, `${name}: embedding max|Δ| ${maxDelta.toFixed(4)}`);
+      check(
+        maxDelta <= 0.01,
+        `${name}: embedding max|Δ| ${maxDelta.toFixed(4)}`,
+      );
       if (dot >= 0.9999 && maxDelta <= 0.01) {
         console.log(`  ${name} ok (cosine ${dot.toFixed(6)})`);
       }
@@ -259,21 +278,35 @@ async function main(): Promise<void> {
     await assertInputNames(synthEncode, "synthEncode");
     const spk = fixtureSpeakerEmbedding();
     const encodeResult = await synthEncode.run({
-      text: new ort.Tensor("int64", BigInt64Array.from(
-        graphCases.synth_encode.text.map(BigInt),
-      ), [1, graphCases.synth_encode.text.length]),
+      text: new ort.Tensor(
+        "int64",
+        BigInt64Array.from(graphCases.synth_encode.text.map(BigInt)),
+        [1, graphCases.synth_encode.text.length],
+      ),
       spk_embed: new ort.Tensor("float32", spk, [1, 256]),
     });
     {
       const encSeq = encodeResult.enc_seq.data as Float32Array;
       const t = graphCases.synth_encode.text.length;
       const rows: Float32Array[] = [];
-      for (let i = 0; i < t; i++) rows.push(encSeq.subarray(i * 512, (i + 1) * 512));
-      compareMatrix("enc_seq", rows, graphCases.synth_encode.enc_seq, GRAPH_ABS_FLOOR);
+      for (let i = 0; i < t; i++)
+        rows.push(encSeq.subarray(i * 512, (i + 1) * 512));
+      compareMatrix(
+        "enc_seq",
+        rows,
+        graphCases.synth_encode.enc_seq,
+        GRAPH_ABS_FLOOR,
+      );
       const proj = encodeResult.enc_seq_proj.data as Float32Array;
       const projRows: Float32Array[] = [];
-      for (let i = 0; i < t; i++) projRows.push(proj.subarray(i * 128, (i + 1) * 128));
-      compareMatrix("enc_seq_proj", projRows, graphCases.synth_encode.enc_seq_proj, GRAPH_ABS_FLOOR);
+      for (let i = 0; i < t; i++)
+        projRows.push(proj.subarray(i * 128, (i + 1) * 128));
+      compareMatrix(
+        "enc_seq_proj",
+        projRows,
+        graphCases.synth_encode.enc_seq_proj,
+        GRAPH_ABS_FLOOR,
+      );
     }
 
     // synth-step — 12 chained steps from Tacotron.generate's zero state.
@@ -284,9 +317,11 @@ async function main(): Promise<void> {
     const state: Record<string, ort.Tensor> = {
       enc_seq: encodeResult.enc_seq,
       enc_seq_proj: encodeResult.enc_seq_proj,
-      chars: new ort.Tensor("int64", BigInt64Array.from(
-        graphCases.synth_encode.text.map(BigInt),
-      ), [1, t]),
+      chars: new ort.Tensor(
+        "int64",
+        BigInt64Array.from(graphCases.synth_encode.text.map(BigInt)),
+        [1, t],
+      ),
       prenet_in: new ort.Tensor("float32", zeros(80), [1, 80]),
       attn_h: new ort.Tensor("float32", zeros(128), [1, 128]),
       rnn1_h: new ort.Tensor("float32", zeros(1024), [1, 1024]),
@@ -306,7 +341,12 @@ async function main(): Promise<void> {
         for (let b = 0; b < 80; b++) row[b] = mel[b * r + f];
         rows.push(row);
       }
-      compareMatrix(`synth_step[${step}].mel`, rows, graphCases.synth_steps[step].mel, GRAPH_ABS_FLOOR);
+      compareMatrix(
+        `synth_step[${step}].mel`,
+        rows,
+        graphCases.synth_steps[step].mel,
+        GRAPH_ABS_FLOOR,
+      );
       const stop = (out.stop.data as Float32Array)[0];
       check(
         closeTo(stop, graphCases.synth_steps[step].stop[0][0], GRAPH_ABS_FLOOR),
@@ -314,7 +354,13 @@ async function main(): Promise<void> {
       );
       // Rotate next_* outputs into the next run's inputs.
       for (const name of [
-        "attn_h", "rnn1_h", "rnn2_h", "rnn1_c", "rnn2_c", "context", "cumulative",
+        "attn_h",
+        "rnn1_h",
+        "rnn2_h",
+        "rnn1_c",
+        "rnn2_c",
+        "context",
+        "cumulative",
       ] as const) {
         state[name] = out[`next_${name}`];
       }
@@ -330,7 +376,8 @@ async function main(): Promise<void> {
     const frames = 32;
     const melInput = new Float32Array(80 * frames); // bins-major [1, 80, frames]
     for (let t2 = 0; t2 < frames; t2++) {
-      for (let b = 0; b < 80; b++) melInput[b * frames + t2] = synMel[t2][b] / 4;
+      for (let b = 0; b < 80; b++)
+        melInput[b * frames + t2] = synMel[t2][b] / 4;
     }
     const vocUpsample = await session("voice-voc-upsample");
     await assertInputNames(vocUpsample, "vocUpsample");
@@ -371,7 +418,8 @@ async function main(): Promise<void> {
         mismatches === 0,
         `voc_frame[${frame}]: ${mismatches}/200 sampled codes differ from golden`,
       );
-      if (mismatches === 0) console.log(`  voc_frame[${frame}] ok (exact argmax codes)`);
+      if (mismatches === 0)
+        console.log(`  voc_frame[${frame}] ok (exact argmax codes)`);
       h1 = chunkOut.next_h1.data as Float32Array;
       h2 = chunkOut.next_h2.data as Float32Array;
       xPrev = chunkOut.next_x_prev.data as Float32Array;

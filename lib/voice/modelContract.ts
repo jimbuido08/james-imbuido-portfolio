@@ -66,7 +66,11 @@ export const SYNTH_MAX_MEL_FRAMES = 800;
 const CHARACTER_SYMBOLS =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!\'\"(),-.:;? ";
 
-export const VOICE_SYMBOLS: readonly string[] = ["_", "~", ...CHARACTER_SYMBOLS];
+export const VOICE_SYMBOLS: readonly string[] = [
+  "_",
+  "~",
+  ...CHARACTER_SYMBOLS,
+];
 
 export const PAD_ID = 0;
 export const EOS_ID = 1;

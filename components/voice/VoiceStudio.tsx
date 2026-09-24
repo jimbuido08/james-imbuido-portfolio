@@ -21,10 +21,7 @@ import {
 import { MonoKicker } from "@/components/ui/MonoKicker";
 import { fieldClasses } from "@/components/ui/fieldClasses";
 import { encodeWav16BitMono } from "@/lib/voice/wav";
-import {
-  canStartRecording,
-  recordHint,
-} from "./recordState";
+import { canStartRecording, recordHint } from "./recordState";
 import {
   canStartSynthesis,
   initialSynthState,
@@ -55,7 +52,11 @@ export function VoiceStudio() {
   const [take, setTake] = useState<Float32Array | null>(null);
   const [embed, setEmbed] = useState<Float32Array | null>(null);
   const [embedState, setEmbedState] = useState<EmbedState>(IDLE_EMBED);
-  const [synth, dispatchSynth] = useReducer(synthReducer, undefined, initialSynthState);
+  const [synth, dispatchSynth] = useReducer(
+    synthReducer,
+    undefined,
+    initialSynthState,
+  );
   /** Stays true after the first successful synthesis (drives the reward CTA). */
   const [hasSynthesized, setHasSynthesized] = useState(false);
   const [text, setText] = useState(DEFAULT_TEXT);
@@ -108,8 +109,8 @@ export function VoiceStudio() {
       // Skipped for Data Saver users; a failed preload stays silent because
       // Synthesize retries the load itself.
       if (
-        !(navigator as Navigator & { connection?: { saveData?: boolean } }).connection
-          ?.saveData
+        !(navigator as Navigator & { connection?: { saveData?: boolean } })
+          .connection?.saveData
       ) {
         requestPreload();
       }
@@ -152,7 +153,8 @@ export function VoiceStudio() {
   }
 
   const recording = recorder.state.phase === "recording";
-  const synthReady = embed !== null && canStartSynthesis(synth) && text.trim().length > 0;
+  const synthReady =
+    embed !== null && canStartSynthesis(synth) && text.trim().length > 0;
 
   return (
     <div className="space-y-8">
@@ -167,12 +169,14 @@ export function VoiceStudio() {
           </CardDescription>
         </CardHeader>
         <div className="mt-4 rounded-md border border-border bg-surface-2 p-4">
-          <MonoKicker className="mb-2">Sample text — read this aloud</MonoKicker>
+          <MonoKicker className="mb-2">
+            Sample text — read this aloud
+          </MonoKicker>
           <p className="text-sm leading-relaxed text-fg">
             &ldquo;The quick brown fox jumps over the lazy dog while a gentle
-            rain falls on the quiet harbour. Numbers sound different from
-            words, so count them out: three, seven, twelve, forty-five. This
-            voice was recorded in a browser, and it never left this device.&rdquo;
+            rain falls on the quiet harbour. Numbers sound different from words,
+            so count them out: three, seven, twelve, forty-five. This voice was
+            recorded in a browser, and it never left this device.&rdquo;
           </p>
           <p className="mt-2 text-xs text-fg-subtle">
             Aim for 10–20 seconds at a natural pace — varied sentences give the
@@ -250,7 +254,10 @@ export function VoiceStudio() {
           disabled={!embed}
         />
         <div className="mt-4 flex flex-wrap items-center gap-3">
-          <Button onClick={() => void handleSynthesize()} disabled={!synthReady}>
+          <Button
+            onClick={() => void handleSynthesize()}
+            disabled={!synthReady}
+          >
             {synth.phase === "working" ? "Synthesizing…" : "Synthesize"}
           </Button>
           {synth.phase === "done" && (
@@ -281,7 +288,11 @@ export function VoiceStudio() {
             <MonoKicker>Result</MonoKicker>
             <audio controls src={resultUrl} className="w-full" />
             <p className="text-sm text-fg-muted">
-              <a href={resultUrl} download="voice-clone.wav" className="underline">
+              <a
+                href={resultUrl}
+                download="voice-clone.wav"
+                className="underline"
+              >
                 Download the WAV
               </a>{" "}
               — generated at 16 kHz, entirely on this device.

@@ -31,7 +31,11 @@ interface RecorderController {
 }
 
 export function useVoiceRecorder(): RecorderController {
-  const [state, dispatch] = useReducer(recordReducer, undefined, initialRecordState);
+  const [state, dispatch] = useReducer(
+    recordReducer,
+    undefined,
+    initialRecordState,
+  );
 
   const contextRef = useRef<AudioContext | null>(null);
   const nodeRef = useRef<AudioWorkletNode | null>(null);
@@ -44,7 +48,9 @@ export function useVoiceRecorder(): RecorderController {
     stateRef.current = state;
   }, [state]);
   /** Set by stop(); auto-stop at the cap resolves the same promise. */
-  const stopResolverRef = useRef<((pcm: Float32Array | null) => void) | null>(null);
+  const stopResolverRef = useRef<((pcm: Float32Array | null) => void) | null>(
+    null,
+  );
 
   const teardown = useCallback(async (): Promise<void> => {
     nodeRef.current?.disconnect();
@@ -97,9 +103,10 @@ export function useVoiceRecorder(): RecorderController {
     } catch (err) {
       dispatch({
         type: "error",
-        message: err instanceof Error
-          ? err.message
-          : "Could not process the recording — try again.",
+        message:
+          err instanceof Error
+            ? err.message
+            : "Could not process the recording — try again.",
       });
       return null;
     }
@@ -117,7 +124,11 @@ export function useVoiceRecorder(): RecorderController {
     dispatch({ type: "request" });
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: false },
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: false,
+        },
       });
       streamRef.current = stream;
       const ctx = new AudioContext();

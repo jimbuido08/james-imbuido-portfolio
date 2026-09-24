@@ -6,10 +6,7 @@
  */
 
 export type VoiceClaimErrorCode =
-  | "unauthenticated"
-  | "already_claimed"
-  | "rate_limited"
-  | "internal";
+  "unauthenticated" | "already_claimed" | "rate_limited" | "internal";
 
 export interface VoiceClaimError {
   error: {

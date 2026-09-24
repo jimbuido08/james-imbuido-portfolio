@@ -6,10 +6,7 @@
  * worker is a single inference pipeline), progress callbacks forward the
  * worker's stage messages, and errors reject the pending request.
  */
-import type {
-  VoiceRequest,
-  VoiceResponse,
-} from "../../workers/voice.worker";
+import type { VoiceRequest, VoiceResponse } from "../../workers/voice.worker";
 import type { EngineStage, EngineProgress } from "../../lib/voice/engine";
 
 type StageListener = (progress: EngineProgress) => void;
@@ -49,9 +46,7 @@ function getWorker(): Worker {
     pending = null;
     const error = new Error(`voice worker crashed: ${event.message}`);
     current?.reject(error);
-    stageListeners.forEach((fn) =>
-      fn({ stage: "loading" }),
-    );
+    stageListeners.forEach((fn) => fn({ stage: "loading" }));
   };
   return worker;
 }
@@ -64,9 +59,7 @@ function addStageListener(fn: StageListener): () => void {
 }
 
 /** Serialized dispatch — each request waits for the previous one to settle. */
-function dispatch(
-  start: (w: Worker) => void,
-): Promise<VoiceResponse> {
+function dispatch(start: (w: Worker) => void): Promise<VoiceResponse> {
   const run = queue.then(
     () =>
       new Promise<VoiceResponse>((resolve, reject) => {
@@ -136,14 +129,22 @@ export function requestSynthesize(
   const cancelStage = onStage ? addStageListener(onStage) : () => undefined;
   const embedCopy = new Float32Array(embed);
   const promise = dispatch((w) => {
-    const request: VoiceRequest = { type: "synthesize", text, embed: embedCopy, seed };
+    const request: VoiceRequest = {
+      type: "synthesize",
+      text,
+      embed: embedCopy,
+      seed,
+    };
     w.postMessage(request, [embedCopy.buffer]);
   }).then((response) => {
     cancelStage();
     if (response.type !== "audio") {
       throw new Error("unexpected worker response for synthesize");
     }
-    return { samples: response.samples, sampleRate: response.sampleRate } as SynthesisResult;
+    return {
+      samples: response.samples,
+      sampleRate: response.sampleRate,
+    } as SynthesisResult;
   });
   return { promise, cancelStage };
 }

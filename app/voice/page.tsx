@@ -14,11 +14,10 @@ export default function VoicePage() {
     <PageShell href="/voice">
       <p className="mt-8 max-w-prose text-fg-muted">
         Record a short voice sample and this page converts it into a speaker
-        embedding, then speaks any text you type in that voice — a
-        three-model pipeline, &ldquo;Real-Time Voice Cloning&rdquo;
-       implementation (speaker encoder, Tacotron synthesizer,
-        WaveRNN vocoder), converted to ONNX and executed client-side over
-        WebAssembly.
+        embedding, then speaks any text you type in that voice — a three-model
+        pipeline, &ldquo;Real-Time Voice Cloning&rdquo; implementation (speaker
+        encoder, Tacotron synthesizer, WaveRNN vocoder), converted to ONNX and
+        executed client-side over WebAssembly.
       </p>
       <p className="mb-8 mt-4 max-w-prose text-sm text-fg-subtle">
         Privacy by architecture: your recording and the generated audio never

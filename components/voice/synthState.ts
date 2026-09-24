@@ -5,11 +5,7 @@
  */
 import type { EngineStage, EngineProgress } from "../../lib/voice/engine";
 
-export type SynthPhase =
-  | "idle"
-  | "working"
-  | "done"
-  | "error";
+export type SynthPhase = "idle" | "working" | "done" | "error";
 
 export interface SynthState {
   phase: SynthPhase;
@@ -31,7 +27,10 @@ export type SynthAction =
   | { type: "error"; message: string }
   | { type: "reset" };
 
-export function synthReducer(state: SynthState, action: SynthAction): SynthState {
+export function synthReducer(
+  state: SynthState,
+  action: SynthAction,
+): SynthState {
   switch (action.type) {
     case "start":
       return { phase: "working" };
@@ -61,11 +60,17 @@ export function synthStageCopy(state: SynthState): string {
     case "text-encode":
       return "Encoding text…";
     case "decode": {
-      const done = state.total ? Math.round(((state.current ?? 0) / state.total) * 100) : null;
-      return done === null ? "Decoding the spectrogram…" : `Decoding the spectrogram… ${done}%`;
+      const done = state.total
+        ? Math.round(((state.current ?? 0) / state.total) * 100)
+        : null;
+      return done === null
+        ? "Decoding the spectrogram…"
+        : `Decoding the spectrogram… ${done}%`;
     }
     case "vocode": {
-      const done = state.total ? Math.round(((state.current ?? 0) / state.total) * 100) : null;
+      const done = state.total
+        ? Math.round(((state.current ?? 0) / state.total) * 100)
+        : null;
       return done === null ? "Generating audio…" : `Generating audio… ${done}%`;
     }
     default:
@@ -74,5 +79,7 @@ export function synthStageCopy(state: SynthState): string {
 }
 
 export function canStartSynthesis(state: SynthState): boolean {
-  return state.phase === "idle" || state.phase === "done" || state.phase === "error";
+  return (
+    state.phase === "idle" || state.phase === "done" || state.phase === "error"
+  );
 }

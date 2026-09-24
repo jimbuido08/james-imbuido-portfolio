@@ -37,7 +37,10 @@ export type RecordAction =
   | { type: "error"; message: string }
   | { type: "reset" };
 
-export function recordReducer(state: RecordState, action: RecordAction): RecordState {
+export function recordReducer(
+  state: RecordState,
+  action: RecordAction,
+): RecordState {
   switch (action.type) {
     case "request":
       return { phase: "requesting", seconds: 0 };
@@ -65,10 +68,7 @@ export const RECORD_PHASE_COPY: Record<RecordPhase, string> = {
 /** Copy under the record button for the current state (empty = none). */
 export function recordHint(state: RecordState): string {
   if (state.phase === "error") return state.error ?? "";
-  if (
-    state.phase === "recording" &&
-    state.seconds < MIN_RECORD_SECONDS
-  ) {
+  if (state.phase === "recording" && state.seconds < MIN_RECORD_SECONDS) {
     return `Keep going — the voice encoder needs at least ${MIN_RECORD_SECONDS} s.`;
   }
   return RECORD_PHASE_COPY[state.phase];
@@ -79,7 +79,5 @@ export function canStartRecording(state: RecordState): boolean {
 }
 
 export function canStopRecording(state: RecordState): boolean {
-  return (
-    state.phase === "recording" && state.seconds >= MIN_RECORD_SECONDS
-  );
+  return state.phase === "recording" && state.seconds >= MIN_RECORD_SECONDS;
 }

@@ -43,11 +43,7 @@ ort.env.logLevel = "error";
 const FADE_OUT_SAMPLES = 20 * 200;
 
 export type EngineStage =
-  | "loading"
-  | "encoder"
-  | "text-encode"
-  | "decode"
-  | "vocode";
+  "loading" | "encoder" | "text-encode" | "decode" | "vocode";
 
 export interface EngineProgress {
   stage: EngineStage;
@@ -66,7 +62,11 @@ interface Sessions {
 }
 
 function zerosTensor(dims: number[]): ort.Tensor {
-  return new ort.Tensor("float32", new Float32Array(dims.reduce((a, b) => a * b, 1)), dims);
+  return new ort.Tensor(
+    "float32",
+    new Float32Array(dims.reduce((a, b) => a * b, 1)),
+    dims,
+  );
 }
 
 /** Retries for a model download: the synthesis graphs total ~111 MB, and a
@@ -80,7 +80,9 @@ async function fetchGraph(name: string): Promise<Uint8Array> {
   let lastError: Error | null = null;
   for (let attempt = 0; attempt <= GRAPH_FETCH_RETRIES; attempt++) {
     if (attempt > 0) {
-      await new Promise((resolve) => setTimeout(resolve, GRAPH_RETRY_DELAYS_MS[attempt - 1]));
+      await new Promise((resolve) =>
+        setTimeout(resolve, GRAPH_RETRY_DELAYS_MS[attempt - 1]),
+      );
     }
     try {
       const response = await fetch(`${VOICE_MODEL_BASE}${name}`);
@@ -157,7 +159,9 @@ export function createVoiceEngine(): VoiceEngine {
         }
         const result = await encoder.run({
           mel_partial: new ort.Tensor("float32", partial, [
-            1, ENCODER_MELS, ENCODER_PARTIAL_FRAMES,
+            1,
+            ENCODER_MELS,
+            ENCODER_PARTIAL_FRAMES,
           ]),
         });
         partialEmbeds.push(result.embed.data as Float32Array);
@@ -175,7 +179,12 @@ export function createVoiceEngine(): VoiceEngine {
     },
 
     async preload(onProgress) {
-      for (const key of ["synthEncode", "synthStep", "vocUpsample", "vocChunk"] as const) {
+      for (const key of [
+        "synthEncode",
+        "synthStep",
+        "vocUpsample",
+        "vocChunk",
+      ] as const) {
         try {
           await require(key, onProgress);
         } catch {
@@ -200,12 +209,14 @@ export function createVoiceEngine(): VoiceEngine {
       // ---- Tacotron encoder pass ------------------------------------------
       onProgress({ stage: "text-encode" });
       const encoded = await synthEncode.run({
-        text: new ort.Tensor(
-          "int64",
-          BigInt64Array.from(ids.map(BigInt)),
-          [1, t],
-        ),
-        spk_embed: new ort.Tensor("float32", spkEmbed, [1, SPEAKER_EMBEDDING_SIZE]),
+        text: new ort.Tensor("int64", BigInt64Array.from(ids.map(BigInt)), [
+          1,
+          t,
+        ]),
+        spk_embed: new ort.Tensor("float32", spkEmbed, [
+          1,
+          SPEAKER_EMBEDDING_SIZE,
+        ]),
       });
       const encSeq = encoded.enc_seq;
       const encSeqProj = encoded.enc_seq_proj;
@@ -215,11 +226,10 @@ export function createVoiceEngine(): VoiceEngine {
       const state: Record<string, ort.Tensor> = {
         enc_seq: encSeq,
         enc_seq_proj: encSeqProj,
-        chars: new ort.Tensor(
-          "int64",
-          BigInt64Array.from(ids.map(BigInt)),
-          [1, t],
-        ),
+        chars: new ort.Tensor("int64", BigInt64Array.from(ids.map(BigInt)), [
+          1,
+          t,
+        ]),
         prenet_in: zerosTensor([1, 80]),
         attn_h: zerosTensor([1, 128]),
         rnn1_h: zerosTensor([1, 1024]),
@@ -256,16 +266,22 @@ export function createVoiceEngine(): VoiceEngine {
         state.prenet_in = new ort.Tensor("float32", last, [1, 80]);
         stepFrame += r;
         if (stopped) break;
-        if (step % 8 === 0) onProgress({ stage: "decode", current: step, total: maxSteps });
+        if (step % 8 === 0)
+          onProgress({ stage: "decode", current: step, total: maxSteps });
       }
-      onProgress({ stage: "decode", current: melChunks.length, total: melChunks.length });
+      onProgress({
+        stage: "decode",
+        current: melChunks.length,
+        total: melChunks.length,
+      });
 
       // ---- Trim trailing silence (synthesizer/inference.py) ----------------
       const frames: Float32Array[] = [];
       for (const chunk of melChunks) {
         for (let f = 0; f < SYNTH_REDUCTION_R; f++) {
           const frame = new Float32Array(80);
-          for (let b = 0; b < 80; b++) frame[b] = chunk[b * SYNTH_REDUCTION_R + f];
+          for (let b = 0; b < 80; b++)
+            frame[b] = chunk[b * SYNTH_REDUCTION_R + f];
           frames.push(frame);
         }
       }
@@ -284,7 +300,8 @@ export function createVoiceEngine(): VoiceEngine {
       onProgress({ stage: "vocode", current: 0, total: melFrames });
       const melInput = new Float32Array(80 * melFrames); // bins-major [1, 80, T]
       for (let f = 0; f < melFrames; f++) {
-        for (let b = 0; b < 80; b++) melInput[b * melFrames + f] = frames[f][b] / 4;
+        for (let b = 0; b < 80; b++)
+          melInput[b * melFrames + f] = frames[f][b] / 4;
       }
       const up = await vocUpsample.run({
         mel: new ort.Tensor("float32", melInput, [1, 80, melFrames]),
@@ -307,12 +324,18 @@ export function createVoiceEngine(): VoiceEngine {
           x_prev: new ort.Tensor("float32", xPrev, [1, 1]),
           mels: new ort.Tensor(
             "float32",
-            melsCond.slice(frame * VOC_CHUNK_SAMPLES * 80, (frame + 1) * VOC_CHUNK_SAMPLES * 80),
+            melsCond.slice(
+              frame * VOC_CHUNK_SAMPLES * 80,
+              (frame + 1) * VOC_CHUNK_SAMPLES * 80,
+            ),
             [VOC_CHUNK_SAMPLES, 80],
           ),
           aux: new ort.Tensor(
             "float32",
-            aux.slice(frame * VOC_CHUNK_SAMPLES * 128, (frame + 1) * VOC_CHUNK_SAMPLES * 128),
+            aux.slice(
+              frame * VOC_CHUNK_SAMPLES * 128,
+              (frame + 1) * VOC_CHUNK_SAMPLES * 128,
+            ),
             [VOC_CHUNK_SAMPLES, 128],
           ),
           h1: new ort.Tensor("float32", h1, [1, 512]),
@@ -355,6 +378,13 @@ export function createVoiceEngine(): VoiceEngine {
 
 // Graph input names are asserted once at module load — a renamed graph input
 // must fail loudly here rather than mysteriously at run time.
-for (const key of ["encoder", "synthEncode", "synthStep", "vocUpsample", "vocChunk"] as const) {
-  if (!GRAPH_INPUTS[key]) throw new Error(`voice engine: missing contract for ${key}`);
+for (const key of [
+  "encoder",
+  "synthEncode",
+  "synthStep",
+  "vocUpsample",
+  "vocChunk",
+] as const) {
+  if (!GRAPH_INPUTS[key])
+    throw new Error(`voice engine: missing contract for ${key}`);
 }

@@ -38,18 +38,50 @@ const UNIDECODE_MAP: ReadonlyMap<string, string> = new Map(
     "…": "...", // …
     " ": " ",
     "£": "£", // £ kept — the number rules consume it
-    "é": "e", "è": "e", "ê": "e", "ë": "e",
-    "É": "E", "È": "E", "Ê": "E", "Ë": "E",
-    "á": "a", "à": "a", "â": "a", "ä": "a",
-    "Á": "A", "À": "A", "Â": "A", "Ä": "A",
-    "í": "i", "ì": "i", "î": "i", "ï": "i",
-    "Í": "I", "Ì": "I", "Î": "I", "Ï": "I",
-    "ó": "o", "ò": "o", "ô": "o", "ö": "o",
-    "Ó": "O", "Ò": "O", "Ô": "O", "Ö": "O",
-    "ú": "u", "ù": "u", "û": "u", "ü": "u",
-    "Ú": "U", "Ù": "U", "Û": "U", "Ü": "U",
-    "ç": "c", "Ç": "C",
-    "ñ": "n", "Ñ": "N",
+    é: "e",
+    è: "e",
+    ê: "e",
+    ë: "e",
+    É: "E",
+    È: "E",
+    Ê: "E",
+    Ë: "E",
+    á: "a",
+    à: "a",
+    â: "a",
+    ä: "a",
+    Á: "A",
+    À: "A",
+    Â: "A",
+    Ä: "A",
+    í: "i",
+    ì: "i",
+    î: "i",
+    ï: "i",
+    Í: "I",
+    Ì: "I",
+    Î: "I",
+    Ï: "I",
+    ó: "o",
+    ò: "o",
+    ô: "o",
+    ö: "o",
+    Ó: "O",
+    Ò: "O",
+    Ô: "O",
+    Ö: "O",
+    ú: "u",
+    ù: "u",
+    û: "u",
+    ü: "u",
+    Ú: "U",
+    Ù: "U",
+    Û: "U",
+    Ü: "U",
+    ç: "c",
+    Ç: "C",
+    ñ: "n",
+    Ñ: "N",
   }),
 );
 
@@ -68,12 +100,37 @@ function convertToAscii(text: string): string {
 // ---- number expansion (synthesizer/utils/numbers.py + inflect) -------------
 
 const ONES = [
-  "zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
-  "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen",
-  "sixteen", "seventeen", "eighteen", "nineteen",
+  "zero",
+  "one",
+  "two",
+  "three",
+  "four",
+  "five",
+  "six",
+  "seven",
+  "eight",
+  "nine",
+  "ten",
+  "eleven",
+  "twelve",
+  "thirteen",
+  "fourteen",
+  "fifteen",
+  "sixteen",
+  "seventeen",
+  "eighteen",
+  "nineteen",
 ];
 const TENS = [
-  "", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty",
+  "",
+  "",
+  "twenty",
+  "thirty",
+  "forty",
+  "fifty",
+  "sixty",
+  "seventy",
+  "eighty",
   "ninety",
 ];
 
@@ -126,16 +183,23 @@ function numberToWordsGroup2(num: number): string {
 function expandBareNumber(num: number): string {
   if (num > 1000 && num < 3000) {
     if (num === 2000) return "two thousand";
-    if (num > 2000 && num < 2010) return `two thousand ${numberToWords(num % 100)}`;
-    if (num % 100 === 0) return `${numberToWords(Math.floor(num / 100))} hundred`;
+    if (num > 2000 && num < 2010)
+      return `two thousand ${numberToWords(num % 100)}`;
+    if (num % 100 === 0)
+      return `${numberToWords(Math.floor(num / 100))} hundred`;
     return numberToWordsGroup2(num);
   }
   return numberToWords(num);
 }
 
 const ORDINAL_SPECIAL = new Map([
-  [1, "first"], [2, "second"], [3, "third"], [5, "fifth"], [8, "eighth"],
-  [9, "ninth"], [12, "twelfth"],
+  [1, "first"],
+  [2, "second"],
+  [3, "third"],
+  [5, "fifth"],
+  [8, "eighth"],
+  [9, "ninth"],
+  [12, "twelfth"],
 ]);
 
 /** inflect number_to_words("21st") → "twenty-first" (last word ordinalised). */
@@ -157,8 +221,9 @@ function expandNumbers(text: string): string {
   // ([0-9][0-9,]+[0-9]) — strip commas from grouped numbers (≥ 3 digits).
   text = text.replace(/\d[\d,]+\d/g, (m) => m.replace(/,/g, ""));
   // £([0-9,]*[0-9]+) → "<n> pounds"
-  text = text.replace(/£(\d[\d,]*)/g, (_m, digits: string) =>
-    `${Number(digits.replace(/,/g, ""))} pounds`,
+  text = text.replace(
+    /£(\d[\d,]*)/g,
+    (_m, digits: string) => `${Number(digits.replace(/,/g, ""))} pounds`,
   );
   // $([0-9.,]*[0-9]+) → dollars/cents sentence
   text = text.replace(/\$([\d.,]*\d)/g, (_m, match: string) => {
@@ -168,7 +233,8 @@ function expandNumbers(text: string): string {
     const cents = parts.length > 1 && parts[1] ? Number(parts[1]) : 0;
     const dollarUnit = dollars === 1 ? "dollar" : "dollars";
     const centUnit = cents === 1 ? "cent" : "cents";
-    if (dollars && cents) return `${dollars} ${dollarUnit}, ${cents} ${centUnit}`;
+    if (dollars && cents)
+      return `${dollars} ${dollarUnit}, ${cents} ${centUnit}`;
     if (dollars) return `${dollars} ${dollarUnit}`;
     if (cents) return `${cents} ${centUnit}`;
     return "zero dollars";
@@ -224,10 +290,7 @@ function expandAbbreviations(text: string): string {
  */
 export function textToSequence(input: string): number[] {
   const cleaned = expandAbbreviations(
-    expandNumbers(
-      convertToAscii(input)
-        .toLowerCase(),
-    ),
+    expandNumbers(convertToAscii(input).toLowerCase()),
   ).replace(/\s+/g, " ");
 
   const sequence: number[] = [];

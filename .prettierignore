@@ -6,6 +6,9 @@ lib/llm/bundledCorpus.ts
 lib/llm/portfolioCorpus.ts
 # Generated from the training log (training/storyteller/export.py owns it)
 lib/storyteller/trainingData.ts
+# Shipped model artifact: byte-identity with the training export is asserted by
+# npm run verify:storyteller-model, so Prettier must not rewrite its whitespace
+public/models/storyteller/tokenizer.json
 
 # Build output
 .next

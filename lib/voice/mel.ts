@@ -170,7 +170,9 @@ export function melFilterbank(
   // mel_f: nMels + 2 edge frequencies, linear in mel space.
   const melPoints = new Float64Array(nMels + 2);
   for (let i = 0; i < nMels + 2; i++) {
-    melPoints[i] = melToHzSlaney(melMin + ((melMax - melMin) * i) / (nMels + 1));
+    melPoints[i] = melToHzSlaney(
+      melMin + ((melMax - melMin) * i) / (nMels + 1),
+    );
   }
   // fft frequencies: sr/2 * linspace(0, 1, bins).
   const fftFreqs = new Float64Array(bins);
@@ -251,17 +253,29 @@ export function synthMel(wav: Float32Array): Float32Array[] {
     preemphasised[n] = wav[n] - SYNTH_PREEMPHASIS * wav[n - 1];
   }
   const mags = stftMagnitudes(preemphasised, SYNTH_N_FFT, SYNTH_HOP);
-  const basis = melFilterbank(16000, SYNTH_N_FFT, SYNTH_MELS, SYNTH_FMIN, SYNTH_FMAX);
+  const basis = melFilterbank(
+    16000,
+    SYNTH_N_FFT,
+    SYNTH_MELS,
+    SYNTH_FMIN,
+    SYNTH_FMAX,
+  );
   const mel = applyBasis(basis, mags, 1); // magnitude, not power
   const minLevel = Math.exp((SYNTH_MIN_LEVEL_DB / 20) * Math.log(10));
   return mel.map((frames) => {
     const out = new Float32Array(frames.length);
     for (let t = 0; t < frames.length; t++) {
-      const db = 20 * Math.log10(Math.max(minLevel, frames[t])) - SYNTH_REF_LEVEL_DB;
-      const clipped = (2 * SYNTH_MAX_ABS_VALUE) *
-        ((db - SYNTH_MIN_LEVEL_DB) / -SYNTH_MIN_LEVEL_DB) -
+      const db =
+        20 * Math.log10(Math.max(minLevel, frames[t])) - SYNTH_REF_LEVEL_DB;
+      const clipped =
+        2 *
+          SYNTH_MAX_ABS_VALUE *
+          ((db - SYNTH_MIN_LEVEL_DB) / -SYNTH_MIN_LEVEL_DB) -
         SYNTH_MAX_ABS_VALUE;
-      out[t] = Math.min(SYNTH_MAX_ABS_VALUE, Math.max(-SYNTH_MAX_ABS_VALUE, clipped));
+      out[t] = Math.min(
+        SYNTH_MAX_ABS_VALUE,
+        Math.max(-SYNTH_MAX_ABS_VALUE, clipped),
+      );
     }
     return out;
   });

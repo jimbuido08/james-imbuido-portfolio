@@ -27,10 +27,7 @@ export function VoiceRewardClaim() {
 
   async function handleClaim(): Promise<void> {
     await submit(() =>
-      postJsonApi<VoiceClaimSuccess, VoiceClaimError>(
-        "/api/voice/claim",
-        null,
-      ),
+      postJsonApi<VoiceClaimSuccess, VoiceClaimError>("/api/voice/claim", null),
     );
   }
 
@@ -83,7 +80,11 @@ export function VoiceRewardClaim() {
         </p>
       )}
       <div className="mt-3">
-        <Button size="sm" onClick={() => void handleClaim()} disabled={submitting}>
+        <Button
+          size="sm"
+          onClick={() => void handleClaim()}
+          disabled={submitting}
+        >
           {submitting
             ? "Claiming…"
             : `Claim +${VOICE_REWARD_CREDITS} JTB interactions`}

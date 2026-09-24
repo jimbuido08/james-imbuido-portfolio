@@ -102,14 +102,16 @@ self.onmessage = async (event: MessageEvent<VoiceRequest>) => {
           onProgress,
         );
         const owned = new Float32Array(samples); // subarray → own buffer to transfer
-        post(
-          { type: "audio", samples: owned, sampleRate: 16000 },
-          [owned.buffer],
-        );
+        post({ type: "audio", samples: owned, sampleRate: 16000 }, [
+          owned.buffer,
+        ]);
         break;
       }
     }
   } catch (err) {
-    post({ type: "error", message: err instanceof Error ? err.message : String(err) });
+    post({
+      type: "error",
+      message: err instanceof Error ? err.message : String(err),
+    });
   }
 };

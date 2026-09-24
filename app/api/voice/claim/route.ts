@@ -3,10 +3,7 @@ import { NextResponse } from "next/server";
 import { outcomeError, requireUser } from "@/lib/server/http";
 import { claimVoiceReward, describeOutcome } from "@/lib/voice/claim";
 import { VOICE_REWARD_CREDITS } from "@/lib/credits/constants";
-import type {
-  ClaimVoiceRewardResult,
-  VoiceClaimSuccess,
-} from "@/types/voice";
+import type { ClaimVoiceRewardResult, VoiceClaimSuccess } from "@/types/voice";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
