@@ -9,7 +9,14 @@ export const STORYTELLER_MODEL_URL = "/models/storyteller/storyteller.bin";
 export const STORYTELLER_TOKENIZER_URL = "/models/storyteller/tokenizer.json";
 
 export const MODEL_BYTES = 13_834_784; // 32-B STOR header + 13,834,752-B fp16 payload
-export const TOKENIZER_BYTES = 593_782;
+/**
+ * Byte count of tokenizer.json with line endings normalised to LF — the form
+ * the artifact is committed in (see .gitattributes). Measured this way because
+ * a raw size comparison is not portable: a CRLF working tree reports 593,782
+ * bytes, so the gate passed only on a core.autocrlf=true machine and failed on
+ * every LF checkout, including CI.
+ */
+export const TOKENIZER_BYTES = 553_807;
 
 export const EXPECTED_PARAMS = 6_917_376;
 

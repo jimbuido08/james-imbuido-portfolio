@@ -92,7 +92,11 @@ async function main(): Promise<void> {
   const tok = buildTokenizer(tokText);
   check(
     "tokenizer: byte size",
-    readFileSync(TOK_PATH).length === TOKENIZER_BYTES,
+    // Normalise line endings first so the assertion holds on any checkout.
+    // Comparing raw bytes made this pass only where core.autocrlf rewrote the
+    // working tree to CRLF, and fail on every LF checkout.
+    Buffer.byteLength(tokText.replace(/\r\n/g, "\n"), "utf8") ===
+      TOKENIZER_BYTES,
   );
   for (const c of fixtures.tokenizerCases) {
     const ids = tok.encode(c.text);
