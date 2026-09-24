@@ -12,6 +12,16 @@ updates:
       time: "06:00"
     open-pull-requests-limit: 5
     groups:
+      # Listed first, so it wins over the catch-all groups below (Dependabot
+      # assigns each dependency to the first group that matches).
+      #
+      # onnxruntime-web is not a routine bump: it is coupled to the wasm runtime
+      # committed in public/models/ort/, and a minor release can change wasm
+      # inference numerics. On its own PR a parity failure is unambiguous — and
+      # the ORT sync check in ci.yml will demand `npm run models:wasm` here —
+      # instead of being buried in a dozen unrelated bumps.
+      onnxruntime:
+        patterns: ["onnxruntime-web"]
       npm-minor-and-patch:
         applies-to: version-updates
         update-types: ["minor", "patch"]
