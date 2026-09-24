@@ -12,21 +12,27 @@ updates:
       time: "06:00"
     open-pull-requests-limit: 5
     groups:
-      # Listed first, so it wins over the catch-all groups below (Dependabot
-      # assigns each dependency to the first group that matches).
-      #
       # onnxruntime-web is not a routine bump: it is coupled to the wasm runtime
       # committed in public/models/ort/, and a minor release can change wasm
       # inference numerics. On its own PR a parity failure is unambiguous — and
       # the ORT sync check in ci.yml will demand `npm run models:wasm` here —
-      # instead of being buried in a dozen unrelated bumps.
+      # instead of being buried among a dozen unrelated bumps.
+      #
+      # The broad groups below exclude it explicitly rather than relying on
+      # group ordering: the docs do not state a precedence rule for a dependency
+      # matching several groups, and in practice listing this group first did not
+      # take it out of the catch-all (the first two Dependabot PRs still bundled
+      # it). Excluding it everywhere else makes this group its only possible
+      # home, so the outcome does not depend on undocumented ordering.
       onnxruntime:
         patterns: ["onnxruntime-web"]
       npm-minor-and-patch:
         applies-to: version-updates
+        exclude-patterns: ["onnxruntime-web"]
         update-types: ["minor", "patch"]
       npm-major:
         applies-to: version-updates
+        exclude-patterns: ["onnxruntime-web"]
         update-types: ["major"]
     commit-message:
       prefix: "chore(deps)"
