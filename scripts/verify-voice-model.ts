@@ -35,7 +35,17 @@ ort.env.logLevel = "error";
 
 const REPO = resolve(import.meta.dirname, "..");
 const FIXTURES = resolve(REPO, "training/voice/fixtures");
-const EXPORT = resolve(REPO, "training/voice/export");
+/**
+ * The graphs under test are the ones that actually ship, so the default points
+ * at the committed artifacts. Override with VOICE_EXPORT_DIR to gate freshly
+ * exported graphs from the local Python pipeline instead — training/voice/export
+ * is git-ignored, so pointing the default there made this gate unrunnable on a
+ * clean clone.
+ */
+const EXPORT = resolve(
+  REPO,
+  process.env.VOICE_EXPORT_DIR ?? "public/models/voice",
+);
 
 interface TextCase {
   text: string;
