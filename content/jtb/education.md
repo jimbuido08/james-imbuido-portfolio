@@ -11,6 +11,12 @@ Activities & societies: Tennis Team Inter-School Sport Captain, Table Tennis Tea
 
 ### Licenses & certifications
 
+**Amazon Web Services (Oct 2026):**
+- AWS Certified AI Practitioner
+
+**Amazon Web Services (Sep 2026):**
+- AWS Certified Cloud Practitioner
+
 **Anthropic (Jul 2026):**
 - AI Fluency for Builders
 - AI Fluency for Small Businesses

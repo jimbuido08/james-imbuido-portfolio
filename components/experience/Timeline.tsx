@@ -15,6 +15,8 @@ export interface TimelineEntry {
   tags?: string[]; // e.g. skills
   summary?: string; // 1–3 sentences, TODO-marked
   sections?: TimelineSection[]; // structured sub-sections with bullets
+  /** Optional verification link for a credential (e.g. a Credly badge). */
+  href?: string;
 }
 
 /** Plain two-column vertical timeline shared by Experience and Education. */
@@ -42,6 +44,19 @@ export function Timeline({ entries }: { entries: TimelineEntry[] }) {
                 {entry.type}
                 {entry.type && entry.location && " · "}
                 {entry.location}
+              </p>
+            )}
+            {entry.href && (
+              <p className="mt-3 text-sm">
+                <a
+                  href={entry.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Verify credential for ${entry.title}`}
+                  className="text-fg underline underline-offset-4 decoration-border hover:decoration-border-strong"
+                >
+                  Verify credential <span className="text-fg-subtle">↗</span>
+                </a>
               </p>
             )}
             {entry.summary && (
