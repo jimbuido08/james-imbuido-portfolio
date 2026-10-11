@@ -278,6 +278,21 @@ const educationEntries: TimelineEntry[] = [
   },
 ];
 
+const certificationEntries: TimelineEntry[] = [
+  {
+    period: "Oct 2026",
+    title: "AWS Certified AI Practitioner",
+    organisation: "Amazon Web Services (AWS)",
+    href: "https://www.credly.com/badges/13633fc2-85e5-4b9b-a7d7-acedc077869b",
+  },
+  {
+    period: "Sep 2026",
+    title: "AWS Certified Cloud Practitioner",
+    organisation: "Amazon Web Services (AWS)",
+    href: "https://www.credly.com/badges/345ea35d-28bc-498c-a7f2-1cc006ec8d45/public_url",
+  },
+];
+
 export default function ExperiencePage() {
   return (
     <PageShell href="/experience">
@@ -292,10 +307,17 @@ export default function ExperiencePage() {
         as="h2"
         kicker="Education"
         title="Education"
-        description="Degrees, certifications, and structured learning."
+        description="Degrees and structured learning."
         className="mt-16"
       />
       <Timeline entries={educationEntries} />
+      <SectionHeading
+        as="h2"
+        kicker="Certifications"
+        title="Certifications"
+        className="mt-16"
+      />
+      <Timeline entries={certificationEntries} />
     </PageShell>
   );
 }

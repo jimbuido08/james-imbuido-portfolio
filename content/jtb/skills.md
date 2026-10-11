@@ -21,3 +21,4 @@ Areas James has covered through completed certifications and structured courses 
 - Programming foundations: Python, R, with foundational coursework in Java and C#.
 - Software design: SOLID design principles and the architecture of modern large-scale systems.
 - Data science mathematics, machine learning, and natural language processing foundations.
+- Cloud: Amazon Web Services (AWS) — AWS Certified AI Practitioner and AWS Certified Cloud Practitioner.

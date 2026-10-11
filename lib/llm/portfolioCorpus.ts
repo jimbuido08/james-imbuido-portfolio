@@ -3,7 +3,7 @@
  * James's approved site copy: content/jtb/{about, ai, career, education, experience, ml, projects, skills}.md
  * with markdown syntax and [TODO placeholder lines stripped (the same
  * text JTB is grounded in). Tiny by design — models memorise it.
- * sha256 4c382b098cec4f2f...
+ * sha256 77f20b11a7aa6ed0...
  */
 
 export const PORTFOLIO_CORPUS = `Overview
@@ -47,6 +47,10 @@ Victorian Certificate of Education — Emmaus College (2014 — 2019)
 High school diploma — awarded with a 92.95 ATAR.
 Activities & societies: Tennis Team Inter-School Sport Captain, Table Tennis Team Inter-School Sport Captain, Badminton Inter-School Sport Player (ranked 4th), Soccer Inter-School Sport Player, Athletics Inter-School Sport Athlete (field and track), Art Committee Member, Musical Production Cast Member (Hairspray), Vinnies Victoria Committee Member, and Junior High Representative.
 Licenses & certifications
+**Amazon Web Services (Oct 2026):**
+AWS Certified AI Practitioner
+**Amazon Web Services (Sep 2026):**
+AWS Certified Cloud Practitioner
 **Anthropic (Jul 2026):**
 AI Fluency for Builders
 AI Fluency for Small Businesses
@@ -181,4 +185,5 @@ Web development: HTML, CSS, JavaScript and TypeScript, React, Django, and Flask.
 Programming foundations: Python, R, with foundational coursework in Java and C#.
 Software design: SOLID design principles and the architecture of modern large-scale systems.
 Data science mathematics, machine learning, and natural language processing foundations.
+Cloud: Amazon Web Services (AWS) — AWS Certified AI Practitioner and AWS Certified Cloud Practitioner.
 `;

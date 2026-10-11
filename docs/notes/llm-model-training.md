@@ -121,12 +121,13 @@ Tolerances: abs 1e-5 OR rel 1e-3 on fixture values rounded to 5 significant
 digits (voice precedent). **GATE: PASSED — 27/27** with the sample shipped.
 
 **The shipped sample** (`public/models/llm/llm-portfolio.bin`): small preset
-trained on the portfolio corpus (18,003 bytes) — 500 steps, batch 32
-(3,072 tokens/step), seed 1, 39.5 min on the dev machine, final EMA loss
-1.09 nats/byte; 962,720 bytes fp16, sha256 `aa9f9e3b…`, crc32 `a06c7ca8`.
-Generations recite and remix the site (measured: "…appast pulying carossit…
-nursing psthonf", "Data Sciencstis" emerges by mid-training) — memorisation
-of a tiny corpus, as designed and as the page copy states.
+trained on the portfolio corpus (18,243 bytes) — 500 steps, batch 32
+(3,072 tokens/step), seed 1, 40.9 min on the dev machine, final EMA loss
+1.07 nats/byte; 962,720 bytes fp16, sha256 `f667fcd7…`, crc32 `06ab9996`.
+Generations recite and remix the site (measured: "**sisemagentic (James 2021 —
+Pesest-ime (Jan 20202)", "Pyth Destisting trough & Presesented…", while
+late-training samples show "…Data Science and Code Data Sc" forming) —
+memorisation of a tiny corpus, as designed and as the page copy states.
 
 Gradcheck metric note: f32 weight storage rounds the ±h perturbation, so the
 relative-error denominator floors at 1e-6 — without that, near-zero gradients
@@ -152,7 +153,7 @@ worst row was analytic −6.34e-8 vs numeric −6.22e-8, abs 1.2e-9).
   is a process demo, not a product model; page copy carries that framing, and
   the shipped sample carries the quality story. Revisit if a future phase adds
   a WebGPU backend or longer "keep training" paths.
-- **2026-09-13 — the portfolio corpus recites.** At 18,003 bytes the sample
+- **2026-09-13 — the portfolio corpus recites.** At 18,243 bytes the sample
   memorizes James's approved copy; multi-line verbatim recitation is possible
   (it's the point) — but it means the sample's words are not editorialized by
   anyone. The page disclaimer ("wordplay, not fact; not the grounded JTB
