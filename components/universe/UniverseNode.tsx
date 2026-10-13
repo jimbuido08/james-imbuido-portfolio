@@ -2,12 +2,13 @@
 
 import { Float, Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { RefObject } from "react";
 import * as THREE from "three";
 
 import { NODE_RADIUS } from "@/lib/universe/config";
 import type { UniverseNodeDef } from "@/lib/universe/config";
+import { nodeMeshRef, nodeSiblingRefs } from "@/lib/universe/nodeOccluders";
 import { nodePositions } from "@/lib/universe/nodePositions";
 import { CANVAS_LABEL_Z_RANGE } from "@/lib/universe/zIndex";
 
@@ -34,9 +35,18 @@ export function UniverseNode({
   coreRef,
 }: UniverseNodeProps) {
   const [hovered, setHovered] = useState(false);
-  const mesh = useRef<THREE.Mesh>(null);
+  const mesh = nodeMeshRef(def.id);
   const isSelected = selectedId === def.id;
   const targetScale = isSelected ? 1.7 : hovered ? 1.35 : 1;
+
+  // What this label must not paint over: the core, plus every sibling sphere.
+  // Raycast occlusion keeps a label hidden while a sphere is between it and the
+  // camera — the node's own sphere is excluded so a steep camera angle can't
+  // self-occlude the label (see lib/universe/nodeOccluders).
+  const labelOccluders = useMemo(
+    () => [...nodeSiblingRefs(def.id), coreRef] as RefObject<THREE.Object3D>[],
+    [def.id, coreRef],
+  );
 
   // Persistent vector tracked in the shared registry so ConnectionLines can
   // reach this node's live center even while Float drifts it off def.position.
@@ -97,14 +107,15 @@ export function UniverseNode({
       {/* Always-visible name, glued to the node (the label markup used to live
           in NodeLabel.tsx — one span, not worth a file). Hidden while any node
           is selected so labels don't clutter the camera glide. Occluded against
-          the core so the label disappears when the node orbits behind it —
-          scoped to coreRef only so the particle field can't falsely hide it. */}
+          the core and every sibling sphere, so the label disappears when the
+          node orbits behind either — scoped to those meshes only so the
+          particle field and connection lines can't falsely hide it. */}
       {selectedId === null && (
         <Html
           position={[def.position[0], def.position[1] - 0.5, def.position[2]]}
           center
           pointerEvents="none"
-          occlude={[coreRef as RefObject<THREE.Object3D>]}
+          occlude={labelOccluders}
           zIndexRange={CANVAS_LABEL_Z_RANGE}
         >
           {/* text-shadow halo keeps labels legible over the hero copy when
