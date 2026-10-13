@@ -19,8 +19,8 @@
     "verify:storyteller-model": "npx tsx scripts/verify-storyteller-model.ts"
   },
   "dependencies": {
-    "@react-three/drei": "^10.7.8",
-    "@react-three/fiber": "^9.8.0",
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.1",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.112.3",
     "chess.js": "^1.4.0",
@@ -31,7 +31,7 @@
     "react-dom": "19.3.0",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
-    "three": "^0.186.0"
+    "three": "^0.186.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
